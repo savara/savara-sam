@@ -1052,6 +1052,11 @@ public final class ActivityModel {
     // required int64 timestamp = 2;
     boolean hasTimestamp();
     long getTimestamp();
+    
+    // optional .org.savara.sam.activity.ServiceInvocation serviceInvocation = 3;
+    boolean hasServiceInvocation();
+    org.savara.sam.activity.ServiceModel.ServiceInvocation getServiceInvocation();
+    org.savara.sam.activity.ServiceModel.ServiceInvocationOrBuilder getServiceInvocationOrBuilder();
   }
   public static final class Activity extends
       com.google.protobuf.GeneratedMessage
@@ -1105,9 +1110,23 @@ public final class ActivityModel {
       return timestamp_;
     }
     
+    // optional .org.savara.sam.activity.ServiceInvocation serviceInvocation = 3;
+    public static final int SERVICEINVOCATION_FIELD_NUMBER = 3;
+    private org.savara.sam.activity.ServiceModel.ServiceInvocation serviceInvocation_;
+    public boolean hasServiceInvocation() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    public org.savara.sam.activity.ServiceModel.ServiceInvocation getServiceInvocation() {
+      return serviceInvocation_;
+    }
+    public org.savara.sam.activity.ServiceModel.ServiceInvocationOrBuilder getServiceInvocationOrBuilder() {
+      return serviceInvocation_;
+    }
+    
     private void initFields() {
       id_ = org.savara.sam.activity.ActivityModel.ComponentId.getDefaultInstance();
       timestamp_ = 0L;
+      serviceInvocation_ = org.savara.sam.activity.ServiceModel.ServiceInvocation.getDefaultInstance();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -1122,6 +1141,12 @@ public final class ActivityModel {
         memoizedIsInitialized = 0;
         return false;
       }
+      if (hasServiceInvocation()) {
+        if (!getServiceInvocation().isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -1134,6 +1159,9 @@ public final class ActivityModel {
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         output.writeInt64(2, timestamp_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeMessage(3, serviceInvocation_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -1151,6 +1179,10 @@ public final class ActivityModel {
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt64Size(2, timestamp_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(3, serviceInvocation_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -1269,6 +1301,7 @@ public final class ActivityModel {
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
           getIdFieldBuilder();
+          getServiceInvocationFieldBuilder();
         }
       }
       private static Builder create() {
@@ -1285,6 +1318,12 @@ public final class ActivityModel {
         bitField0_ = (bitField0_ & ~0x00000001);
         timestamp_ = 0L;
         bitField0_ = (bitField0_ & ~0x00000002);
+        if (serviceInvocationBuilder_ == null) {
+          serviceInvocation_ = org.savara.sam.activity.ServiceModel.ServiceInvocation.getDefaultInstance();
+        } else {
+          serviceInvocationBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000004);
         return this;
       }
       
@@ -1335,6 +1374,14 @@ public final class ActivityModel {
           to_bitField0_ |= 0x00000002;
         }
         result.timestamp_ = timestamp_;
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        if (serviceInvocationBuilder_ == null) {
+          result.serviceInvocation_ = serviceInvocation_;
+        } else {
+          result.serviceInvocation_ = serviceInvocationBuilder_.build();
+        }
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -1357,6 +1404,9 @@ public final class ActivityModel {
         if (other.hasTimestamp()) {
           setTimestamp(other.getTimestamp());
         }
+        if (other.hasServiceInvocation()) {
+          mergeServiceInvocation(other.getServiceInvocation());
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
@@ -1369,6 +1419,12 @@ public final class ActivityModel {
         if (!hasTimestamp()) {
           
           return false;
+        }
+        if (hasServiceInvocation()) {
+          if (!getServiceInvocation().isInitialized()) {
+            
+            return false;
+          }
         }
         return true;
       }
@@ -1408,6 +1464,15 @@ public final class ActivityModel {
             case 16: {
               bitField0_ |= 0x00000002;
               timestamp_ = input.readInt64();
+              break;
+            }
+            case 26: {
+              org.savara.sam.activity.ServiceModel.ServiceInvocation.Builder subBuilder = org.savara.sam.activity.ServiceModel.ServiceInvocation.newBuilder();
+              if (hasServiceInvocation()) {
+                subBuilder.mergeFrom(getServiceInvocation());
+              }
+              input.readMessage(subBuilder, extensionRegistry);
+              setServiceInvocation(subBuilder.buildPartial());
               break;
             }
           }
@@ -1525,6 +1590,96 @@ public final class ActivityModel {
         timestamp_ = 0L;
         onChanged();
         return this;
+      }
+      
+      // optional .org.savara.sam.activity.ServiceInvocation serviceInvocation = 3;
+      private org.savara.sam.activity.ServiceModel.ServiceInvocation serviceInvocation_ = org.savara.sam.activity.ServiceModel.ServiceInvocation.getDefaultInstance();
+      private com.google.protobuf.SingleFieldBuilder<
+          org.savara.sam.activity.ServiceModel.ServiceInvocation, org.savara.sam.activity.ServiceModel.ServiceInvocation.Builder, org.savara.sam.activity.ServiceModel.ServiceInvocationOrBuilder> serviceInvocationBuilder_;
+      public boolean hasServiceInvocation() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      public org.savara.sam.activity.ServiceModel.ServiceInvocation getServiceInvocation() {
+        if (serviceInvocationBuilder_ == null) {
+          return serviceInvocation_;
+        } else {
+          return serviceInvocationBuilder_.getMessage();
+        }
+      }
+      public Builder setServiceInvocation(org.savara.sam.activity.ServiceModel.ServiceInvocation value) {
+        if (serviceInvocationBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          serviceInvocation_ = value;
+          onChanged();
+        } else {
+          serviceInvocationBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000004;
+        return this;
+      }
+      public Builder setServiceInvocation(
+          org.savara.sam.activity.ServiceModel.ServiceInvocation.Builder builderForValue) {
+        if (serviceInvocationBuilder_ == null) {
+          serviceInvocation_ = builderForValue.build();
+          onChanged();
+        } else {
+          serviceInvocationBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000004;
+        return this;
+      }
+      public Builder mergeServiceInvocation(org.savara.sam.activity.ServiceModel.ServiceInvocation value) {
+        if (serviceInvocationBuilder_ == null) {
+          if (((bitField0_ & 0x00000004) == 0x00000004) &&
+              serviceInvocation_ != org.savara.sam.activity.ServiceModel.ServiceInvocation.getDefaultInstance()) {
+            serviceInvocation_ =
+              org.savara.sam.activity.ServiceModel.ServiceInvocation.newBuilder(serviceInvocation_).mergeFrom(value).buildPartial();
+          } else {
+            serviceInvocation_ = value;
+          }
+          onChanged();
+        } else {
+          serviceInvocationBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000004;
+        return this;
+      }
+      public Builder clearServiceInvocation() {
+        if (serviceInvocationBuilder_ == null) {
+          serviceInvocation_ = org.savara.sam.activity.ServiceModel.ServiceInvocation.getDefaultInstance();
+          onChanged();
+        } else {
+          serviceInvocationBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000004);
+        return this;
+      }
+      public org.savara.sam.activity.ServiceModel.ServiceInvocation.Builder getServiceInvocationBuilder() {
+        bitField0_ |= 0x00000004;
+        onChanged();
+        return getServiceInvocationFieldBuilder().getBuilder();
+      }
+      public org.savara.sam.activity.ServiceModel.ServiceInvocationOrBuilder getServiceInvocationOrBuilder() {
+        if (serviceInvocationBuilder_ != null) {
+          return serviceInvocationBuilder_.getMessageOrBuilder();
+        } else {
+          return serviceInvocation_;
+        }
+      }
+      private com.google.protobuf.SingleFieldBuilder<
+          org.savara.sam.activity.ServiceModel.ServiceInvocation, org.savara.sam.activity.ServiceModel.ServiceInvocation.Builder, org.savara.sam.activity.ServiceModel.ServiceInvocationOrBuilder> 
+          getServiceInvocationFieldBuilder() {
+        if (serviceInvocationBuilder_ == null) {
+          serviceInvocationBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.savara.sam.activity.ServiceModel.ServiceInvocation, org.savara.sam.activity.ServiceModel.ServiceInvocation.Builder, org.savara.sam.activity.ServiceModel.ServiceInvocationOrBuilder>(
+                  serviceInvocation_,
+                  getParentForChildren(),
+                  isClean());
+          serviceInvocation_ = null;
+        }
+        return serviceInvocationBuilder_;
       }
       
       // @@protoc_insertion_point(builder_scope:org.savara.sam.activity.Activity)
@@ -2126,16 +2281,18 @@ public final class ActivityModel {
   static {
     java.lang.String[] descriptorData = {
       "\n\023ActivityModel.proto\022\027org.savara.sam.ac" +
-      "tivity\"\257\001\n\013ComponentId\022\020\n\010location\030\001 \001(\t" +
-      "\022\024\n\014locationType\030\002 \001(\t\022\023\n\013containerId\030\003 " +
-      "\001(\t\022\023\n\013application\030\004 \001(\t\022\021\n\tcomponent\030\005 " +
-      "\001(\t\022\025\n\rcomponentType\030\006 \001(\t\022\022\n\ninstanceId" +
-      "\030\007 \001(\t\022\020\n\010threadId\030\010 \001(\t\"O\n\010Activity\0220\n\002" +
-      "id\030\001 \002(\0132$.org.savara.sam.activity.Compo" +
-      "nentId\022\021\n\ttimestamp\030\002 \002(\003\"C\n\014ActivityLis" +
-      "t\0223\n\010activity\030\001 \003(\0132!.org.savara.sam.act" +
-      "ivity.ActivityB(\n\027org.savara.sam.activit",
-      "yB\rActivityModel"
+      "tivity\032\022ServiceModel.proto\"\257\001\n\013Component" +
+      "Id\022\020\n\010location\030\001 \001(\t\022\024\n\014locationType\030\002 \001" +
+      "(\t\022\023\n\013containerId\030\003 \001(\t\022\023\n\013application\030\004" +
+      " \001(\t\022\021\n\tcomponent\030\005 \001(\t\022\025\n\rcomponentType" +
+      "\030\006 \001(\t\022\022\n\ninstanceId\030\007 \001(\t\022\020\n\010threadId\030\010" +
+      " \001(\t\"\226\001\n\010Activity\0220\n\002id\030\001 \002(\0132$.org.sava" +
+      "ra.sam.activity.ComponentId\022\021\n\ttimestamp" +
+      "\030\002 \002(\003\022E\n\021serviceInvocation\030\003 \001(\0132*.org." +
+      "savara.sam.activity.ServiceInvocation\"C\n",
+      "\014ActivityList\0223\n\010activity\030\001 \003(\0132!.org.sa" +
+      "vara.sam.activity.ActivityB(\n\027org.savara" +
+      ".sam.activityB\rActivityModel"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -2155,7 +2312,7 @@ public final class ActivityModel {
           internal_static_org_savara_sam_activity_Activity_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_savara_sam_activity_Activity_descriptor,
-              new java.lang.String[] { "Id", "Timestamp", },
+              new java.lang.String[] { "Id", "Timestamp", "ServiceInvocation", },
               org.savara.sam.activity.ActivityModel.Activity.class,
               org.savara.sam.activity.ActivityModel.Activity.Builder.class);
           internal_static_org_savara_sam_activity_ActivityList_descriptor =
@@ -2172,6 +2329,7 @@ public final class ActivityModel {
     com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
+          org.savara.sam.activity.ServiceModel.getDescriptor(),
         }, assigner);
   }
   

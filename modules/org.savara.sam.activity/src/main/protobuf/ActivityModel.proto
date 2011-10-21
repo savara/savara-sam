@@ -3,6 +3,8 @@ package org.savara.sam.activity;
 option java_package = "org.savara.sam.activity";
 option java_outer_classname = "ActivityModel";
 
+import "ServiceModel.proto";
+
 message ComponentId {
   optional string location = 1;
   optional string locationType = 2;
@@ -17,6 +19,9 @@ message ComponentId {
 message Activity {
   required ComponentId id = 1;
   required int64 timestamp = 2;
+  
+  // The activity types
+  optional ServiceInvocation serviceInvocation = 3;
 }
 
 message ActivityList {

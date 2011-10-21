@@ -1,0 +1,23 @@
+package org.savara.sam.activity;
+
+option java_package = "org.savara.sam.activity";
+option java_outer_classname = "ServiceModel";
+
+message Message {
+  required string messageType = 1;
+  
+  optional string content = 2;
+}
+
+message ServiceInvocation {
+  required string serviceType = 1;
+  optional string operation = 2;
+  
+  enum InvocationType {
+    REQUEST = 0;
+    RESPONSE = 1;
+  }
+  required InvocationType invocationType = 3 [default = REQUEST];
+  
+  repeated Message message = 4;
+}
