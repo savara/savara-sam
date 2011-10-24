@@ -20,6 +20,7 @@
 
 	<modules>
 		<module>org.savara.sam.activity</module>
+		<module>org.savara.sam.aq</module>
 	</modules>
 
 <!-- Not currently needed unless making the modules OSGi bundles? 

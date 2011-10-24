@@ -1053,7 +1053,11 @@ public final class ActivityModel {
     boolean hasTimestamp();
     long getTimestamp();
     
-    // optional .org.savara.sam.activity.ServiceInvocation serviceInvocation = 3;
+    // required string principal = 3;
+    boolean hasPrincipal();
+    String getPrincipal();
+    
+    // optional .org.savara.sam.activity.ServiceInvocation serviceInvocation = 4;
     boolean hasServiceInvocation();
     org.savara.sam.activity.ServiceModel.ServiceInvocation getServiceInvocation();
     org.savara.sam.activity.ServiceModel.ServiceInvocationOrBuilder getServiceInvocationOrBuilder();
@@ -1110,11 +1114,43 @@ public final class ActivityModel {
       return timestamp_;
     }
     
-    // optional .org.savara.sam.activity.ServiceInvocation serviceInvocation = 3;
-    public static final int SERVICEINVOCATION_FIELD_NUMBER = 3;
+    // required string principal = 3;
+    public static final int PRINCIPAL_FIELD_NUMBER = 3;
+    private java.lang.Object principal_;
+    public boolean hasPrincipal() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    public String getPrincipal() {
+      java.lang.Object ref = principal_;
+      if (ref instanceof String) {
+        return (String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        String s = bs.toStringUtf8();
+        if (com.google.protobuf.Internal.isValidUtf8(bs)) {
+          principal_ = s;
+        }
+        return s;
+      }
+    }
+    private com.google.protobuf.ByteString getPrincipalBytes() {
+      java.lang.Object ref = principal_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8((String) ref);
+        principal_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+    
+    // optional .org.savara.sam.activity.ServiceInvocation serviceInvocation = 4;
+    public static final int SERVICEINVOCATION_FIELD_NUMBER = 4;
     private org.savara.sam.activity.ServiceModel.ServiceInvocation serviceInvocation_;
     public boolean hasServiceInvocation() {
-      return ((bitField0_ & 0x00000004) == 0x00000004);
+      return ((bitField0_ & 0x00000008) == 0x00000008);
     }
     public org.savara.sam.activity.ServiceModel.ServiceInvocation getServiceInvocation() {
       return serviceInvocation_;
@@ -1126,6 +1162,7 @@ public final class ActivityModel {
     private void initFields() {
       id_ = org.savara.sam.activity.ActivityModel.ComponentId.getDefaultInstance();
       timestamp_ = 0L;
+      principal_ = "";
       serviceInvocation_ = org.savara.sam.activity.ServiceModel.ServiceInvocation.getDefaultInstance();
     }
     private byte memoizedIsInitialized = -1;
@@ -1138,6 +1175,10 @@ public final class ActivityModel {
         return false;
       }
       if (!hasTimestamp()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasPrincipal()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -1161,7 +1202,10 @@ public final class ActivityModel {
         output.writeInt64(2, timestamp_);
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
-        output.writeMessage(3, serviceInvocation_);
+        output.writeBytes(3, getPrincipalBytes());
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        output.writeMessage(4, serviceInvocation_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -1182,7 +1226,11 @@ public final class ActivityModel {
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(3, serviceInvocation_);
+          .computeBytesSize(3, getPrincipalBytes());
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(4, serviceInvocation_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -1318,12 +1366,14 @@ public final class ActivityModel {
         bitField0_ = (bitField0_ & ~0x00000001);
         timestamp_ = 0L;
         bitField0_ = (bitField0_ & ~0x00000002);
+        principal_ = "";
+        bitField0_ = (bitField0_ & ~0x00000004);
         if (serviceInvocationBuilder_ == null) {
           serviceInvocation_ = org.savara.sam.activity.ServiceModel.ServiceInvocation.getDefaultInstance();
         } else {
           serviceInvocationBuilder_.clear();
         }
-        bitField0_ = (bitField0_ & ~0x00000004);
+        bitField0_ = (bitField0_ & ~0x00000008);
         return this;
       }
       
@@ -1377,6 +1427,10 @@ public final class ActivityModel {
         if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
           to_bitField0_ |= 0x00000004;
         }
+        result.principal_ = principal_;
+        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+          to_bitField0_ |= 0x00000008;
+        }
         if (serviceInvocationBuilder_ == null) {
           result.serviceInvocation_ = serviceInvocation_;
         } else {
@@ -1404,6 +1458,9 @@ public final class ActivityModel {
         if (other.hasTimestamp()) {
           setTimestamp(other.getTimestamp());
         }
+        if (other.hasPrincipal()) {
+          setPrincipal(other.getPrincipal());
+        }
         if (other.hasServiceInvocation()) {
           mergeServiceInvocation(other.getServiceInvocation());
         }
@@ -1417,6 +1474,10 @@ public final class ActivityModel {
           return false;
         }
         if (!hasTimestamp()) {
+          
+          return false;
+        }
+        if (!hasPrincipal()) {
           
           return false;
         }
@@ -1467,6 +1528,11 @@ public final class ActivityModel {
               break;
             }
             case 26: {
+              bitField0_ |= 0x00000004;
+              principal_ = input.readBytes();
+              break;
+            }
+            case 34: {
               org.savara.sam.activity.ServiceModel.ServiceInvocation.Builder subBuilder = org.savara.sam.activity.ServiceModel.ServiceInvocation.newBuilder();
               if (hasServiceInvocation()) {
                 subBuilder.mergeFrom(getServiceInvocation());
@@ -1592,12 +1658,48 @@ public final class ActivityModel {
         return this;
       }
       
-      // optional .org.savara.sam.activity.ServiceInvocation serviceInvocation = 3;
+      // required string principal = 3;
+      private java.lang.Object principal_ = "";
+      public boolean hasPrincipal() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      public String getPrincipal() {
+        java.lang.Object ref = principal_;
+        if (!(ref instanceof String)) {
+          String s = ((com.google.protobuf.ByteString) ref).toStringUtf8();
+          principal_ = s;
+          return s;
+        } else {
+          return (String) ref;
+        }
+      }
+      public Builder setPrincipal(String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+        principal_ = value;
+        onChanged();
+        return this;
+      }
+      public Builder clearPrincipal() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        principal_ = getDefaultInstance().getPrincipal();
+        onChanged();
+        return this;
+      }
+      void setPrincipal(com.google.protobuf.ByteString value) {
+        bitField0_ |= 0x00000004;
+        principal_ = value;
+        onChanged();
+      }
+      
+      // optional .org.savara.sam.activity.ServiceInvocation serviceInvocation = 4;
       private org.savara.sam.activity.ServiceModel.ServiceInvocation serviceInvocation_ = org.savara.sam.activity.ServiceModel.ServiceInvocation.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
           org.savara.sam.activity.ServiceModel.ServiceInvocation, org.savara.sam.activity.ServiceModel.ServiceInvocation.Builder, org.savara.sam.activity.ServiceModel.ServiceInvocationOrBuilder> serviceInvocationBuilder_;
       public boolean hasServiceInvocation() {
-        return ((bitField0_ & 0x00000004) == 0x00000004);
+        return ((bitField0_ & 0x00000008) == 0x00000008);
       }
       public org.savara.sam.activity.ServiceModel.ServiceInvocation getServiceInvocation() {
         if (serviceInvocationBuilder_ == null) {
@@ -1616,7 +1718,7 @@ public final class ActivityModel {
         } else {
           serviceInvocationBuilder_.setMessage(value);
         }
-        bitField0_ |= 0x00000004;
+        bitField0_ |= 0x00000008;
         return this;
       }
       public Builder setServiceInvocation(
@@ -1627,12 +1729,12 @@ public final class ActivityModel {
         } else {
           serviceInvocationBuilder_.setMessage(builderForValue.build());
         }
-        bitField0_ |= 0x00000004;
+        bitField0_ |= 0x00000008;
         return this;
       }
       public Builder mergeServiceInvocation(org.savara.sam.activity.ServiceModel.ServiceInvocation value) {
         if (serviceInvocationBuilder_ == null) {
-          if (((bitField0_ & 0x00000004) == 0x00000004) &&
+          if (((bitField0_ & 0x00000008) == 0x00000008) &&
               serviceInvocation_ != org.savara.sam.activity.ServiceModel.ServiceInvocation.getDefaultInstance()) {
             serviceInvocation_ =
               org.savara.sam.activity.ServiceModel.ServiceInvocation.newBuilder(serviceInvocation_).mergeFrom(value).buildPartial();
@@ -1643,7 +1745,7 @@ public final class ActivityModel {
         } else {
           serviceInvocationBuilder_.mergeFrom(value);
         }
-        bitField0_ |= 0x00000004;
+        bitField0_ |= 0x00000008;
         return this;
       }
       public Builder clearServiceInvocation() {
@@ -1653,11 +1755,11 @@ public final class ActivityModel {
         } else {
           serviceInvocationBuilder_.clear();
         }
-        bitField0_ = (bitField0_ & ~0x00000004);
+        bitField0_ = (bitField0_ & ~0x00000008);
         return this;
       }
       public org.savara.sam.activity.ServiceModel.ServiceInvocation.Builder getServiceInvocationBuilder() {
-        bitField0_ |= 0x00000004;
+        bitField0_ |= 0x00000008;
         onChanged();
         return getServiceInvocationFieldBuilder().getBuilder();
       }
@@ -1693,569 +1795,6 @@ public final class ActivityModel {
     // @@protoc_insertion_point(class_scope:org.savara.sam.activity.Activity)
   }
   
-  public interface ActivityListOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
-    
-    // repeated .org.savara.sam.activity.Activity activity = 1;
-    java.util.List<org.savara.sam.activity.ActivityModel.Activity> 
-        getActivityList();
-    org.savara.sam.activity.ActivityModel.Activity getActivity(int index);
-    int getActivityCount();
-    java.util.List<? extends org.savara.sam.activity.ActivityModel.ActivityOrBuilder> 
-        getActivityOrBuilderList();
-    org.savara.sam.activity.ActivityModel.ActivityOrBuilder getActivityOrBuilder(
-        int index);
-  }
-  public static final class ActivityList extends
-      com.google.protobuf.GeneratedMessage
-      implements ActivityListOrBuilder {
-    // Use ActivityList.newBuilder() to construct.
-    private ActivityList(Builder builder) {
-      super(builder);
-    }
-    private ActivityList(boolean noInit) {}
-    
-    private static final ActivityList defaultInstance;
-    public static ActivityList getDefaultInstance() {
-      return defaultInstance;
-    }
-    
-    public ActivityList getDefaultInstanceForType() {
-      return defaultInstance;
-    }
-    
-    public static final com.google.protobuf.Descriptors.Descriptor
-        getDescriptor() {
-      return org.savara.sam.activity.ActivityModel.internal_static_org_savara_sam_activity_ActivityList_descriptor;
-    }
-    
-    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
-        internalGetFieldAccessorTable() {
-      return org.savara.sam.activity.ActivityModel.internal_static_org_savara_sam_activity_ActivityList_fieldAccessorTable;
-    }
-    
-    // repeated .org.savara.sam.activity.Activity activity = 1;
-    public static final int ACTIVITY_FIELD_NUMBER = 1;
-    private java.util.List<org.savara.sam.activity.ActivityModel.Activity> activity_;
-    public java.util.List<org.savara.sam.activity.ActivityModel.Activity> getActivityList() {
-      return activity_;
-    }
-    public java.util.List<? extends org.savara.sam.activity.ActivityModel.ActivityOrBuilder> 
-        getActivityOrBuilderList() {
-      return activity_;
-    }
-    public int getActivityCount() {
-      return activity_.size();
-    }
-    public org.savara.sam.activity.ActivityModel.Activity getActivity(int index) {
-      return activity_.get(index);
-    }
-    public org.savara.sam.activity.ActivityModel.ActivityOrBuilder getActivityOrBuilder(
-        int index) {
-      return activity_.get(index);
-    }
-    
-    private void initFields() {
-      activity_ = java.util.Collections.emptyList();
-    }
-    private byte memoizedIsInitialized = -1;
-    public final boolean isInitialized() {
-      byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
-      
-      for (int i = 0; i < getActivityCount(); i++) {
-        if (!getActivity(i).isInitialized()) {
-          memoizedIsInitialized = 0;
-          return false;
-        }
-      }
-      memoizedIsInitialized = 1;
-      return true;
-    }
-    
-    public void writeTo(com.google.protobuf.CodedOutputStream output)
-                        throws java.io.IOException {
-      getSerializedSize();
-      for (int i = 0; i < activity_.size(); i++) {
-        output.writeMessage(1, activity_.get(i));
-      }
-      getUnknownFields().writeTo(output);
-    }
-    
-    private int memoizedSerializedSize = -1;
-    public int getSerializedSize() {
-      int size = memoizedSerializedSize;
-      if (size != -1) return size;
-    
-      size = 0;
-      for (int i = 0; i < activity_.size(); i++) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(1, activity_.get(i));
-      }
-      size += getUnknownFields().getSerializedSize();
-      memoizedSerializedSize = size;
-      return size;
-    }
-    
-    private static final long serialVersionUID = 0L;
-    @java.lang.Override
-    protected java.lang.Object writeReplace()
-        throws java.io.ObjectStreamException {
-      return super.writeReplace();
-    }
-    
-    public static org.savara.sam.activity.ActivityModel.ActivityList parseFrom(
-        com.google.protobuf.ByteString data)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return newBuilder().mergeFrom(data).buildParsed();
-    }
-    public static org.savara.sam.activity.ActivityModel.ActivityList parseFrom(
-        com.google.protobuf.ByteString data,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return newBuilder().mergeFrom(data, extensionRegistry)
-               .buildParsed();
-    }
-    public static org.savara.sam.activity.ActivityModel.ActivityList parseFrom(byte[] data)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return newBuilder().mergeFrom(data).buildParsed();
-    }
-    public static org.savara.sam.activity.ActivityModel.ActivityList parseFrom(
-        byte[] data,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return newBuilder().mergeFrom(data, extensionRegistry)
-               .buildParsed();
-    }
-    public static org.savara.sam.activity.ActivityModel.ActivityList parseFrom(java.io.InputStream input)
-        throws java.io.IOException {
-      return newBuilder().mergeFrom(input).buildParsed();
-    }
-    public static org.savara.sam.activity.ActivityModel.ActivityList parseFrom(
-        java.io.InputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
-      return newBuilder().mergeFrom(input, extensionRegistry)
-               .buildParsed();
-    }
-    public static org.savara.sam.activity.ActivityModel.ActivityList parseDelimitedFrom(java.io.InputStream input)
-        throws java.io.IOException {
-      Builder builder = newBuilder();
-      if (builder.mergeDelimitedFrom(input)) {
-        return builder.buildParsed();
-      } else {
-        return null;
-      }
-    }
-    public static org.savara.sam.activity.ActivityModel.ActivityList parseDelimitedFrom(
-        java.io.InputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
-      Builder builder = newBuilder();
-      if (builder.mergeDelimitedFrom(input, extensionRegistry)) {
-        return builder.buildParsed();
-      } else {
-        return null;
-      }
-    }
-    public static org.savara.sam.activity.ActivityModel.ActivityList parseFrom(
-        com.google.protobuf.CodedInputStream input)
-        throws java.io.IOException {
-      return newBuilder().mergeFrom(input).buildParsed();
-    }
-    public static org.savara.sam.activity.ActivityModel.ActivityList parseFrom(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
-      return newBuilder().mergeFrom(input, extensionRegistry)
-               .buildParsed();
-    }
-    
-    public static Builder newBuilder() { return Builder.create(); }
-    public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder(org.savara.sam.activity.ActivityModel.ActivityList prototype) {
-      return newBuilder().mergeFrom(prototype);
-    }
-    public Builder toBuilder() { return newBuilder(this); }
-    
-    @java.lang.Override
-    protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
-      Builder builder = new Builder(parent);
-      return builder;
-    }
-    public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.savara.sam.activity.ActivityModel.ActivityListOrBuilder {
-      public static final com.google.protobuf.Descriptors.Descriptor
-          getDescriptor() {
-        return org.savara.sam.activity.ActivityModel.internal_static_org_savara_sam_activity_ActivityList_descriptor;
-      }
-      
-      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
-          internalGetFieldAccessorTable() {
-        return org.savara.sam.activity.ActivityModel.internal_static_org_savara_sam_activity_ActivityList_fieldAccessorTable;
-      }
-      
-      // Construct using org.savara.sam.activity.ActivityModel.ActivityList.newBuilder()
-      private Builder() {
-        maybeForceBuilderInitialization();
-      }
-      
-      private Builder(BuilderParent parent) {
-        super(parent);
-        maybeForceBuilderInitialization();
-      }
-      private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
-          getActivityFieldBuilder();
-        }
-      }
-      private static Builder create() {
-        return new Builder();
-      }
-      
-      public Builder clear() {
-        super.clear();
-        if (activityBuilder_ == null) {
-          activity_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000001);
-        } else {
-          activityBuilder_.clear();
-        }
-        return this;
-      }
-      
-      public Builder clone() {
-        return create().mergeFrom(buildPartial());
-      }
-      
-      public com.google.protobuf.Descriptors.Descriptor
-          getDescriptorForType() {
-        return org.savara.sam.activity.ActivityModel.ActivityList.getDescriptor();
-      }
-      
-      public org.savara.sam.activity.ActivityModel.ActivityList getDefaultInstanceForType() {
-        return org.savara.sam.activity.ActivityModel.ActivityList.getDefaultInstance();
-      }
-      
-      public org.savara.sam.activity.ActivityModel.ActivityList build() {
-        org.savara.sam.activity.ActivityModel.ActivityList result = buildPartial();
-        if (!result.isInitialized()) {
-          throw newUninitializedMessageException(result);
-        }
-        return result;
-      }
-      
-      private org.savara.sam.activity.ActivityModel.ActivityList buildParsed()
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        org.savara.sam.activity.ActivityModel.ActivityList result = buildPartial();
-        if (!result.isInitialized()) {
-          throw newUninitializedMessageException(
-            result).asInvalidProtocolBufferException();
-        }
-        return result;
-      }
-      
-      public org.savara.sam.activity.ActivityModel.ActivityList buildPartial() {
-        org.savara.sam.activity.ActivityModel.ActivityList result = new org.savara.sam.activity.ActivityModel.ActivityList(this);
-        int from_bitField0_ = bitField0_;
-        if (activityBuilder_ == null) {
-          if (((bitField0_ & 0x00000001) == 0x00000001)) {
-            activity_ = java.util.Collections.unmodifiableList(activity_);
-            bitField0_ = (bitField0_ & ~0x00000001);
-          }
-          result.activity_ = activity_;
-        } else {
-          result.activity_ = activityBuilder_.build();
-        }
-        onBuilt();
-        return result;
-      }
-      
-      public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof org.savara.sam.activity.ActivityModel.ActivityList) {
-          return mergeFrom((org.savara.sam.activity.ActivityModel.ActivityList)other);
-        } else {
-          super.mergeFrom(other);
-          return this;
-        }
-      }
-      
-      public Builder mergeFrom(org.savara.sam.activity.ActivityModel.ActivityList other) {
-        if (other == org.savara.sam.activity.ActivityModel.ActivityList.getDefaultInstance()) return this;
-        if (activityBuilder_ == null) {
-          if (!other.activity_.isEmpty()) {
-            if (activity_.isEmpty()) {
-              activity_ = other.activity_;
-              bitField0_ = (bitField0_ & ~0x00000001);
-            } else {
-              ensureActivityIsMutable();
-              activity_.addAll(other.activity_);
-            }
-            onChanged();
-          }
-        } else {
-          if (!other.activity_.isEmpty()) {
-            if (activityBuilder_.isEmpty()) {
-              activityBuilder_.dispose();
-              activityBuilder_ = null;
-              activity_ = other.activity_;
-              bitField0_ = (bitField0_ & ~0x00000001);
-              activityBuilder_ = 
-                com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
-                   getActivityFieldBuilder() : null;
-            } else {
-              activityBuilder_.addAllMessages(other.activity_);
-            }
-          }
-        }
-        this.mergeUnknownFields(other.getUnknownFields());
-        return this;
-      }
-      
-      public final boolean isInitialized() {
-        for (int i = 0; i < getActivityCount(); i++) {
-          if (!getActivity(i).isInitialized()) {
-            
-            return false;
-          }
-        }
-        return true;
-      }
-      
-      public Builder mergeFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws java.io.IOException {
-        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-          com.google.protobuf.UnknownFieldSet.newBuilder(
-            this.getUnknownFields());
-        while (true) {
-          int tag = input.readTag();
-          switch (tag) {
-            case 0:
-              this.setUnknownFields(unknownFields.build());
-              onChanged();
-              return this;
-            default: {
-              if (!parseUnknownField(input, unknownFields,
-                                     extensionRegistry, tag)) {
-                this.setUnknownFields(unknownFields.build());
-                onChanged();
-                return this;
-              }
-              break;
-            }
-            case 10: {
-              org.savara.sam.activity.ActivityModel.Activity.Builder subBuilder = org.savara.sam.activity.ActivityModel.Activity.newBuilder();
-              input.readMessage(subBuilder, extensionRegistry);
-              addActivity(subBuilder.buildPartial());
-              break;
-            }
-          }
-        }
-      }
-      
-      private int bitField0_;
-      
-      // repeated .org.savara.sam.activity.Activity activity = 1;
-      private java.util.List<org.savara.sam.activity.ActivityModel.Activity> activity_ =
-        java.util.Collections.emptyList();
-      private void ensureActivityIsMutable() {
-        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
-          activity_ = new java.util.ArrayList<org.savara.sam.activity.ActivityModel.Activity>(activity_);
-          bitField0_ |= 0x00000001;
-         }
-      }
-      
-      private com.google.protobuf.RepeatedFieldBuilder<
-          org.savara.sam.activity.ActivityModel.Activity, org.savara.sam.activity.ActivityModel.Activity.Builder, org.savara.sam.activity.ActivityModel.ActivityOrBuilder> activityBuilder_;
-      
-      public java.util.List<org.savara.sam.activity.ActivityModel.Activity> getActivityList() {
-        if (activityBuilder_ == null) {
-          return java.util.Collections.unmodifiableList(activity_);
-        } else {
-          return activityBuilder_.getMessageList();
-        }
-      }
-      public int getActivityCount() {
-        if (activityBuilder_ == null) {
-          return activity_.size();
-        } else {
-          return activityBuilder_.getCount();
-        }
-      }
-      public org.savara.sam.activity.ActivityModel.Activity getActivity(int index) {
-        if (activityBuilder_ == null) {
-          return activity_.get(index);
-        } else {
-          return activityBuilder_.getMessage(index);
-        }
-      }
-      public Builder setActivity(
-          int index, org.savara.sam.activity.ActivityModel.Activity value) {
-        if (activityBuilder_ == null) {
-          if (value == null) {
-            throw new NullPointerException();
-          }
-          ensureActivityIsMutable();
-          activity_.set(index, value);
-          onChanged();
-        } else {
-          activityBuilder_.setMessage(index, value);
-        }
-        return this;
-      }
-      public Builder setActivity(
-          int index, org.savara.sam.activity.ActivityModel.Activity.Builder builderForValue) {
-        if (activityBuilder_ == null) {
-          ensureActivityIsMutable();
-          activity_.set(index, builderForValue.build());
-          onChanged();
-        } else {
-          activityBuilder_.setMessage(index, builderForValue.build());
-        }
-        return this;
-      }
-      public Builder addActivity(org.savara.sam.activity.ActivityModel.Activity value) {
-        if (activityBuilder_ == null) {
-          if (value == null) {
-            throw new NullPointerException();
-          }
-          ensureActivityIsMutable();
-          activity_.add(value);
-          onChanged();
-        } else {
-          activityBuilder_.addMessage(value);
-        }
-        return this;
-      }
-      public Builder addActivity(
-          int index, org.savara.sam.activity.ActivityModel.Activity value) {
-        if (activityBuilder_ == null) {
-          if (value == null) {
-            throw new NullPointerException();
-          }
-          ensureActivityIsMutable();
-          activity_.add(index, value);
-          onChanged();
-        } else {
-          activityBuilder_.addMessage(index, value);
-        }
-        return this;
-      }
-      public Builder addActivity(
-          org.savara.sam.activity.ActivityModel.Activity.Builder builderForValue) {
-        if (activityBuilder_ == null) {
-          ensureActivityIsMutable();
-          activity_.add(builderForValue.build());
-          onChanged();
-        } else {
-          activityBuilder_.addMessage(builderForValue.build());
-        }
-        return this;
-      }
-      public Builder addActivity(
-          int index, org.savara.sam.activity.ActivityModel.Activity.Builder builderForValue) {
-        if (activityBuilder_ == null) {
-          ensureActivityIsMutable();
-          activity_.add(index, builderForValue.build());
-          onChanged();
-        } else {
-          activityBuilder_.addMessage(index, builderForValue.build());
-        }
-        return this;
-      }
-      public Builder addAllActivity(
-          java.lang.Iterable<? extends org.savara.sam.activity.ActivityModel.Activity> values) {
-        if (activityBuilder_ == null) {
-          ensureActivityIsMutable();
-          super.addAll(values, activity_);
-          onChanged();
-        } else {
-          activityBuilder_.addAllMessages(values);
-        }
-        return this;
-      }
-      public Builder clearActivity() {
-        if (activityBuilder_ == null) {
-          activity_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000001);
-          onChanged();
-        } else {
-          activityBuilder_.clear();
-        }
-        return this;
-      }
-      public Builder removeActivity(int index) {
-        if (activityBuilder_ == null) {
-          ensureActivityIsMutable();
-          activity_.remove(index);
-          onChanged();
-        } else {
-          activityBuilder_.remove(index);
-        }
-        return this;
-      }
-      public org.savara.sam.activity.ActivityModel.Activity.Builder getActivityBuilder(
-          int index) {
-        return getActivityFieldBuilder().getBuilder(index);
-      }
-      public org.savara.sam.activity.ActivityModel.ActivityOrBuilder getActivityOrBuilder(
-          int index) {
-        if (activityBuilder_ == null) {
-          return activity_.get(index);  } else {
-          return activityBuilder_.getMessageOrBuilder(index);
-        }
-      }
-      public java.util.List<? extends org.savara.sam.activity.ActivityModel.ActivityOrBuilder> 
-           getActivityOrBuilderList() {
-        if (activityBuilder_ != null) {
-          return activityBuilder_.getMessageOrBuilderList();
-        } else {
-          return java.util.Collections.unmodifiableList(activity_);
-        }
-      }
-      public org.savara.sam.activity.ActivityModel.Activity.Builder addActivityBuilder() {
-        return getActivityFieldBuilder().addBuilder(
-            org.savara.sam.activity.ActivityModel.Activity.getDefaultInstance());
-      }
-      public org.savara.sam.activity.ActivityModel.Activity.Builder addActivityBuilder(
-          int index) {
-        return getActivityFieldBuilder().addBuilder(
-            index, org.savara.sam.activity.ActivityModel.Activity.getDefaultInstance());
-      }
-      public java.util.List<org.savara.sam.activity.ActivityModel.Activity.Builder> 
-           getActivityBuilderList() {
-        return getActivityFieldBuilder().getBuilderList();
-      }
-      private com.google.protobuf.RepeatedFieldBuilder<
-          org.savara.sam.activity.ActivityModel.Activity, org.savara.sam.activity.ActivityModel.Activity.Builder, org.savara.sam.activity.ActivityModel.ActivityOrBuilder> 
-          getActivityFieldBuilder() {
-        if (activityBuilder_ == null) {
-          activityBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
-              org.savara.sam.activity.ActivityModel.Activity, org.savara.sam.activity.ActivityModel.Activity.Builder, org.savara.sam.activity.ActivityModel.ActivityOrBuilder>(
-                  activity_,
-                  ((bitField0_ & 0x00000001) == 0x00000001),
-                  getParentForChildren(),
-                  isClean());
-          activity_ = null;
-        }
-        return activityBuilder_;
-      }
-      
-      // @@protoc_insertion_point(builder_scope:org.savara.sam.activity.ActivityList)
-    }
-    
-    static {
-      defaultInstance = new ActivityList(true);
-      defaultInstance.initFields();
-    }
-    
-    // @@protoc_insertion_point(class_scope:org.savara.sam.activity.ActivityList)
-  }
-  
   private static com.google.protobuf.Descriptors.Descriptor
     internal_static_org_savara_sam_activity_ComponentId_descriptor;
   private static
@@ -2266,11 +1805,6 @@ public final class ActivityModel {
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_org_savara_sam_activity_Activity_fieldAccessorTable;
-  private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_savara_sam_activity_ActivityList_descriptor;
-  private static
-    com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_savara_sam_activity_ActivityList_fieldAccessorTable;
   
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -2286,13 +1820,12 @@ public final class ActivityModel {
       "(\t\022\023\n\013containerId\030\003 \001(\t\022\023\n\013application\030\004" +
       " \001(\t\022\021\n\tcomponent\030\005 \001(\t\022\025\n\rcomponentType" +
       "\030\006 \001(\t\022\022\n\ninstanceId\030\007 \001(\t\022\020\n\010threadId\030\010" +
-      " \001(\t\"\226\001\n\010Activity\0220\n\002id\030\001 \002(\0132$.org.sava" +
+      " \001(\t\"\251\001\n\010Activity\0220\n\002id\030\001 \002(\0132$.org.sava" +
       "ra.sam.activity.ComponentId\022\021\n\ttimestamp" +
-      "\030\002 \002(\003\022E\n\021serviceInvocation\030\003 \001(\0132*.org." +
-      "savara.sam.activity.ServiceInvocation\"C\n",
-      "\014ActivityList\0223\n\010activity\030\001 \003(\0132!.org.sa" +
-      "vara.sam.activity.ActivityB(\n\027org.savara" +
-      ".sam.activityB\rActivityModel"
+      "\030\002 \002(\003\022\021\n\tprincipal\030\003 \002(\t\022E\n\021serviceInvo" +
+      "cation\030\004 \001(\0132*.org.savara.sam.activity.S",
+      "erviceInvocationB(\n\027org.savara.sam.activ" +
+      "ityB\rActivityModel"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -2312,17 +1845,9 @@ public final class ActivityModel {
           internal_static_org_savara_sam_activity_Activity_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_savara_sam_activity_Activity_descriptor,
-              new java.lang.String[] { "Id", "Timestamp", "ServiceInvocation", },
+              new java.lang.String[] { "Id", "Timestamp", "Principal", "ServiceInvocation", },
               org.savara.sam.activity.ActivityModel.Activity.class,
               org.savara.sam.activity.ActivityModel.Activity.Builder.class);
-          internal_static_org_savara_sam_activity_ActivityList_descriptor =
-            getDescriptor().getMessageTypes().get(2);
-          internal_static_org_savara_sam_activity_ActivityList_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_savara_sam_activity_ActivityList_descriptor,
-              new java.lang.String[] { "Activity", },
-              org.savara.sam.activity.ActivityModel.ActivityList.class,
-              org.savara.sam.activity.ActivityModel.ActivityList.Builder.class);
           return null;
         }
       };

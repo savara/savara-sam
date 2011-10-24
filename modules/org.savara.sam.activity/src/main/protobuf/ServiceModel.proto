@@ -12,12 +12,13 @@ message Message {
 message ServiceInvocation {
   required string serviceType = 1;
   optional string operation = 2;
+  optional string fault = 3;
+  
+  repeated Message message = 4;
   
   enum InvocationType {
     REQUEST = 0;
     RESPONSE = 1;
   }
-  required InvocationType invocationType = 3 [default = REQUEST];
-  
-  repeated Message message = 4;
+  required InvocationType invocationType = 5 [default = REQUEST];
 }

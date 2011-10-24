@@ -50,11 +50,14 @@
 	</developers>
 
 	<properties>
+		<protobuf.version>2.4.0a</protobuf.version>
 		<junit.version>4.4</junit.version>
 	</properties>
 
 	<modules>
 		<module>modules</module>
+		<module>integration</module>
+		<module>tests</module>
 	</modules>
 
 	<build>

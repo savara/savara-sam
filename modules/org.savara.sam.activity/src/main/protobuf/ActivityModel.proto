@@ -20,10 +20,8 @@ message Activity {
   required ComponentId id = 1;
   required int64 timestamp = 2;
   
+  required string principal = 3;
+  
   // The activity types
-  optional ServiceInvocation serviceInvocation = 3;
-}
-
-message ActivityList {
-  repeated Activity activity = 1;
+  optional ServiceInvocation serviceInvocation = 4;
 }

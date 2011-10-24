@@ -496,9 +496,9 @@ public final class ServiceModel {
     boolean hasOperation();
     String getOperation();
     
-    // required .org.savara.sam.activity.ServiceInvocation.InvocationType invocationType = 3 [default = REQUEST];
-    boolean hasInvocationType();
-    org.savara.sam.activity.ServiceModel.ServiceInvocation.InvocationType getInvocationType();
+    // optional string fault = 3;
+    boolean hasFault();
+    String getFault();
     
     // repeated .org.savara.sam.activity.Message message = 4;
     java.util.List<org.savara.sam.activity.ServiceModel.Message> 
@@ -509,6 +509,10 @@ public final class ServiceModel {
         getMessageOrBuilderList();
     org.savara.sam.activity.ServiceModel.MessageOrBuilder getMessageOrBuilder(
         int index);
+    
+    // required .org.savara.sam.activity.ServiceInvocation.InvocationType invocationType = 5 [default = REQUEST];
+    boolean hasInvocationType();
+    org.savara.sam.activity.ServiceModel.ServiceInvocation.InvocationType getInvocationType();
   }
   public static final class ServiceInvocation extends
       com.google.protobuf.GeneratedMessage
@@ -672,14 +676,36 @@ public final class ServiceModel {
       }
     }
     
-    // required .org.savara.sam.activity.ServiceInvocation.InvocationType invocationType = 3 [default = REQUEST];
-    public static final int INVOCATIONTYPE_FIELD_NUMBER = 3;
-    private org.savara.sam.activity.ServiceModel.ServiceInvocation.InvocationType invocationType_;
-    public boolean hasInvocationType() {
+    // optional string fault = 3;
+    public static final int FAULT_FIELD_NUMBER = 3;
+    private java.lang.Object fault_;
+    public boolean hasFault() {
       return ((bitField0_ & 0x00000004) == 0x00000004);
     }
-    public org.savara.sam.activity.ServiceModel.ServiceInvocation.InvocationType getInvocationType() {
-      return invocationType_;
+    public String getFault() {
+      java.lang.Object ref = fault_;
+      if (ref instanceof String) {
+        return (String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        String s = bs.toStringUtf8();
+        if (com.google.protobuf.Internal.isValidUtf8(bs)) {
+          fault_ = s;
+        }
+        return s;
+      }
+    }
+    private com.google.protobuf.ByteString getFaultBytes() {
+      java.lang.Object ref = fault_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8((String) ref);
+        fault_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
     }
     
     // repeated .org.savara.sam.activity.Message message = 4;
@@ -703,11 +729,22 @@ public final class ServiceModel {
       return message_.get(index);
     }
     
+    // required .org.savara.sam.activity.ServiceInvocation.InvocationType invocationType = 5 [default = REQUEST];
+    public static final int INVOCATIONTYPE_FIELD_NUMBER = 5;
+    private org.savara.sam.activity.ServiceModel.ServiceInvocation.InvocationType invocationType_;
+    public boolean hasInvocationType() {
+      return ((bitField0_ & 0x00000008) == 0x00000008);
+    }
+    public org.savara.sam.activity.ServiceModel.ServiceInvocation.InvocationType getInvocationType() {
+      return invocationType_;
+    }
+    
     private void initFields() {
       serviceType_ = "";
       operation_ = "";
-      invocationType_ = org.savara.sam.activity.ServiceModel.ServiceInvocation.InvocationType.REQUEST;
+      fault_ = "";
       message_ = java.util.Collections.emptyList();
+      invocationType_ = org.savara.sam.activity.ServiceModel.ServiceInvocation.InvocationType.REQUEST;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -742,10 +779,13 @@ public final class ServiceModel {
         output.writeBytes(2, getOperationBytes());
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
-        output.writeEnum(3, invocationType_.getNumber());
+        output.writeBytes(3, getFaultBytes());
       }
       for (int i = 0; i < message_.size(); i++) {
         output.writeMessage(4, message_.get(i));
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        output.writeEnum(5, invocationType_.getNumber());
       }
       getUnknownFields().writeTo(output);
     }
@@ -766,11 +806,15 @@ public final class ServiceModel {
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeEnumSize(3, invocationType_.getNumber());
+          .computeBytesSize(3, getFaultBytes());
       }
       for (int i = 0; i < message_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(4, message_.get(i));
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeEnumSize(5, invocationType_.getNumber());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -901,7 +945,7 @@ public final class ServiceModel {
         bitField0_ = (bitField0_ & ~0x00000001);
         operation_ = "";
         bitField0_ = (bitField0_ & ~0x00000002);
-        invocationType_ = org.savara.sam.activity.ServiceModel.ServiceInvocation.InvocationType.REQUEST;
+        fault_ = "";
         bitField0_ = (bitField0_ & ~0x00000004);
         if (messageBuilder_ == null) {
           message_ = java.util.Collections.emptyList();
@@ -909,6 +953,8 @@ public final class ServiceModel {
         } else {
           messageBuilder_.clear();
         }
+        invocationType_ = org.savara.sam.activity.ServiceModel.ServiceInvocation.InvocationType.REQUEST;
+        bitField0_ = (bitField0_ & ~0x00000010);
         return this;
       }
       
@@ -958,7 +1004,7 @@ public final class ServiceModel {
         if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
           to_bitField0_ |= 0x00000004;
         }
-        result.invocationType_ = invocationType_;
+        result.fault_ = fault_;
         if (messageBuilder_ == null) {
           if (((bitField0_ & 0x00000008) == 0x00000008)) {
             message_ = java.util.Collections.unmodifiableList(message_);
@@ -968,6 +1014,10 @@ public final class ServiceModel {
         } else {
           result.message_ = messageBuilder_.build();
         }
+        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+          to_bitField0_ |= 0x00000008;
+        }
+        result.invocationType_ = invocationType_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -990,8 +1040,8 @@ public final class ServiceModel {
         if (other.hasOperation()) {
           setOperation(other.getOperation());
         }
-        if (other.hasInvocationType()) {
-          setInvocationType(other.getInvocationType());
+        if (other.hasFault()) {
+          setFault(other.getFault());
         }
         if (messageBuilder_ == null) {
           if (!other.message_.isEmpty()) {
@@ -1018,6 +1068,9 @@ public final class ServiceModel {
               messageBuilder_.addAllMessages(other.message_);
             }
           }
+        }
+        if (other.hasInvocationType()) {
+          setInvocationType(other.getInvocationType());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -1074,21 +1127,26 @@ public final class ServiceModel {
               operation_ = input.readBytes();
               break;
             }
-            case 24: {
-              int rawValue = input.readEnum();
-              org.savara.sam.activity.ServiceModel.ServiceInvocation.InvocationType value = org.savara.sam.activity.ServiceModel.ServiceInvocation.InvocationType.valueOf(rawValue);
-              if (value == null) {
-                unknownFields.mergeVarintField(3, rawValue);
-              } else {
-                bitField0_ |= 0x00000004;
-                invocationType_ = value;
-              }
+            case 26: {
+              bitField0_ |= 0x00000004;
+              fault_ = input.readBytes();
               break;
             }
             case 34: {
               org.savara.sam.activity.ServiceModel.Message.Builder subBuilder = org.savara.sam.activity.ServiceModel.Message.newBuilder();
               input.readMessage(subBuilder, extensionRegistry);
               addMessage(subBuilder.buildPartial());
+              break;
+            }
+            case 40: {
+              int rawValue = input.readEnum();
+              org.savara.sam.activity.ServiceModel.ServiceInvocation.InvocationType value = org.savara.sam.activity.ServiceModel.ServiceInvocation.InvocationType.valueOf(rawValue);
+              if (value == null) {
+                unknownFields.mergeVarintField(5, rawValue);
+              } else {
+                bitField0_ |= 0x00000010;
+                invocationType_ = value;
+              }
               break;
             }
           }
@@ -1169,28 +1227,40 @@ public final class ServiceModel {
         onChanged();
       }
       
-      // required .org.savara.sam.activity.ServiceInvocation.InvocationType invocationType = 3 [default = REQUEST];
-      private org.savara.sam.activity.ServiceModel.ServiceInvocation.InvocationType invocationType_ = org.savara.sam.activity.ServiceModel.ServiceInvocation.InvocationType.REQUEST;
-      public boolean hasInvocationType() {
+      // optional string fault = 3;
+      private java.lang.Object fault_ = "";
+      public boolean hasFault() {
         return ((bitField0_ & 0x00000004) == 0x00000004);
       }
-      public org.savara.sam.activity.ServiceModel.ServiceInvocation.InvocationType getInvocationType() {
-        return invocationType_;
-      }
-      public Builder setInvocationType(org.savara.sam.activity.ServiceModel.ServiceInvocation.InvocationType value) {
-        if (value == null) {
-          throw new NullPointerException();
+      public String getFault() {
+        java.lang.Object ref = fault_;
+        if (!(ref instanceof String)) {
+          String s = ((com.google.protobuf.ByteString) ref).toStringUtf8();
+          fault_ = s;
+          return s;
+        } else {
+          return (String) ref;
         }
-        bitField0_ |= 0x00000004;
-        invocationType_ = value;
+      }
+      public Builder setFault(String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+        fault_ = value;
         onChanged();
         return this;
       }
-      public Builder clearInvocationType() {
+      public Builder clearFault() {
         bitField0_ = (bitField0_ & ~0x00000004);
-        invocationType_ = org.savara.sam.activity.ServiceModel.ServiceInvocation.InvocationType.REQUEST;
+        fault_ = getDefaultInstance().getFault();
         onChanged();
         return this;
+      }
+      void setFault(com.google.protobuf.ByteString value) {
+        bitField0_ |= 0x00000004;
+        fault_ = value;
+        onChanged();
       }
       
       // repeated .org.savara.sam.activity.Message message = 4;
@@ -1379,6 +1449,30 @@ public final class ServiceModel {
         return messageBuilder_;
       }
       
+      // required .org.savara.sam.activity.ServiceInvocation.InvocationType invocationType = 5 [default = REQUEST];
+      private org.savara.sam.activity.ServiceModel.ServiceInvocation.InvocationType invocationType_ = org.savara.sam.activity.ServiceModel.ServiceInvocation.InvocationType.REQUEST;
+      public boolean hasInvocationType() {
+        return ((bitField0_ & 0x00000010) == 0x00000010);
+      }
+      public org.savara.sam.activity.ServiceModel.ServiceInvocation.InvocationType getInvocationType() {
+        return invocationType_;
+      }
+      public Builder setInvocationType(org.savara.sam.activity.ServiceModel.ServiceInvocation.InvocationType value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000010;
+        invocationType_ = value;
+        onChanged();
+        return this;
+      }
+      public Builder clearInvocationType() {
+        bitField0_ = (bitField0_ & ~0x00000010);
+        invocationType_ = org.savara.sam.activity.ServiceModel.ServiceInvocation.InvocationType.REQUEST;
+        onChanged();
+        return this;
+      }
+      
       // @@protoc_insertion_point(builder_scope:org.savara.sam.activity.ServiceInvocation)
     }
     
@@ -1411,14 +1505,14 @@ public final class ServiceModel {
     java.lang.String[] descriptorData = {
       "\n\022ServiceModel.proto\022\027org.savara.sam.act" +
       "ivity\"/\n\007Message\022\023\n\013messageType\030\001 \002(\t\022\017\n" +
-      "\007content\030\002 \001(\t\"\367\001\n\021ServiceInvocation\022\023\n\013" +
-      "serviceType\030\001 \002(\t\022\021\n\toperation\030\002 \001(\t\022Z\n\016" +
-      "invocationType\030\003 \002(\01629.org.savara.sam.ac" +
-      "tivity.ServiceInvocation.InvocationType:" +
-      "\007REQUEST\0221\n\007message\030\004 \003(\0132 .org.savara.s" +
-      "am.activity.Message\"+\n\016InvocationType\022\013\n" +
-      "\007REQUEST\020\000\022\014\n\010RESPONSE\020\001B\'\n\027org.savara.s" +
-      "am.activityB\014ServiceModel"
+      "\007content\030\002 \001(\t\"\206\002\n\021ServiceInvocation\022\023\n\013" +
+      "serviceType\030\001 \002(\t\022\021\n\toperation\030\002 \001(\t\022\r\n\005" +
+      "fault\030\003 \001(\t\0221\n\007message\030\004 \003(\0132 .org.savar" +
+      "a.sam.activity.Message\022Z\n\016invocationType" +
+      "\030\005 \002(\01629.org.savara.sam.activity.Service" +
+      "Invocation.InvocationType:\007REQUEST\"+\n\016In" +
+      "vocationType\022\013\n\007REQUEST\020\000\022\014\n\010RESPONSE\020\001B" +
+      "\'\n\027org.savara.sam.activityB\014ServiceModel"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -1438,7 +1532,7 @@ public final class ServiceModel {
           internal_static_org_savara_sam_activity_ServiceInvocation_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_savara_sam_activity_ServiceInvocation_descriptor,
-              new java.lang.String[] { "ServiceType", "Operation", "InvocationType", "Message", },
+              new java.lang.String[] { "ServiceType", "Operation", "Fault", "Message", "InvocationType", },
               org.savara.sam.activity.ServiceModel.ServiceInvocation.class,
               org.savara.sam.activity.ServiceModel.ServiceInvocation.Builder.class);
           return null;
