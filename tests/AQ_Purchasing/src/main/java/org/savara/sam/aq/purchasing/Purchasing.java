@@ -62,6 +62,7 @@ public class Purchasing implements MessageListener {
 	MessageProducer _purchasingStartedProducer=null;
 	MessageProducer _purchasingSuccessfulProducer=null;
 	MessageProducer _purchasingUnsuccessfulProducer=null;
+	MessageProducer _purchasingResponseTimeProducer=null;
 	MessageProducer _purchasingTopicProducer=null;
 
 	@Resource(mappedName = "java:/queues/activity/PurchasingStarted")
@@ -72,6 +73,9 @@ public class Purchasing implements MessageListener {
 	
 	@Resource(mappedName = "java:/queues/activity/PurchasingUnsuccessful")
 	Destination _purchasingUnsuccessful;
+	
+	@Resource(mappedName = "java:/queues/activity/PurchasingResponseTime")
+	Destination _purchasingResponseTime;
 	
 	@Resource(mappedName = "java:/topics/activity/Purchasing")
 	Destination _purchasingTopic;
@@ -110,6 +114,7 @@ public class Purchasing implements MessageListener {
 			_purchasingStartedProducer = _session.createProducer(_purchasingStarted);
 			_purchasingSuccessfulProducer = _session.createProducer(_purchasingSuccessful);
 			_purchasingUnsuccessfulProducer = _session.createProducer(_purchasingUnsuccessful);
+			_purchasingResponseTimeProducer = _session.createProducer(_purchasingResponseTime);
 			_purchasingTopicProducer = _session.createProducer(_purchasingTopic);
 		} catch(Exception e) {
 			LOG.error("Failed to setup JMS connection/session", e);
@@ -145,6 +150,7 @@ public class Purchasing implements MessageListener {
 					_purchasingStartedProducer.send(m);
 					_purchasingSuccessfulProducer.send(m);
 					_purchasingUnsuccessfulProducer.send(m);
+					_purchasingResponseTimeProducer.send(m);
 					_purchasingTopicProducer.send(m);
 					
 				} else if (LOG.isInfoEnabled()) {

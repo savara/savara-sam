@@ -83,6 +83,7 @@ public class ActivitySummary implements java.io.Serializable {
 		private String _serviceType=null;
 		private String _fault=null;
 		private boolean _request=false;
+		private String _correlation=null;
 		
 		public ServiceInvocationSummary(ServiceInvocation si) {
 			initialize(si);
@@ -93,6 +94,7 @@ public class ActivitySummary implements java.io.Serializable {
 			_serviceType = si.getServiceType();
 			_fault = si.getFault();
 			_request = (si.getInvocationType() == InvocationType.REQUEST);
+			_correlation = si.getCorrelation();
 		}
 		
 		public String getOperation() {
@@ -111,8 +113,13 @@ public class ActivitySummary implements java.io.Serializable {
 			return (_request);
 		}
 		
+		public String getCorrelation() {
+			return (_correlation);
+		}
+		
 		public String toString() {
-			return("{serviceType="+_serviceType+" op="+_operation+" fault="+_fault+" request="+_request+"}");
+			return("{serviceType="+_serviceType+" op="+_operation+" fault="+_fault+" request="+
+								_request+" correlation="+_correlation+"}");
 		}
 	}
 }

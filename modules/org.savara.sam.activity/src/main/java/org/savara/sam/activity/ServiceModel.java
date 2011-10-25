@@ -513,6 +513,10 @@ public final class ServiceModel {
     // required .org.savara.sam.activity.ServiceInvocation.InvocationType invocationType = 5 [default = REQUEST];
     boolean hasInvocationType();
     org.savara.sam.activity.ServiceModel.ServiceInvocation.InvocationType getInvocationType();
+    
+    // optional string correlation = 6;
+    boolean hasCorrelation();
+    String getCorrelation();
   }
   public static final class ServiceInvocation extends
       com.google.protobuf.GeneratedMessage
@@ -739,12 +743,45 @@ public final class ServiceModel {
       return invocationType_;
     }
     
+    // optional string correlation = 6;
+    public static final int CORRELATION_FIELD_NUMBER = 6;
+    private java.lang.Object correlation_;
+    public boolean hasCorrelation() {
+      return ((bitField0_ & 0x00000010) == 0x00000010);
+    }
+    public String getCorrelation() {
+      java.lang.Object ref = correlation_;
+      if (ref instanceof String) {
+        return (String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        String s = bs.toStringUtf8();
+        if (com.google.protobuf.Internal.isValidUtf8(bs)) {
+          correlation_ = s;
+        }
+        return s;
+      }
+    }
+    private com.google.protobuf.ByteString getCorrelationBytes() {
+      java.lang.Object ref = correlation_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8((String) ref);
+        correlation_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+    
     private void initFields() {
       serviceType_ = "";
       operation_ = "";
       fault_ = "";
       message_ = java.util.Collections.emptyList();
       invocationType_ = org.savara.sam.activity.ServiceModel.ServiceInvocation.InvocationType.REQUEST;
+      correlation_ = "";
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -787,6 +824,9 @@ public final class ServiceModel {
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         output.writeEnum(5, invocationType_.getNumber());
       }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        output.writeBytes(6, getCorrelationBytes());
+      }
       getUnknownFields().writeTo(output);
     }
     
@@ -815,6 +855,10 @@ public final class ServiceModel {
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         size += com.google.protobuf.CodedOutputStream
           .computeEnumSize(5, invocationType_.getNumber());
+      }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(6, getCorrelationBytes());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -955,6 +999,8 @@ public final class ServiceModel {
         }
         invocationType_ = org.savara.sam.activity.ServiceModel.ServiceInvocation.InvocationType.REQUEST;
         bitField0_ = (bitField0_ & ~0x00000010);
+        correlation_ = "";
+        bitField0_ = (bitField0_ & ~0x00000020);
         return this;
       }
       
@@ -1018,6 +1064,10 @@ public final class ServiceModel {
           to_bitField0_ |= 0x00000008;
         }
         result.invocationType_ = invocationType_;
+        if (((from_bitField0_ & 0x00000020) == 0x00000020)) {
+          to_bitField0_ |= 0x00000010;
+        }
+        result.correlation_ = correlation_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -1071,6 +1121,9 @@ public final class ServiceModel {
         }
         if (other.hasInvocationType()) {
           setInvocationType(other.getInvocationType());
+        }
+        if (other.hasCorrelation()) {
+          setCorrelation(other.getCorrelation());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -1147,6 +1200,11 @@ public final class ServiceModel {
                 bitField0_ |= 0x00000010;
                 invocationType_ = value;
               }
+              break;
+            }
+            case 50: {
+              bitField0_ |= 0x00000020;
+              correlation_ = input.readBytes();
               break;
             }
           }
@@ -1473,6 +1531,42 @@ public final class ServiceModel {
         return this;
       }
       
+      // optional string correlation = 6;
+      private java.lang.Object correlation_ = "";
+      public boolean hasCorrelation() {
+        return ((bitField0_ & 0x00000020) == 0x00000020);
+      }
+      public String getCorrelation() {
+        java.lang.Object ref = correlation_;
+        if (!(ref instanceof String)) {
+          String s = ((com.google.protobuf.ByteString) ref).toStringUtf8();
+          correlation_ = s;
+          return s;
+        } else {
+          return (String) ref;
+        }
+      }
+      public Builder setCorrelation(String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000020;
+        correlation_ = value;
+        onChanged();
+        return this;
+      }
+      public Builder clearCorrelation() {
+        bitField0_ = (bitField0_ & ~0x00000020);
+        correlation_ = getDefaultInstance().getCorrelation();
+        onChanged();
+        return this;
+      }
+      void setCorrelation(com.google.protobuf.ByteString value) {
+        bitField0_ |= 0x00000020;
+        correlation_ = value;
+        onChanged();
+      }
+      
       // @@protoc_insertion_point(builder_scope:org.savara.sam.activity.ServiceInvocation)
     }
     
@@ -1505,14 +1599,15 @@ public final class ServiceModel {
     java.lang.String[] descriptorData = {
       "\n\022ServiceModel.proto\022\027org.savara.sam.act" +
       "ivity\"/\n\007Message\022\023\n\013messageType\030\001 \002(\t\022\017\n" +
-      "\007content\030\002 \001(\t\"\206\002\n\021ServiceInvocation\022\023\n\013" +
+      "\007content\030\002 \001(\t\"\233\002\n\021ServiceInvocation\022\023\n\013" +
       "serviceType\030\001 \002(\t\022\021\n\toperation\030\002 \001(\t\022\r\n\005" +
       "fault\030\003 \001(\t\0221\n\007message\030\004 \003(\0132 .org.savar" +
       "a.sam.activity.Message\022Z\n\016invocationType" +
       "\030\005 \002(\01629.org.savara.sam.activity.Service" +
-      "Invocation.InvocationType:\007REQUEST\"+\n\016In" +
-      "vocationType\022\013\n\007REQUEST\020\000\022\014\n\010RESPONSE\020\001B" +
-      "\'\n\027org.savara.sam.activityB\014ServiceModel"
+      "Invocation.InvocationType:\007REQUEST\022\023\n\013co" +
+      "rrelation\030\006 \001(\t\"+\n\016InvocationType\022\013\n\007REQ" +
+      "UEST\020\000\022\014\n\010RESPONSE\020\001B\'\n\027org.savara.sam.a",
+      "ctivityB\014ServiceModel"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -1532,7 +1627,7 @@ public final class ServiceModel {
           internal_static_org_savara_sam_activity_ServiceInvocation_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_savara_sam_activity_ServiceInvocation_descriptor,
-              new java.lang.String[] { "ServiceType", "Operation", "Fault", "Message", "InvocationType", },
+              new java.lang.String[] { "ServiceType", "Operation", "Fault", "Message", "InvocationType", "Correlation", },
               org.savara.sam.activity.ServiceModel.ServiceInvocation.class,
               org.savara.sam.activity.ServiceModel.ServiceInvocation.Builder.class);
           return null;

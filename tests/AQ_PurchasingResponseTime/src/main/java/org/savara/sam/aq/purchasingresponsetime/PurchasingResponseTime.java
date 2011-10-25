@@ -15,7 +15,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.savara.sam.aq.purchasingbrokerresponse;
+package org.savara.sam.aq.purchasingresponsetime;
+
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -36,52 +38,55 @@ import javax.jms.ObjectMessage;
 import javax.jms.Session;
 
 import org.jboss.logging.Logger;
+import org.savara.sam.activity.ActivityAnalysis;
 import org.savara.sam.activity.ActivitySummary;
 import org.savara.sam.activity.ActivitySummary.ServiceInvocationSummary;
 import org.savara.sam.aq.DefaultActiveQuery;
 import org.savara.sam.aq.Predicate;
 
-@MessageDriven(name = "PurchasingBrokerResponse", messageListenerInterface = MessageListener.class,
+@MessageDriven(name = "PurchasingResponseTime", messageListenerInterface = MessageListener.class,
                activationConfig =
                      {
                         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
-                        @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/activity/PurchasingBrokerResponse")
+                        @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/activity/PurchasingResponseTime")
                      })
 @TransactionManagement(value= TransactionManagementType.CONTAINER)
 @TransactionAttribute(value= TransactionAttributeType.REQUIRED)
-public class PurchasingBrokerResponse implements MessageListener {
+public class PurchasingResponseTime implements MessageListener {
 	
-	private static final Logger LOG=Logger.getLogger(PurchasingBrokerResponse.class.getName());
+	private static final Logger LOG=Logger.getLogger(PurchasingResponseTime.class.getName());
 
-	private static final String ACTIVE_QUERY_NAME = "PurchasingBrokerResponse";
+	private static final String ACTIVE_QUERY_NAME = "PurchasingResponseTime";
 
 	@Resource(mappedName = "java:/JmsXA")
 	ConnectionFactory _connectionFactory;
 	
 	Connection _connection=null;
 	Session _session=null;
-	MessageProducer _purchasingBrokerResponseTopicProducer=null;
+	MessageProducer _purchasingResponseTimeTopicProducer=null;
 
-	@Resource(mappedName = "java:/topics/activity/PurchasingBrokerResponse")
-	Destination _purchasingBrokerResponseTopic;
+	@Resource(mappedName = "java:/topics/activity/PurchasingResponseTime")
+	Destination _purchasingResponseTimeTopic;
 
 	@Resource(mappedName="java:jboss/infinispan/sam")
 	private org.infinispan.manager.CacheContainer _container;
-	private org.infinispan.Cache<String, DefaultActiveQuery<ActivitySummary>> _cache;
+	private org.infinispan.Cache<String, DefaultActiveQuery<ActivityAnalysis>> _cache;
+	private org.infinispan.Cache<String, ActivitySummary> _siCache;
 	
-	private DefaultActiveQuery<ActivitySummary> _activeQuery=null;
+	private DefaultActiveQuery<ActivityAnalysis> _activeQuery=null;
 	
-	public PurchasingBrokerResponse() {
+	public PurchasingResponseTime() {
 	}
 	
 	@PostConstruct
 	public void init() {
 		_cache = _container.getCache("queries");
+		_siCache = _container.getCache("serviceInvocations");
 		
 		_activeQuery = _cache.get(ACTIVE_QUERY_NAME);
 		
 		if (_activeQuery == null) {
-			_activeQuery = new DefaultActiveQuery<ActivitySummary>(ACTIVE_QUERY_NAME, new PurchasingBrokerResponsePredicate());
+			_activeQuery = new DefaultActiveQuery<ActivityAnalysis>(ACTIVE_QUERY_NAME, null);
 			_cache.put(ACTIVE_QUERY_NAME, _activeQuery);
 			
 			if (LOG.isInfoEnabled()) {
@@ -96,7 +101,7 @@ public class PurchasingBrokerResponse implements MessageListener {
 		try {
 			_connection = _connectionFactory.createConnection();
 			_session = _connection.createSession(true, Session.AUTO_ACKNOWLEDGE);
-			_purchasingBrokerResponseTopicProducer = _session.createProducer(_purchasingBrokerResponseTopic);
+			_purchasingResponseTimeTopicProducer = _session.createProducer(_purchasingResponseTimeTopic);
 		} catch(Exception e) {
 			LOG.error("Failed to setup JMS connection/session", e);
 		}
@@ -117,47 +122,52 @@ public class PurchasingBrokerResponse implements MessageListener {
 		if (message instanceof ObjectMessage) {
 			try {
 				ActivitySummary activity=(ActivitySummary)((ObjectMessage)message).getObject();
-								
-				if (_activeQuery.add(activity)) {
+				
+				// Check if service interaction with correlation
+				if (activity.getServiceInvocation() != null &&
+						activity.getServiceInvocation().getCorrelation() != null) {
+					String correlation=activity.getServiceInvocation().getCorrelation();
 					
-					// Propagate to child queries and topics
-					if (LOG.isInfoEnabled()) {
-						LOG.info("AQ "+ACTIVE_QUERY_NAME+" PROPAGATE ACTIVITY="+activity);
+					// Check if correlated invocation already exists
+					ActivitySummary other=_siCache.get(correlation);
+					
+					if (other == null) {
+						_siCache.put(correlation, activity, 150, TimeUnit.SECONDS);
+					} else {
+						// Create activity results object for correlated match
+						ActivityAnalysis aa=new ActivityAnalysis();
+						
+						long responseTime=activity.getTimestamp()-other.getTimestamp();
+						
+						aa.addProperty("requestTimestamp", Long.class.getName(), other.getTimestamp());
+						aa.addProperty("requestId", String.class.getName(), other.getId());
+						aa.addProperty("responseId", String.class.getName(), activity.getId());
+						aa.addProperty("responseTime", Long.class.getName(), responseTime);
+						aa.addProperty("serviceType", String.class.getName(), activity.getServiceInvocation().getServiceType());
+						aa.addProperty("operation", String.class.getName(), activity.getServiceInvocation().getOperation());
+						aa.addProperty("fault", String.class.getName(), activity.getServiceInvocation().getFault());
+						
+						if (_activeQuery.add(aa)) {
+							
+							// Propagate to child queries and topics
+							if (LOG.isInfoEnabled()) {
+								LOG.info("AQ "+ACTIVE_QUERY_NAME+" PROPAGATE ANALYSIS="+aa);
+							}
+							
+							Message m=_session.createObjectMessage(aa);
+							m.setBooleanProperty("include", true); // Whether activity should be added or removed
+							
+							_purchasingResponseTimeTopicProducer.send(m);
+							
+						} else if (LOG.isInfoEnabled()) {
+							LOG.info("AQ "+ACTIVE_QUERY_NAME+" IGNORE ANALYSIS="+aa);
+						}
 					}
-					
-					Message m=_session.createObjectMessage(activity);
-					m.setBooleanProperty("include", true); // Whether activity should be added or removed
-					
-					_purchasingBrokerResponseTopicProducer.send(m);
-					
-				} else if (LOG.isInfoEnabled()) {
-					LOG.info("AQ "+ACTIVE_QUERY_NAME+" IGNORE ACTIVITY="+activity);
 				}
 				
 			} catch(Exception e) {
 				e.printStackTrace();
 			}
-		}
-	}
-	
-	public static class PurchasingBrokerResponsePredicate implements Predicate<ActivitySummary>, java.io.Serializable {
-		
-		private static final long serialVersionUID = 5086630412993298230L;
-
-		public PurchasingBrokerResponsePredicate() {
-		}
-
-		public boolean evaluate(ActivitySummary value) {
-			ServiceInvocationSummary si=value.getServiceInvocation();
-			
-			if (si != null &&
-					si.getServiceType().equals("Broker") &&
-					si.getOperation().equals("buy") &&
-					si.isRequest()) {
-				return (true);
-			}
-
-			return false;
 		}
 	}
 }

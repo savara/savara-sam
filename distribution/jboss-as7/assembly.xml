@@ -1,0 +1,135 @@
+<!--
+  ~ JBoss, Home of Professional Open Source
+  ~ Copyright 2011 Red Hat Inc. and/or its affiliates and other contributors
+  ~ as indicated by the @author tags. All rights reserved.
+  ~ See the copyright.txt in the distribution for a
+  ~ full listing of individual contributors.
+  ~
+  ~ This copyrighted material is made available to anyone wishing to use,
+  ~ modify, copy, or redistribute it subject to the terms and conditions
+  ~ of the GNU Lesser General Public License, v. 2.1.
+  ~ This program is distributed in the hope that it will be useful, but WITHOUT A
+  ~ WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+  ~ PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more details.
+  ~ You should have received a copy of the GNU Lesser General Public License,
+  ~ v.2.1 along with this distribution; if not, write to the Free Software
+  ~ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+  ~ MA  02110-1301, USA.
+  -->
+
+<assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0 http://maven.apache.org/xsd/assembly-1.1.0.xsd">
+    <id></id>
+    <includeBaseDirectory>false</includeBaseDirectory>
+    <formats>
+        <format>zip</format>
+    </formats>
+
+    <files>
+        <file>
+            <source>src/main/resources/modules/savara/sam/module.xml</source>
+            <outputDirectory>/modules/org/savara/sam/main</outputDirectory>
+            <filtered>true</filtered>
+        </file>
+        <file>
+            <source>src/main/resources/modules/google/protobuf/module.xml</source>
+            <outputDirectory>/modules/com/google/protobuf/main</outputDirectory>
+            <filtered>true</filtered>
+        </file>
+        <file>
+            <source>src/main/resources/standalone/standalone-preview.xml</source>
+            <outputDirectory>/standalone/configuration</outputDirectory>
+            <filtered>true</filtered>
+        </file>
+    </files>
+    <dependencySets>
+	<!-- Modules -->
+        <dependencySet>
+            <useTransitiveDependencies>false</useTransitiveDependencies>
+            <includes>
+                <include>org.savara.sam.modules:org.savara.sam.activity</include>
+            </includes>
+            <outputDirectory>/modules/org/savara/sam/main</outputDirectory>
+            <outputFileNameMapping>${artifact.artifactId}-${sam.version}.${artifact.extension}</outputFileNameMapping>
+        </dependencySet>
+        <dependencySet>
+            <useTransitiveDependencies>false</useTransitiveDependencies>
+            <includes>
+                <include>org.savara.sam.modules:org.savara.sam.aq</include>
+            </includes>
+            <outputDirectory>/modules/org/savara/sam/main</outputDirectory>
+            <outputFileNameMapping>${artifact.artifactId}-${sam.version}.${artifact.extension}</outputFileNameMapping>
+        </dependencySet>
+        <dependencySet>
+            <useTransitiveDependencies>false</useTransitiveDependencies>
+            <includes>
+                <include>com.google.protobuf:protobuf-java</include>
+            </includes>
+            <outputDirectory>/modules/com/google/protobuf/main</outputDirectory>
+            <outputFileNameMapping>${artifact.artifactId}-${protobuf.version}.${artifact.extension}</outputFileNameMapping>
+        </dependencySet>
+
+	<!-- Activity Monitoring Server -->
+        <dependencySet>
+            <useTransitiveDependencies>false</useTransitiveDependencies>
+            <includes>
+                <include>org.savara.sam.integration:activity-monitor-server</include>
+            </includes>
+            <outputDirectory>/standalone/deployments</outputDirectory>
+            <outputFileNameMapping>${artifact.artifactId}-${sam.version}.${artifact.extension}</outputFileNameMapping>
+        </dependencySet>
+
+	<!-- Test Active Queries and Analysers -->
+        <dependencySet>
+            <useTransitiveDependencies>false</useTransitiveDependencies>
+            <includes>
+                <include>org.savara.sam.tests:AQ_Root</include>
+            </includes>
+            <outputDirectory>/standalone/deployments</outputDirectory>
+            <outputFileNameMapping>${artifact.artifactId}-${sam.version}.${artifact.extension}</outputFileNameMapping>
+        </dependencySet>
+        <dependencySet>
+            <useTransitiveDependencies>false</useTransitiveDependencies>
+            <includes>
+                <include>org.savara.sam.tests:AQ_Purchasing</include>
+            </includes>
+            <outputDirectory>/standalone/deployments</outputDirectory>
+            <outputFileNameMapping>${artifact.artifactId}-${sam.version}.${artifact.extension}</outputFileNameMapping>
+        </dependencySet>
+        <dependencySet>
+            <useTransitiveDependencies>false</useTransitiveDependencies>
+            <includes>
+                <include>org.savara.sam.tests:AQ_PurchasingStarted</include>
+            </includes>
+            <outputDirectory>/standalone/deployments</outputDirectory>
+            <outputFileNameMapping>${artifact.artifactId}-${sam.version}.${artifact.extension}</outputFileNameMapping>
+        </dependencySet>
+        <dependencySet>
+            <useTransitiveDependencies>false</useTransitiveDependencies>
+            <includes>
+                <include>org.savara.sam.tests:AQ_PurchasingSuccessful</include>
+            </includes>
+            <outputDirectory>/standalone/deployments</outputDirectory>
+            <outputFileNameMapping>${artifact.artifactId}-${sam.version}.${artifact.extension}</outputFileNameMapping>
+        </dependencySet>
+        <dependencySet>
+            <useTransitiveDependencies>false</useTransitiveDependencies>
+            <includes>
+                <include>org.savara.sam.tests:AQ_PurchasingUnsuccessful</include>
+            </includes>
+            <outputDirectory>/standalone/deployments</outputDirectory>
+            <outputFileNameMapping>${artifact.artifactId}-${sam.version}.${artifact.extension}</outputFileNameMapping>
+        </dependencySet>
+        <dependencySet>
+            <useTransitiveDependencies>false</useTransitiveDependencies>
+            <includes>
+                <include>org.savara.sam.tests:AQ_PurchasingResponseTime</include>
+            </includes>
+            <outputDirectory>/standalone/deployments</outputDirectory>
+            <outputFileNameMapping>${artifact.artifactId}-${sam.version}.${artifact.extension}</outputFileNameMapping>
+        </dependencySet>
+
+    </dependencySets>
+
+</assembly>

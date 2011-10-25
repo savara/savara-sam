@@ -50,6 +50,7 @@
 	</developers>
 
 	<properties>
+		<sam.version>1.0.0-SNAPSHOT</sam.version>
 		<protobuf.version>2.4.0a</protobuf.version>
 		<junit.version>4.4</junit.version>
 	</properties>
@@ -58,6 +59,7 @@
 		<module>modules</module>
 		<module>integration</module>
 		<module>tests</module>
+		<module>distribution</module>
 	</modules>
 
 	<build>

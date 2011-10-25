@@ -21,4 +21,8 @@ message ServiceInvocation {
     RESPONSE = 1;
   }
   required InvocationType invocationType = 5 [default = REQUEST];
+  
+  // Set if service invocation is associated with a request/response pair,
+  // to allow the request and response event details to be matched
+  optional string correlation = 6;
 }
