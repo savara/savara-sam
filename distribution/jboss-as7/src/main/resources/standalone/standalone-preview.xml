@@ -294,43 +294,43 @@
                     <entry name="queues/ActivityMonitorServer"/>
                 </jms-queue>
                 <jms-queue name="Root">
-                    <entry name="queues/activity/Root"/>
+                    <entry name="queues/aq/Root"/>
                 </jms-queue>
                 <jms-queue name="PurchasingSuccessful">
-                    <entry name="queues/activity/PurchasingSuccessful"/>
+                    <entry name="queues/aq/PurchasingSuccessful"/>
                 </jms-queue>
                 <jms-queue name="PurchasingStarted">
-                    <entry name="queues/activity/PurchasingStarted"/>
+                    <entry name="queues/aq/PurchasingStarted"/>
                 </jms-queue>
                 <jms-queue name="PurchasingUnsuccessful">
-                    <entry name="queues/activity/PurchasingUnsuccessful"/>
+                    <entry name="queues/aq/PurchasingUnsuccessful"/>
                 </jms-queue>
                 <jms-queue name="Purchasing">
-                    <entry name="queues/activity/Purchasing"/>
+                    <entry name="queues/aq/Purchasing"/>
                 </jms-queue>
                 <jms-queue name="PurchasingResponseTime">
-                    <entry name="queues/activity/PurchasingResponseTime"/>
+                    <entry name="queues/aq/PurchasingResponseTime"/>
                 </jms-queue>
                 <jms-topic name="testTopic">
                     <entry name="topic/test"/>
                 </jms-topic>
                 <jms-topic name="Purchasing">
-                    <entry name="topics/activity/Purchasing"/>
+                    <entry name="topics/aq/Purchasing"/>
                 </jms-topic>
                 <jms-topic name="PurchasingUnsuccessful">
-                    <entry name="topics/activity/PurchasingUnsuccessful"/>
+                    <entry name="topics/aq/PurchasingUnsuccessful"/>
                 </jms-topic>
                 <jms-topic name="PurchasingStarted">
-                    <entry name="topics/activity/PurchasingStarted"/>
+                    <entry name="topics/aq/PurchasingStarted"/>
                 </jms-topic>
                 <jms-topic name="PurchasingSuccessful">
-                    <entry name="topics/activity/PurchasingSuccessful"/>
+                    <entry name="topics/aq/PurchasingSuccessful"/>
                 </jms-topic>
                 <jms-topic name="PurchasingResponseTime">
-                    <entry name="topics/activity/PurchasingResponseTime"/>
+                    <entry name="topics/aq/PurchasingResponseTime"/>
                 </jms-topic>
                 <jms-topic name="Root">
-                    <entry name="topics/activity/Root"/>
+                    <entry name="topics/aq/Root"/>
                 </jms-topic>
             </jms-destinations>
         </subsystem>

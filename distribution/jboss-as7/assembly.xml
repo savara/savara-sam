@@ -77,7 +77,17 @@
                 <include>org.savara.sam.integration:activity-monitor-server</include>
             </includes>
             <outputDirectory>/standalone/deployments</outputDirectory>
-            <outputFileNameMapping>${artifact.artifactId}-${sam.version}.${artifact.extension}</outputFileNameMapping>
+            <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
+        </dependencySet>
+
+	<!-- Active Query Server -->
+        <dependencySet>
+            <useTransitiveDependencies>false</useTransitiveDependencies>
+            <includes>
+                <include>org.savara.sam.integration:active-query-server</include>
+            </includes>
+            <outputDirectory>/standalone/deployments</outputDirectory>
+            <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
         </dependencySet>
 
 	<!-- Test Active Queries and Analysers -->
@@ -87,7 +97,7 @@
                 <include>org.savara.sam.tests:AQ_Root</include>
             </includes>
             <outputDirectory>/standalone/deployments</outputDirectory>
-            <outputFileNameMapping>${artifact.artifactId}-${sam.version}.${artifact.extension}</outputFileNameMapping>
+            <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
         </dependencySet>
         <dependencySet>
             <useTransitiveDependencies>false</useTransitiveDependencies>
@@ -95,7 +105,7 @@
                 <include>org.savara.sam.tests:AQ_Purchasing</include>
             </includes>
             <outputDirectory>/standalone/deployments</outputDirectory>
-            <outputFileNameMapping>${artifact.artifactId}-${sam.version}.${artifact.extension}</outputFileNameMapping>
+            <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
         </dependencySet>
         <dependencySet>
             <useTransitiveDependencies>false</useTransitiveDependencies>
@@ -103,7 +113,7 @@
                 <include>org.savara.sam.tests:AQ_PurchasingStarted</include>
             </includes>
             <outputDirectory>/standalone/deployments</outputDirectory>
-            <outputFileNameMapping>${artifact.artifactId}-${sam.version}.${artifact.extension}</outputFileNameMapping>
+            <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
         </dependencySet>
         <dependencySet>
             <useTransitiveDependencies>false</useTransitiveDependencies>
@@ -111,7 +121,7 @@
                 <include>org.savara.sam.tests:AQ_PurchasingSuccessful</include>
             </includes>
             <outputDirectory>/standalone/deployments</outputDirectory>
-            <outputFileNameMapping>${artifact.artifactId}-${sam.version}.${artifact.extension}</outputFileNameMapping>
+            <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
         </dependencySet>
         <dependencySet>
             <useTransitiveDependencies>false</useTransitiveDependencies>
@@ -119,7 +129,7 @@
                 <include>org.savara.sam.tests:AQ_PurchasingUnsuccessful</include>
             </includes>
             <outputDirectory>/standalone/deployments</outputDirectory>
-            <outputFileNameMapping>${artifact.artifactId}-${sam.version}.${artifact.extension}</outputFileNameMapping>
+            <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
         </dependencySet>
         <dependencySet>
             <useTransitiveDependencies>false</useTransitiveDependencies>
@@ -127,7 +137,17 @@
                 <include>org.savara.sam.tests:AQ_PurchasingResponseTime</include>
             </includes>
             <outputDirectory>/standalone/deployments</outputDirectory>
-            <outputFileNameMapping>${artifact.artifactId}-${sam.version}.${artifact.extension}</outputFileNameMapping>
+            <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
+        </dependencySet>
+
+	<!-- Test Web App -->
+        <dependencySet>
+            <useTransitiveDependencies>false</useTransitiveDependencies>
+            <includes>
+                <include>org.savara.sam.tests:AQ_Monitor:war</include>
+            </includes>
+            <outputDirectory>/standalone/deployments</outputDirectory>
+            <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
         </dependencySet>
 
     </dependencySets>

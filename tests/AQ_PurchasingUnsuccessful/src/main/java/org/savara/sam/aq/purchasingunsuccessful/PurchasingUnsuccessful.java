@@ -45,7 +45,7 @@ import org.savara.sam.aq.Predicate;
                activationConfig =
                      {
                         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
-                        @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/activity/PurchasingUnsuccessful")
+                        @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/aq/PurchasingUnsuccessful")
                      })
 @TransactionManagement(value= TransactionManagementType.CONTAINER)
 @TransactionAttribute(value= TransactionAttributeType.REQUIRED)
@@ -62,7 +62,7 @@ public class PurchasingUnsuccessful implements MessageListener {
 	Session _session=null;
 	MessageProducer _purchasingUnsuccessfulTopicProducer=null;
 
-	@Resource(mappedName = "java:/topics/activity/PurchasingUnsuccessful")
+	@Resource(mappedName = "java:/topics/aq/PurchasingUnsuccessful")
 	Destination _purchasingUnsuccessfulTopic;
 
 	@Resource(mappedName="java:jboss/infinispan/sam")

@@ -16,6 +16,7 @@
 
 	<modules>
 		<module>activity-monitor-server</module>
+		<module>active-query-server</module>
 	</modules>
 
 </project>

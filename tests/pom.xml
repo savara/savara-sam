@@ -21,6 +21,7 @@
 		<module>AQ_PurchasingSuccessful</module>
 		<module>AQ_PurchasingUnsuccessful</module>
 		<module>AQ_PurchasingResponseTime</module>
+		<module>AQ_Monitor</module>
 	</modules>
 
 </project>

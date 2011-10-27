@@ -55,7 +55,7 @@ public class ActivityMonitorServer implements MessageListener {
 	@Resource(mappedName = "java:/JmsXA")
 	ConnectionFactory _connectionFactory;
 	
-	@Resource(mappedName = "java:/queues/activity/Root")
+	@Resource(mappedName = "java:/queues/aq/Root")
 	Destination _root;
 	
 	@Resource(mappedName="java:jboss/infinispan/sam")

@@ -45,7 +45,7 @@ import org.savara.sam.aq.Predicate;
                activationConfig =
                      {
                         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
-                        @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/activity/PurchasingStarted")
+                        @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/aq/PurchasingStarted")
                      })
 @TransactionManagement(value= TransactionManagementType.CONTAINER)
 @TransactionAttribute(value= TransactionAttributeType.REQUIRED)
@@ -62,7 +62,7 @@ public class PurchasingStarted implements MessageListener {
 	Session _session=null;
 	MessageProducer _purchasingStartedTopicProducer=null;
 
-	@Resource(mappedName = "java:/topics/activity/PurchasingStarted")
+	@Resource(mappedName = "java:/topics/aq/PurchasingStarted")
 	Destination _purchasingStartedTopic;
 
 	@Resource(mappedName="java:jboss/infinispan/sam")

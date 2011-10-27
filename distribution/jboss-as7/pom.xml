@@ -53,6 +53,11 @@
             <artifactId>activity-monitor-server</artifactId>
 	    <version>${sam.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.savara.sam.integration</groupId>
+            <artifactId>active-query-server</artifactId>
+	    <version>${sam.version}</version>
+        </dependency>
 
 	<!-- Test deployments -->
         <dependency>
@@ -83,6 +88,12 @@
         <dependency>
             <groupId>org.savara.sam.tests</groupId>
             <artifactId>AQ_PurchasingResponseTime</artifactId>
+	    <version>${sam.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.savara.sam.tests</groupId>
+            <artifactId>AQ_Monitor</artifactId>
+	    <type>war</type>
 	    <version>${sam.version}</version>
         </dependency>
     </dependencies>

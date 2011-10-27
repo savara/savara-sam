@@ -37,13 +37,15 @@ import javax.jms.Session;
 
 import org.jboss.logging.Logger;
 import org.savara.sam.activity.ActivitySummary;
+import org.savara.sam.aq.ActiveQueryManager;
 import org.savara.sam.aq.DefaultActiveQuery;
+import org.savara.sam.aq.server.ActiveQueryServer;
 
 @MessageDriven(name = "Root", messageListenerInterface = MessageListener.class,
                activationConfig =
                      {
                         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
-                        @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/activity/Root")
+                        @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/aq/Root")
                      })
 @TransactionManagement(value= TransactionManagementType.CONTAINER)
 @TransactionAttribute(value= TransactionAttributeType.REQUIRED)
@@ -61,11 +63,14 @@ public class Root implements MessageListener {
 	MessageProducer _purchasingProducer=null;
 	MessageProducer _rootTopicProducer=null;
 
-	@Resource(mappedName = "java:/queues/activity/Purchasing")
+	@Resource(mappedName = "java:/queues/aq/Purchasing")
 	Destination _purchasing;
 	
-	@Resource(mappedName = "java:/topics/activity/Root")
+	@Resource(mappedName = "java:/topics/aq/Root")
 	Destination _rootTopic;
+	
+	//@Inject
+	//ActiveQueryManager _activeQueryManager;
 	
 	@Resource(mappedName="java:jboss/infinispan/sam")
 	private org.infinispan.manager.CacheContainer _container;
@@ -78,6 +83,7 @@ public class Root implements MessageListener {
 	
 	@PostConstruct
 	public void init() {
+
 		_cache = _container.getCache("queries");
 		
 		_activeQuery = _cache.get(ACTIVE_QUERY_NAME);

@@ -1,0 +1,131 @@
+<?xml version="1.0"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+   <modelVersion>4.0.0</modelVersion>
+
+   <groupId>org.savara.sam.tests</groupId>
+   <artifactId>AQ_Monitor</artifactId>
+   <version>1.0.0-SNAPSHOT</version>
+   <packaging>war</packaging>
+   <name>Savara SAM::Tests::AQ_Monitor</name>
+
+	<parent>
+		<groupId>org.savara.sam</groupId>
+		<artifactId>tests</artifactId>
+		<version>1.0.0-SNAPSHOT</version>
+	</parent>
+
+   <properties>
+      <!-- Explicitly declaring the source encoding eliminates the following 
+         message: -->
+      <!-- [WARNING] Using platform encoding (UTF-8 actually) to copy filtered 
+         resources, i.e. build is platform dependent! -->
+      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+   </properties>
+
+   <dependencyManagement>
+      <dependencies>
+         <dependency>
+            <groupId>org.jboss.spec</groupId>
+            <artifactId>jboss-javaee-web-6.0</artifactId>
+            <version>2.0.0.Final</version>
+            <type>pom</type>
+            <scope>import</scope>
+         </dependency>
+      </dependencies>
+   </dependencyManagement>
+
+   <dependencies>
+
+      <!-- Import the CDI API, we use provided scope as the API is included 
+         in JBoss AS 7 -->
+      <dependency>
+         <groupId>javax.enterprise</groupId>
+         <artifactId>cdi-api</artifactId>
+         <scope>provided</scope>
+      </dependency>
+
+      <!-- Import the Common Annotations API (JSR-250), we use provided scope 
+         as the API is included in JBoss AS 7 -->
+      <dependency>
+         <groupId>org.jboss.spec.javax.annotation</groupId>
+         <artifactId>jboss-annotations-api_1.1_spec</artifactId>
+         <scope>provided</scope>
+      </dependency>
+
+      <!-- Import the Servlet API, we use provided scope as the API is included 
+         in JBoss AS 7 -->
+      <dependency>
+         <groupId>org.jboss.spec.javax.servlet</groupId>
+         <artifactId>jboss-servlet-api_3.0_spec</artifactId>
+         <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+         <groupId>org.savara.sam.modules</groupId>
+         <artifactId>org.savara.sam.activity</artifactId>
+         <version>1.0.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+         <groupId>org.savara.sam.modules</groupId>
+         <artifactId>org.savara.sam.aq</artifactId>
+         <version>1.0.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+         <groupId>org.savara.sam.integration</groupId>
+         <artifactId>active-query-server</artifactId>
+         <version>1.0.0-SNAPSHOT</version>
+      </dependency>
+		<dependency>
+		    <groupId>org.infinispan</groupId>
+		    <artifactId>infinispan-core</artifactId>
+		    <version>5.0.1.FINAL</version>
+		    <scope>provided</scope>
+		</dependency>
+		<dependency>
+		    <groupId>org.jboss.javaee</groupId>
+		    <artifactId>jboss-jms-api</artifactId>
+		    <version>1.1.0.GA</version>
+		    <scope>provided</scope>
+		</dependency>
+   </dependencies>
+
+   <build>
+      <!-- Set the name of the war, used as the context root when the app 
+         is deployed -->
+      <finalName>AQ_Monitor</finalName>
+      <plugins>
+         <plugin>
+            <artifactId>maven-war-plugin</artifactId>
+            <version>2.1.1</version>
+            <configuration>
+               <!-- Java EE 6 doesn't require web.xml, Maven needs to catch 
+                  up! -->
+               <failOnMissingWebXml>false</failOnMissingWebXml>
+          				<archive>
+            				<manifestFile>META-INF/MANIFEST.MF</manifestFile>
+          				</archive>
+            </configuration>
+         </plugin>
+         <!-- JBoss AS plugin to deploy war -->
+<!--
+         <plugin>
+            <groupId>org.jboss.as.plugins</groupId>
+            <artifactId>jboss-as-maven-plugin</artifactId>
+            <version>7.0.0.Final</version>
+         </plugin>
+-->
+         <!-- Compiler plugin enforces Java 1.6 compatibility and activates 
+            annotation processors -->
+         <plugin>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>2.3.1</version>
+            <configuration>
+               <source>1.6</source>
+               <target>1.6</target>
+            </configuration>
+         </plugin>
+      </plugins>
+   </build>
+
+</project>

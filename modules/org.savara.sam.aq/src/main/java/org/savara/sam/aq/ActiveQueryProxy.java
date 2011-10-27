@@ -17,6 +17,9 @@
  */
 package org.savara.sam.aq;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  * This class represents the Active Query.
  *
@@ -24,6 +27,8 @@ package org.savara.sam.aq;
  */
 public class ActiveQueryProxy<T> implements ActiveQuery<T> {
 
+	private static final Logger LOG=Logger.getLogger(ActiveQueryProxy.class.getName());
+	
 	private ActiveQuery<T> _activeQuery=null;
 	private java.util.Set<ActiveListener<T>> _listeners=new java.util.HashSet<ActiveListener<T>>();
 	private ChangeHandler _changeHandler=new ChangeHandler();
@@ -35,6 +40,10 @@ public class ActiveQueryProxy<T> implements ActiveQuery<T> {
 	 */
 	public ActiveQueryProxy(ActiveQuery<T> aq) {
 		_activeQuery = aq;
+	}
+	
+	protected ActiveQuery<T> getSource() {
+		return (_activeQuery);
 	}
 	
 	/**
@@ -73,6 +82,10 @@ public class ActiveQueryProxy<T> implements ActiveQuery<T> {
 	public void addActiveListener(ActiveListener<T> l) {
 		synchronized(_listeners) {
 			_listeners.add(l);
+			
+			if (LOG.isLoggable(Level.INFO)) {
+				LOG.info("Added active listener "+l+" - now "+_listeners.size()+" listeners");
+			}
 		}
 	}
 	
@@ -84,7 +97,15 @@ public class ActiveQueryProxy<T> implements ActiveQuery<T> {
 	public void removeActiveListener(ActiveListener<T> l) {
 		synchronized(_listeners) {
 			_listeners.remove(l);
+			
+			if (LOG.isLoggable(Level.INFO)) {
+				LOG.info("Removed active listener "+l+" - now "+_listeners.size()+" listeners");
+			}
 		}
+	}
+	
+	protected int numberOfActiveListeners() {
+		return(_listeners.size());
 	}
 	
 	/**
@@ -97,15 +118,21 @@ public class ActiveQueryProxy<T> implements ActiveQuery<T> {
 	public boolean add(T value) {
 		boolean ret=_activeQuery.add(value);
 		
-		if (ret && _listeners.size() > 0) {
+		if (ret) {
+			notifyAddition(value);
+		}
+		
+		return (ret);
+	}
+	
+	protected void notifyAddition(T value) {
+		if (_listeners.size() > 0) {
 			synchronized(_listeners) {
 				for (ActiveListener<T> l : _listeners) {
 					l.valueAdded(value);						
 				}
 			}
 		}
-		
-		return (ret);
 	}
 	
 	/**
@@ -118,15 +145,21 @@ public class ActiveQueryProxy<T> implements ActiveQuery<T> {
 	public boolean remove(T value) {
 		boolean ret=_activeQuery.remove(value);
 			
-		if (ret && _listeners.size() > 0) {
+		if (ret) {
+			notifyRemoval(value);						
+		}
+		
+		return (ret);
+	}
+	
+	protected void notifyRemoval(T value) {
+		if (_listeners.size() > 0) {
 			synchronized(_listeners) {
 				for (ActiveListener<T> l : _listeners) {
 					l.valueRemoved(value);						
 				}
 			}
 		}
-		
-		return (ret);
 	}
 	
 	/**

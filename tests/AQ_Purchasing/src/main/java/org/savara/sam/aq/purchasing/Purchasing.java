@@ -44,7 +44,7 @@ import org.savara.sam.aq.Predicate;
                activationConfig =
                      {
                         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
-                        @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/activity/Purchasing")
+                        @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/aq/Purchasing")
                      })
 @TransactionManagement(value= TransactionManagementType.CONTAINER)
 @TransactionAttribute(value= TransactionAttributeType.REQUIRED)
@@ -65,19 +65,19 @@ public class Purchasing implements MessageListener {
 	MessageProducer _purchasingResponseTimeProducer=null;
 	MessageProducer _purchasingTopicProducer=null;
 
-	@Resource(mappedName = "java:/queues/activity/PurchasingStarted")
+	@Resource(mappedName = "java:/queues/aq/PurchasingStarted")
 	Destination _purchasingStarted;
 	
-	@Resource(mappedName = "java:/queues/activity/PurchasingSuccessful")
+	@Resource(mappedName = "java:/queues/aq/PurchasingSuccessful")
 	Destination _purchasingSuccessful;
 	
-	@Resource(mappedName = "java:/queues/activity/PurchasingUnsuccessful")
+	@Resource(mappedName = "java:/queues/aq/PurchasingUnsuccessful")
 	Destination _purchasingUnsuccessful;
 	
-	@Resource(mappedName = "java:/queues/activity/PurchasingResponseTime")
+	@Resource(mappedName = "java:/queues/aq/PurchasingResponseTime")
 	Destination _purchasingResponseTime;
 	
-	@Resource(mappedName = "java:/topics/activity/Purchasing")
+	@Resource(mappedName = "java:/topics/aq/Purchasing")
 	Destination _purchasingTopic;
 
 	@Resource(mappedName="java:jboss/infinispan/sam")

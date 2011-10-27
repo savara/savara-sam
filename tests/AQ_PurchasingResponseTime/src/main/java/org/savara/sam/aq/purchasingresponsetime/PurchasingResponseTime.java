@@ -40,15 +40,13 @@ import javax.jms.Session;
 import org.jboss.logging.Logger;
 import org.savara.sam.activity.ActivityAnalysis;
 import org.savara.sam.activity.ActivitySummary;
-import org.savara.sam.activity.ActivitySummary.ServiceInvocationSummary;
 import org.savara.sam.aq.DefaultActiveQuery;
-import org.savara.sam.aq.Predicate;
 
 @MessageDriven(name = "PurchasingResponseTime", messageListenerInterface = MessageListener.class,
                activationConfig =
                      {
                         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
-                        @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/activity/PurchasingResponseTime")
+                        @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/aq/PurchasingResponseTime")
                      })
 @TransactionManagement(value= TransactionManagementType.CONTAINER)
 @TransactionAttribute(value= TransactionAttributeType.REQUIRED)
@@ -65,7 +63,7 @@ public class PurchasingResponseTime implements MessageListener {
 	Session _session=null;
 	MessageProducer _purchasingResponseTimeTopicProducer=null;
 
-	@Resource(mappedName = "java:/topics/activity/PurchasingResponseTime")
+	@Resource(mappedName = "java:/topics/aq/PurchasingResponseTime")
 	Destination _purchasingResponseTimeTopic;
 
 	@Resource(mappedName="java:jboss/infinispan/sam")
