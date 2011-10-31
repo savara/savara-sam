@@ -43,6 +43,14 @@
             <filtered>true</filtered>
         </file>
     </files>
+
+    <fileSets>
+	<fileSet>
+            <directory>../../demo</directory>
+            <outputDirectory>/demo</outputDirectory>
+	</fileSet>
+    </fileSets>
+
     <dependencySets>
 	<!-- Modules -->
         <dependencySet>

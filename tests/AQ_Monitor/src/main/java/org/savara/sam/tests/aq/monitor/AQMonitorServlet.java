@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.savara.sam.activity.ActivityAnalysis;
+import org.savara.sam.activity.ActivitySummary;
 import org.savara.sam.aq.ActiveListener;
 import org.savara.sam.aq.ActiveQuery;
 import org.savara.sam.aq.ActiveQueryManager;
@@ -42,7 +43,13 @@ public class AQMonitorServlet extends HttpServlet {
 	private ActiveQuery<ActivityAnalysis> _purchasingResponseTime;
 	private ActiveListener<ActivityAnalysis> _purchasingResponseTimeListener;
 	
-	private StringBuffer _report=new StringBuffer();
+	private ActiveQuery<ActivitySummary> _startedTxns;
+	private ActiveQuery<ActivitySummary> _completedTxns;
+	private ActiveQuery<ActivitySummary> _failedTxns;
+	private ActiveListener<ActivitySummary> _txnRatioListener;
+	
+	private StringBuffer _responseTimeReport=new StringBuffer();
+	private StringBuffer _txnRatioReport=new StringBuffer();
 	
 	// NOTES:
 	// Need to see whether cache update notification should be used? But then won't be
@@ -62,9 +69,21 @@ public class AQMonitorServlet extends HttpServlet {
 			// when dependency setup in the manifest - to be investigated further
 			_activeQueryManager = new ActiveQueryServer(_container);
 			
+			_startedTxns = _activeQueryManager.getActiveQuery("PurchasingStarted");
+			_completedTxns = _activeQueryManager.getActiveQuery("PurchasingSuccessful");
+			_failedTxns = _activeQueryManager.getActiveQuery("PurchasingUnsuccessful");
+			_txnRatioListener = new TxnRatioNotifier();
+			_startedTxns.addActiveListener(_txnRatioListener);
+			_completedTxns.addActiveListener(_txnRatioListener);
+			_failedTxns.addActiveListener(_txnRatioListener);
+
 			_purchasingResponseTime = _activeQueryManager.getActiveQuery("PurchasingResponseTime");
-			_purchasingResponseTimeListener = new ActiveQueryNotifier<ActivityAnalysis>("PurchasingResponseTime");
+			_purchasingResponseTimeListener = new ResponseTimeNotifier();
 			_purchasingResponseTime.addActiveListener(_purchasingResponseTimeListener);
+			
+			// TODO: CREATE LOCALLY MAINTAINED ACTIVE QUERY
+			// TODO: ACTIVE QUERY MANAGER - if cache entry null, then
+			// initialise
 		}
 	}
 
@@ -77,26 +96,66 @@ public class AQMonitorServlet extends HttpServlet {
       PrintWriter writer = resp.getWriter();
       writer.println(PAGE_HEADER);
       writer.println("<h1>" + "SAVARA SAM Active Query Monitor" + "</h1>");
-      writer.println(_report.toString());
+      writer.println(_txnRatioReport.toString());
+      writer.println(_responseTimeReport.toString());
       writer.println(PAGE_FOOTER);
       writer.close();
    }
 
-	public class ActiveQueryNotifier<T> implements ActiveListener<T> {
+	public class TxnRatioNotifier implements ActiveListener<ActivitySummary> {
 
-		private String _name;
+		public TxnRatioNotifier() {
+			buildReport();
+		}
 		
-		public ActiveQueryNotifier(String aqname) {
-			_name = aqname;
+		protected void buildReport() {
+			_txnRatioReport = new StringBuffer();
+			
+			_txnRatioReport.append("<h3>Transaction Ratio Report ("+new java.util.Date()+")</h3>");
+			
+			_txnRatioReport.append("<h5>Started "+_startedTxns.size()+" : Successful "+
+						_completedTxns.size()+" : Unsuccessful "+_failedTxns.size()+"</h5>");
 		}
 		
 		@Override
-		public void valueAdded(T value) {
-			_report.append("<h3>"+_name+" : "+value.toString()+"</h3>");
+		public void valueAdded(ActivitySummary value) {
+			buildReport();
 		}
 
 		@Override
-		public void valueRemoved(T value) {
+		public void valueRemoved(ActivitySummary value) {
+			buildReport();
+		}		
+	}
+
+	public class ResponseTimeNotifier implements ActiveListener<ActivityAnalysis> {
+
+		public ResponseTimeNotifier() {
+			buildReport();
+		}
+		
+		protected void buildReport() {
+			java.util.Iterator<ActivityAnalysis> iter=_purchasingResponseTime.getResults();
+			_responseTimeReport = new StringBuffer();
+			
+			_responseTimeReport.append("<h3>Response Time Report ("+new java.util.Date()+")</h3>");
+			
+			while (iter.hasNext()) {
+				ActivityAnalysis aa=iter.next();
+				String operation=(String)aa.getProperty("operation").getValue();
+				long responseTime=(Long)aa.getProperty("responseTime").getValue();
+				_responseTimeReport.append("<h5>Operation "+operation+" : response time "+responseTime+"ms</h5>");
+			}
+		}
+		
+		@Override
+		public void valueAdded(ActivityAnalysis value) {
+			buildReport();
+		}
+
+		@Override
+		public void valueRemoved(ActivityAnalysis value) {
+			buildReport();
 		}		
 	}
 }

@@ -1,4 +1,55 @@
-This repository has been setup to build a Service Activity Monitoring prototype architecture for use by Savara.
+SAVARA SAM (Service Activity Monitoring) Prototype
+==================================================
+
+Aim: This repository has been setup to build a Service Activity Monitoring prototype architecture for use by Savara.
 
 NOTE: This is just an experiment at this stage, and may therefore be deleted in the future if a more appropriate alternative is found, or the experiment is not successful.
+
+
+Building:
+
+Checkout the savara-sam project, e.g.
+
+	git clone git@github.com:savara/savara-sam.git
+
+and run the following command from the top level folder,
+
+	mvn clean install
+
+This will create an installer for JBoss AS7 in the distribution/jboss-as7/target folder, called sam.deployer.zip.
+
+
+Running the Demo:
+
+1) Download and unpack a JBoss AS7 distribution
+
+
+2) Expand the sam.deployer.zip into the root folder of the AS7 distribution
+
+
+3) Go to the bin folder and start a standalone version of AS7, e.g.
+
+	(if AS 7.0.2)  
+
+	./standalone.sh --server-config=standalone-preview.xml
+
+	(if AS 7.1, with hornetq included by default)
+
+	./standalone.sh
+
+
+4) Generate a buy request and (after a 5 second delay) response from the Broker service by:
+
+a) opening a command window in the $AS7/demo/event_generator folder
+b) running "mvn test"
+
+This will initialise the demo - currently necessary, to initialise all of the active queries, but eventually will not be required.
+
+NOTE: The event generator will be updated to provide flexibility in the type of events/transactions generated, as well as supporting random generation of transactions.
+
+
+5) Start a browser and navigate to URL: http://localhost:8080/AQ_Monitor/
+
+This will show a report based on the 'purchasing response time' and the ratio between started/successful/failed purchasing transactions. Pressing the refresh button on the browser can be used to show the changes to the information, although the actual report information is only regenerated when an update occurs, not when the browser requests the page, demonstrating how notifications could also (eventually) be used to prompt the browser to refresh.
+
 
