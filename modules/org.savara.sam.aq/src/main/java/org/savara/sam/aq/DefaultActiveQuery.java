@@ -104,7 +104,10 @@ public class DefaultActiveQuery<T> implements ActiveQuery<T>, java.io.Serializab
 		if (evaluate(value)) {
 			ret = true;
 			
-			_contents.add(value);
+			// Check if already added, in case duplicate notifications
+			if (!_contents.contains(value)) {
+				_contents.add(value);
+			}
 		}
 		
 		return (ret);

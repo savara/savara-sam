@@ -32,6 +32,7 @@ public class ActivitySummary implements java.io.Serializable {
 
 	private String _id=null;
 	private long _timestamp=0;
+	private String _principal=null;
 	private ServiceInvocationSummary _serviceInvocation=null;
 	
 	public ActivitySummary(String id, Activity activity) {
@@ -42,6 +43,7 @@ public class ActivitySummary implements java.io.Serializable {
 	
 	protected void initialize(Activity activity) {
 		_timestamp = activity.getTimestamp();
+		_principal = activity.getPrincipal();
 		
 		if (activity.getServiceInvocation() != null) {
 			_serviceInvocation = new ServiceInvocationSummary(activity.getServiceInvocation());
@@ -54,6 +56,10 @@ public class ActivitySummary implements java.io.Serializable {
 	
 	public long getTimestamp() {
 		return (_timestamp);
+	}
+	
+	public String getPrincipal() {
+		return(_principal);
 	}
 	
 	public ServiceInvocationSummary getServiceInvocation() {

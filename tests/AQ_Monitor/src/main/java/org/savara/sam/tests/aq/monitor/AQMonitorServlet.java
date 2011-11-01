@@ -19,6 +19,7 @@ import org.savara.sam.activity.ActivitySummary;
 import org.savara.sam.aq.ActiveListener;
 import org.savara.sam.aq.ActiveQuery;
 import org.savara.sam.aq.ActiveQueryManager;
+import org.savara.sam.aq.Predicate;
 import org.savara.sam.aq.server.ActiveQueryServer;
 
 @SuppressWarnings("serial")
@@ -30,9 +31,6 @@ public class AQMonitorServlet extends HttpServlet {
 
    static String PAGE_FOOTER = "</body></html>";
 
-	//@Resource(mappedName = "java:/JmsXA")
-	//ConnectionFactory _connectionFactory;
-	
 	//@Inject
 	ActiveQueryManager _activeQueryManager;
 	
@@ -43,6 +41,9 @@ public class AQMonitorServlet extends HttpServlet {
 	private ActiveQuery<ActivityAnalysis> _purchasingResponseTime;
 	private ActiveListener<ActivityAnalysis> _purchasingResponseTimeListener;
 	
+	private ActiveQuery<ActivityAnalysis> _slaWarnings;
+	private ActiveListener<ActivityAnalysis> _slaWarningsListener;
+	
 	private ActiveQuery<ActivitySummary> _startedTxns;
 	private ActiveQuery<ActivitySummary> _completedTxns;
 	private ActiveQuery<ActivitySummary> _failedTxns;
@@ -50,6 +51,7 @@ public class AQMonitorServlet extends HttpServlet {
 	
 	private StringBuffer _responseTimeReport=new StringBuffer();
 	private StringBuffer _txnRatioReport=new StringBuffer();
+	private StringBuffer _slaWarningsReport=new StringBuffer();
 	
 	// NOTES:
 	// Need to see whether cache update notification should be used? But then won't be
@@ -81,9 +83,15 @@ public class AQMonitorServlet extends HttpServlet {
 			_purchasingResponseTimeListener = new ResponseTimeNotifier();
 			_purchasingResponseTime.addActiveListener(_purchasingResponseTimeListener);
 			
-			// TODO: CREATE LOCALLY MAINTAINED ACTIVE QUERY
-			// TODO: ACTIVE QUERY MANAGER - if cache entry null, then
-			// initialise
+			_slaWarnings = _activeQueryManager.createActiveQuery(_purchasingResponseTime,
+								new Predicate<ActivityAnalysis>() {
+				public boolean evaluate(ActivityAnalysis value) {
+					long responseTime=(Long)value.getProperty("responseTime").getValue();
+					return responseTime > 9000;
+				}
+			});
+			_slaWarningsListener = new SLAWarningsNotifier();
+			_slaWarnings.addActiveListener(_slaWarningsListener);
 		}
 	}
 
@@ -97,6 +105,7 @@ public class AQMonitorServlet extends HttpServlet {
       writer.println(PAGE_HEADER);
       writer.println("<h1>" + "SAVARA SAM Active Query Monitor" + "</h1>");
       writer.println(_txnRatioReport.toString());
+      writer.println(_slaWarningsReport.toString());
       writer.println(_responseTimeReport.toString());
       writer.println(PAGE_FOOTER);
       writer.close();
@@ -145,6 +154,37 @@ public class AQMonitorServlet extends HttpServlet {
 				String operation=(String)aa.getProperty("operation").getValue();
 				long responseTime=(Long)aa.getProperty("responseTime").getValue();
 				_responseTimeReport.append("<h5>Operation "+operation+" : response time "+responseTime+"ms</h5>");
+			}
+		}
+		
+		@Override
+		public void valueAdded(ActivityAnalysis value) {
+			buildReport();
+		}
+
+		@Override
+		public void valueRemoved(ActivityAnalysis value) {
+			buildReport();
+		}		
+	}
+
+	public class SLAWarningsNotifier implements ActiveListener<ActivityAnalysis> {
+
+		public SLAWarningsNotifier() {
+			buildReport();
+		}
+		
+		protected void buildReport() {
+			java.util.Iterator<ActivityAnalysis> iter=_slaWarnings.getResults();
+			_slaWarningsReport = new StringBuffer();
+			
+			_slaWarningsReport.append("<h3>SLA Warnings Report ("+new java.util.Date()+")</h3>");
+			
+			while (iter.hasNext()) {
+				ActivityAnalysis aa=iter.next();
+				String principal=(String)aa.getProperty("principal").getValue();
+				long responseTime=(Long)aa.getProperty("responseTime").getValue();
+				_slaWarningsReport.append("<h5>Principal "+principal+" : response time "+responseTime+"ms</h5>");
 			}
 		}
 		

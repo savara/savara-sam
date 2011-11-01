@@ -24,6 +24,8 @@ import javax.annotation.Resource;
 import java.util.logging.Logger;
 import org.savara.sam.aq.ActiveQuery;
 import org.savara.sam.aq.ActiveQueryManager;
+import org.savara.sam.aq.ActiveQueryProxy;
+import org.savara.sam.aq.DefaultActiveQuery;
 import org.savara.sam.aq.Predicate;
 
 public class ActiveQueryServer implements ActiveQueryManager {
@@ -51,15 +53,24 @@ public class ActiveQueryServer implements ActiveQueryManager {
 		init();	// When injection working, this won't be necessary
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@SuppressWarnings("unchecked")
 	public <T> ActiveQuery<T> getActiveQuery(String name) {
 		return (new JEEActiveQueryProxy<T>((ActiveQuery<T>)_cache.get(name)));
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public <T> ActiveQuery<T> createActiveQuery(ActiveQuery<T> parent,
 			Predicate<T> predicate) {
-		// TODO Auto-generated method stub
-		return null;
+		ActiveQuery<T> ret=new ActiveQueryProxy<T>(new DefaultActiveQuery<T>(null, predicate));
+		
+		parent.addActiveListener(ret.getChangeHandler());
+		
+		return (ret);
 	}
 	
 	@PostConstruct

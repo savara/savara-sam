@@ -148,6 +148,7 @@ public class PurchasingResponseTime implements MessageListener {
 						aa.addProperty("serviceType", String.class.getName(), activity.getServiceInvocation().getServiceType());
 						aa.addProperty("operation", String.class.getName(), activity.getServiceInvocation().getOperation());
 						aa.addProperty("fault", String.class.getName(), activity.getServiceInvocation().getFault());
+						aa.addProperty("principal", String.class.getName(), activity.getPrincipal());
 						
 						ActiveQuery<ActivityAnalysis> aq=getActiveQuery();
 						
