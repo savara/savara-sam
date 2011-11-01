@@ -35,9 +35,11 @@ import javax.jms.MessageProducer;
 import javax.jms.ObjectMessage;
 import javax.jms.Session;
 
-import org.jboss.logging.Logger;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.savara.sam.activity.ActivitySummary;
 import org.savara.sam.activity.ActivitySummary.ServiceInvocationSummary;
+import org.savara.sam.aq.ActiveQuery;
 import org.savara.sam.aq.DefaultActiveQuery;
 import org.savara.sam.aq.Predicate;
 
@@ -69,7 +71,7 @@ public class PurchasingStarted implements MessageListener {
 	private org.infinispan.manager.CacheContainer _container;
 	private org.infinispan.Cache<String, DefaultActiveQuery<ActivitySummary>> _cache;
 	
-	private DefaultActiveQuery<ActivitySummary> _activeQuery=null;
+	//private DefaultActiveQuery<ActivitySummary> _activeQuery=null;
 	
 	public PurchasingStarted() {
 	}
@@ -78,27 +80,12 @@ public class PurchasingStarted implements MessageListener {
 	public void init() {
 		_cache = _container.getCache("queries");
 		
-		_activeQuery = _cache.get(ACTIVE_QUERY_NAME);
-		
-		if (_activeQuery == null) {
-			_activeQuery = new DefaultActiveQuery<ActivitySummary>(ACTIVE_QUERY_NAME, new PurchasingStartedPredicate());
-			_cache.put(ACTIVE_QUERY_NAME, _activeQuery);
-			
-			if (LOG.isInfoEnabled()) {
-				LOG.info("CREATING "+ACTIVE_QUERY_NAME+" AQ="+_activeQuery);
-			}
-		} else {
-			if (LOG.isInfoEnabled()) {
-				LOG.info("EXISTING "+ACTIVE_QUERY_NAME+" AQ="+_activeQuery);
-			}
-		}
-
 		try {
 			_connection = _connectionFactory.createConnection();
 			_session = _connection.createSession(true, Session.AUTO_ACKNOWLEDGE);
 			_purchasingStartedTopicProducer = _session.createProducer(_purchasingStartedTopic);
 		} catch(Exception e) {
-			LOG.error("Failed to setup JMS connection/session", e);
+			LOG.log(Level.SEVERE, "Failed to setup JMS connection/session", e);
 		}
 	}
 
@@ -108,21 +95,42 @@ public class PurchasingStarted implements MessageListener {
 			_session.close();
 			_connection.close();
 		} catch(Exception e) {
-			LOG.error("Failed to close JMS connection/session", e);
+			LOG.log(Level.SEVERE, "Failed to close JMS connection/session", e);
 		}
 	}
 
+	protected ActiveQuery<ActivitySummary> getActiveQuery() {
+		DefaultActiveQuery<ActivitySummary> ret=_cache.get(ACTIVE_QUERY_NAME);
+		
+		if (ret == null) {
+			ret = new DefaultActiveQuery<ActivitySummary>(ACTIVE_QUERY_NAME, new PurchasingStartedPredicate());
+			_cache.put(ACTIVE_QUERY_NAME, ret);
+			
+			if (LOG.isLoggable(Level.FINE)) {
+				LOG.fine("Creating Active Query: "+ACTIVE_QUERY_NAME+" = "+ret);
+			}
+		} else {
+			if (LOG.isLoggable(Level.FINE)) {
+				LOG.fine("Using existing Active Query: "+ACTIVE_QUERY_NAME+" = "+ret);
+			}
+		}
+		
+		return(ret);
+	}
+	
 	public void onMessage(Message message) {
 		
 		if (message instanceof ObjectMessage) {
 			try {
 				ActivitySummary activity=(ActivitySummary)((ObjectMessage)message).getObject();
-								
-				if (_activeQuery.add(activity)) {
+				
+				ActiveQuery<ActivitySummary> aq=getActiveQuery();
+				
+				if (aq.add(activity)) {
 					
 					// Propagate to child queries and topics
-					if (LOG.isInfoEnabled()) {
-						LOG.info("AQ "+ACTIVE_QUERY_NAME+" PROPAGATE ACTIVITY="+activity);
+					if (LOG.isLoggable(Level.FINEST)) {
+						LOG.finest("AQ "+ACTIVE_QUERY_NAME+" propagate activity = "+activity);
 					}
 					
 					Message m=_session.createObjectMessage(activity);
@@ -130,8 +138,8 @@ public class PurchasingStarted implements MessageListener {
 					
 					_purchasingStartedTopicProducer.send(m);
 					
-				} else if (LOG.isInfoEnabled()) {
-					LOG.info("AQ "+ACTIVE_QUERY_NAME+" IGNORE ACTIVITY="+activity);
+				} else if (LOG.isLoggable(Level.FINEST)) {
+					LOG.finest("AQ "+ACTIVE_QUERY_NAME+" ignore activity = "+activity);
 				}
 				
 			} catch(Exception e) {

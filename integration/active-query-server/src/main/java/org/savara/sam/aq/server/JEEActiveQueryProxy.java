@@ -17,7 +17,8 @@
  */
 package org.savara.sam.aq.server;
 
-import org.jboss.logging.Logger;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.savara.sam.aq.ActiveListener;
 import org.savara.sam.aq.ActiveQuery;
 import org.savara.sam.aq.ActiveQueryProxy;
@@ -28,18 +29,16 @@ public class JEEActiveQueryProxy<T> extends ActiveQueryProxy<T> {
 
 	public JEEActiveQueryProxy(ActiveQuery<T> aq) {
 		super(aq);
-		if (LOG.isInfoEnabled()) {
-			LOG.info("Create JEE ActiveQueryProxy "+this+" for AQ "+aq.getName());
+		if (LOG.isLoggable(Level.FINEST)) {
+			LOG.finest("Create JEE ActiveQueryProxy "+this+" for AQ "+aq.getName());
 		}
 	}
 	
 	public void addActiveListener(ActiveListener<T> l) {
 		if (numberOfActiveListeners() == 0) {
 			// Subscribe to the topic associated with the active query name
-LOG.info(">> SUBSCRIBE TO NOTIFICATIONS");
 			init();
 		}
-LOG.info(">> Add listener "+l+": size before="+this.numberOfActiveListeners());
 		super.addActiveListener(l);
 	}
 	

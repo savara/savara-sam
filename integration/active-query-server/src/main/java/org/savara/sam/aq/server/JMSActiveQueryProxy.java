@@ -26,7 +26,8 @@ import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
 import javax.jms.Session;
 
-import org.jboss.logging.Logger;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.savara.sam.aq.ActiveListener;
 import org.savara.sam.aq.ActiveQuery;
 import org.savara.sam.aq.ActiveQueryProxy;
@@ -87,7 +88,7 @@ public class JMSActiveQueryProxy<T> extends ActiveQueryProxy<T> {
 								notifyRemoval(value);
 							}
 						} catch(Exception e) {
-							LOG.error("Failed to retrieve active query notification", e);
+							LOG.log(Level.SEVERE, "Failed to retrieve active query notification", e);
 						}
 					}
 				}
@@ -96,7 +97,7 @@ public class JMSActiveQueryProxy<T> extends ActiveQueryProxy<T> {
 			_connection.start();
 			
 		} catch(Exception e) {
-			LOG.error("Failed to initialize JMS", e);
+			LOG.log(Level.SEVERE, "Failed to initialize JMS", e);
 		}
 	}
 	
@@ -105,7 +106,7 @@ public class JMSActiveQueryProxy<T> extends ActiveQueryProxy<T> {
 			_session.close();
 			_connection.close();
 		} catch(Exception e) {
-			LOG.error("Failed to close JMS", e);
+			LOG.log(Level.SEVERE, "Failed to close JMS", e);
 		}
 		
 	}

@@ -21,17 +21,11 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 
-import org.jboss.logging.Logger;
+import java.util.logging.Logger;
 import org.savara.sam.aq.ActiveQuery;
 import org.savara.sam.aq.ActiveQueryManager;
 import org.savara.sam.aq.Predicate;
 
-//import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Typed;
-
-@Typed(ActiveQueryManager.class)
-//@javax.enterprise.inject.Default
-//@ApplicationScoped
 public class ActiveQueryServer implements ActiveQueryManager {
 	
 	private static final Logger LOG=Logger.getLogger(ActiveQueryServer.class.getName());
@@ -40,14 +34,6 @@ public class ActiveQueryServer implements ActiveQueryManager {
 	private org.infinispan.manager.CacheContainer _container;
 	private org.infinispan.Cache<String, ActiveQuery<?>> _cache;
 	 
-	/*
-	@Resource(mappedName = "java:/JmsXA")
-	ConnectionFactory _connectionFactory;
-	
-	Connection _connection=null;
-	Session _session=null;
-	MessageProducer _producer=null;
-*/
 	public ActiveQueryServer() {
 	}
 	
@@ -80,30 +66,11 @@ public class ActiveQueryServer implements ActiveQueryManager {
 	public void init() {
 		LOG.info("Initialize Active Query Server");
 		
-		/*
-		try {
-			_connection = _connectionFactory.createConnection();
-			_session = _connection.createSession(true, Session.AUTO_ACKNOWLEDGE);
-			//_producer = _session.createProducer(_root);
-		} catch(Exception e) {
-			LOG.error("Failed to initialize JMS", e);
-		}
-		*/
-		
 		_cache = _container.getCache("queries");
 	}
 	
 	@PreDestroy
 	public void close() {
 		LOG.info("Closing Active Query Server");
-
-		/*
-		try {
-			_session.close();
-			_connection.close();
-		} catch(Exception e) {
-			LOG.error("Failed to close JMS", e);
-		}
-		*/
 	}
 }

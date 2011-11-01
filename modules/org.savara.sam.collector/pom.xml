@@ -1,19 +1,27 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.savara.sam.modules</groupId>
+	<artifactId>org.savara.sam.collector</artifactId> 
+	<version>1.0.0-SNAPSHOT</version>
+	<packaging>jar</packaging>
+	<name>Savara SAM::Modules::Collector</name>
 
-   <modelVersion>4.0.0</modelVersion>
-   <groupId>sam</groupId>
-   <artifactId>event_generator</artifactId>
-   <packaging>ejb</packaging>
-   <version>1.0.0</version>
+	<parent>
+		<groupId>org.savara.sam</groupId>
+		<artifactId>modules</artifactId>
+		<version>1.0.0-SNAPSHOT</version>
+	</parent>
 
-   <dependencies>
-      <dependency>
-         <groupId>org.savara.sam.modules</groupId>
-         <artifactId>org.savara.sam.activity</artifactId>
-         <version>1.0.0-SNAPSHOT</version>
-         <scope>provided</scope>
-      </dependency>
+	<properties>
+	</properties>
+  
+	<dependencies>
+		<dependency>
+			<groupId>org.savara.sam.modules</groupId>
+			<artifactId>org.savara.sam.activity</artifactId>
+			<version>${sam.version}</version>
+		</dependency>
       <dependency>
          <groupId>org.jboss.javaee</groupId>
          <artifactId>jboss-jms-api</artifactId>
@@ -54,43 +62,21 @@
         <artifactId>jnp-client</artifactId>
         <version>5.0.3.GA</version>
       </dependency>
-   </dependencies>
-
-   <build>
-      <plugins>
-         <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>exec-maven-plugin</artifactId>
-            <version>1.1</version>
-            <executions>
-               <execution>
-                  <phase>test</phase>
-                  <goals>
-                     <goal>java</goal>
-                  </goals>
-                  <configuration>
-                     <mainClass>org.savara.sam.demo.EventGenerator</mainClass>
-                  </configuration>
-               </execution>
-            </executions>
-         </plugin>
-      </plugins>
-   </build>
-
-	<repositories>
-	    <repository>
-	        <id>jboss-developer-repository-group</id>
-	        <name>JBoss Developer Maven Repository Group</name>
-		<url>https://repository.jboss.org/nexus/content/groups/developer/</url>
-		<releases>
-		  <enabled>true</enabled>
-		  <updatePolicy>never</updatePolicy>
-		</releases>
-		<snapshots>
-		  <enabled>true</enabled>
-		  <updatePolicy>never</updatePolicy>
-		</snapshots>
-	    </repository>
-	</repositories>
-
+		<dependency>
+			<groupId>org.osgi</groupId>
+			<artifactId>org.osgi.core</artifactId>
+			<version>${osgi.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.osgi</groupId>
+			<artifactId>org.osgi.compendium</artifactId>
+			<version>${osgi.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+           		<version>${junit.version}</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
 </project>

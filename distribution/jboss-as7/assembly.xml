@@ -48,6 +48,11 @@
 	<fileSet>
             <directory>../../demo</directory>
             <outputDirectory>/demo</outputDirectory>
+	    <excludes>
+		<exclude>**/target/**</exclude>
+		<exclude>**/.project</exclude>
+		<exclude>**/.classpath</exclude>
+	    </excludes>
 	</fileSet>
     </fileSets>
 

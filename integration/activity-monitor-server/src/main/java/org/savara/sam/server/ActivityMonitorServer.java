@@ -35,7 +35,8 @@ import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 
-import org.jboss.logging.Logger;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.savara.sam.activity.ActivityModel;
 import org.savara.sam.activity.ActivityModel.Activity;
 import org.savara.sam.activity.ActivitySummary;
@@ -79,7 +80,7 @@ public class ActivityMonitorServer implements MessageListener {
 			_session = _connection.createSession(true, Session.AUTO_ACKNOWLEDGE);
 			_producer = _session.createProducer(_root);
 		} catch(Exception e) {
-			LOG.error("Failed to initialize JMS", e);
+			LOG.log(Level.SEVERE, "Failed to initialize JMS", e);
 		}
 		
 		_cache = _container.getCache("activities");
@@ -93,7 +94,7 @@ public class ActivityMonitorServer implements MessageListener {
 			_session.close();
 			_connection.close();
 		} catch(Exception e) {
-			LOG.error("Failed to close JMS", e);
+			LOG.log(Level.SEVERE, "Failed to close JMS", e);
 		}
 	}
 
@@ -104,8 +105,8 @@ public class ActivityMonitorServer implements MessageListener {
 			
 			boolean finished=false;
 			
-			if (LOG.isInfoEnabled()) {
-				LOG.info("ActivityMonitorServer: Received activity event batch: "+message);
+			if (LOG.isLoggable(Level.FINEST)) {
+				LOG.finest("ActivityMonitorServer: Received activity event batch: "+message);
 			}
 			
 			// TODO: Need to provide utility mechanism for building messages
@@ -133,8 +134,8 @@ public class ActivityMonitorServer implements MessageListener {
 						Message m=_session.createObjectMessage(summary);
 						m.setBooleanProperty("include", true); // Whether activity should be added or removed
 						
-						if (LOG.isInfoEnabled()) {
-							LOG.info("ActivityMonitorServer: Sending activity: "+m);
+						if (LOG.isLoggable(Level.FINEST)) {
+							LOG.finest("ActivityMonitorServer: Sending activity: "+m);
 						}
 						
 						_producer.send(m);
@@ -142,7 +143,7 @@ public class ActivityMonitorServer implements MessageListener {
 						finished = true;
 					}
 				} catch(Exception e) {
-					LOG.error("Failed to process activity event batch", e);
+					LOG.log(Level.SEVERE, "Failed to process activity event batch", e);
 				}
 			} while (!finished);
 		}

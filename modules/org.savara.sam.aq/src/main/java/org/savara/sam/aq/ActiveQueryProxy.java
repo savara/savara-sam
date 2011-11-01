@@ -83,8 +83,8 @@ public class ActiveQueryProxy<T> implements ActiveQuery<T> {
 		synchronized(_listeners) {
 			_listeners.add(l);
 			
-			if (LOG.isLoggable(Level.INFO)) {
-				LOG.info("Added active listener "+l+" - now "+_listeners.size()+" listeners");
+			if (LOG.isLoggable(Level.FINER)) {
+				LOG.finer("Added active listener "+l+" - now "+_listeners.size()+" listeners");
 			}
 		}
 	}
@@ -98,8 +98,8 @@ public class ActiveQueryProxy<T> implements ActiveQuery<T> {
 		synchronized(_listeners) {
 			_listeners.remove(l);
 			
-			if (LOG.isLoggable(Level.INFO)) {
-				LOG.info("Removed active listener "+l+" - now "+_listeners.size()+" listeners");
+			if (LOG.isLoggable(Level.FINER)) {
+				LOG.finer("Removed active listener "+l+" - now "+_listeners.size()+" listeners");
 			}
 		}
 	}

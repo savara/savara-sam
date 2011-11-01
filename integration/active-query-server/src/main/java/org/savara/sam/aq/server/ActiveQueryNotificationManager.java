@@ -27,7 +27,8 @@ import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
 
-import org.jboss.logging.Logger;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @MessageDriven(name = "ActiveQueryNotificationManager", messageListenerInterface = MessageListener.class,
                activationConfig =
@@ -56,7 +57,7 @@ public class ActiveQueryNotificationManager implements MessageListener {
 				dispatch(dest, val, message.getBooleanProperty("include"));
 			}
 		} catch(Exception e) {
-			LOG.error("Failed to handle notification", e);
+			LOG.log(Level.SEVERE, "Failed to handle notification", e);
 		}
 	}
 	
@@ -65,8 +66,8 @@ public class ActiveQueryNotificationManager implements MessageListener {
 			java.util.List<JEEActiveQueryProxy<?>> list=_listeners.get(dest);
 			if (list != null) {
 				for (JEEActiveQueryProxy<?> aq : list) {
-					if (LOG.isInfoEnabled()) {
-						LOG.info("Dispatch "+(addition ? "ADD" : "REMOVE")+
+					if (LOG.isLoggable(Level.FINE)) {
+						LOG.fine("Dispatch "+(addition ? "ADD" : "REMOVE")+
 									" notification "+val+" to AQ ["+dest+"]");
 					}
 					
@@ -87,8 +88,8 @@ public class ActiveQueryNotificationManager implements MessageListener {
 				list = new java.util.Vector<JEEActiveQueryProxy<?>>();
 				_listeners.put(aq.getName(), list);
 			}
-			if (LOG.isInfoEnabled()) {
-				LOG.info("Register QA proxy "+aq+" for notifications");
+			if (LOG.isLoggable(Level.FINE)) {
+				LOG.fine("Register QA proxy "+aq+" for notifications");
 			}
 			list.add(aq);
 		}
@@ -100,8 +101,8 @@ public class ActiveQueryNotificationManager implements MessageListener {
 			if (list != null) {
 				list.remove(aq);
 				if (list.size() == 0) {
-					if (LOG.isInfoEnabled()) {
-						LOG.info("Unregister QA proxy "+aq+" for notifications");
+					if (LOG.isLoggable(Level.FINE)) {
+						LOG.fine("Unregister QA proxy "+aq+" for notifications");
 					}
 					_listeners.remove(aq.getName());
 				}

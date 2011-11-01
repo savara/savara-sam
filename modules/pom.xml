@@ -21,6 +21,7 @@
 	<modules>
 		<module>org.savara.sam.activity</module>
 		<module>org.savara.sam.aq</module>
+		<module>org.savara.sam.collector</module>
 	</modules>
 
 <!-- Not currently needed unless making the modules OSGi bundles? 
