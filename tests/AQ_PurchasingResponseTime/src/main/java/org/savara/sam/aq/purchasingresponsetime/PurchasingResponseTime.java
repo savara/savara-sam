@@ -28,21 +28,13 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
-import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
-import javax.jms.Message;
 import javax.jms.MessageListener;
-import javax.jms.MessageProducer;
-import javax.jms.ObjectMessage;
-import javax.jms.Session;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.savara.sam.activity.ActivityAnalysis;
 import org.savara.sam.activity.ActivitySummary;
-import org.savara.sam.aq.ActiveQuery;
-import org.savara.sam.aq.DefaultActiveQuery;
+import org.savara.sam.aq.server.JEEActiveQueryManager;
 
 @MessageDriven(name = "PurchasingResponseTime", messageListenerInterface = MessageListener.class,
                activationConfig =
@@ -52,140 +44,67 @@ import org.savara.sam.aq.DefaultActiveQuery;
                      })
 @TransactionManagement(value= TransactionManagementType.CONTAINER)
 @TransactionAttribute(value= TransactionAttributeType.REQUIRED)
-public class PurchasingResponseTime implements MessageListener {
+public class PurchasingResponseTime extends JEEActiveQueryManager<ActivitySummary,ActivityAnalysis> implements MessageListener {
 	
-	private static final Logger LOG=Logger.getLogger(PurchasingResponseTime.class.getName());
-
 	private static final String ACTIVE_QUERY_NAME = "PurchasingResponseTime";
 
 	@Resource(mappedName = "java:/JmsXA")
 	ConnectionFactory _connectionFactory;
 	
-	Connection _connection=null;
-	Session _session=null;
-	MessageProducer _purchasingResponseTimeTopicProducer=null;
-
 	@Resource(mappedName = "java:/topics/aq/PurchasingResponseTime")
 	Destination _purchasingResponseTimeTopic;
 
 	@Resource(mappedName="java:jboss/infinispan/sam")
 	private org.infinispan.manager.CacheContainer _container;
-	private org.infinispan.Cache<String, DefaultActiveQuery<ActivityAnalysis>> _cache;
+
 	private org.infinispan.Cache<String, ActivitySummary> _siCache;
 	
 	public PurchasingResponseTime() {
+		super(ACTIVE_QUERY_NAME);
 	}
 	
 	@PostConstruct
 	public void init() {
-		_cache = _container.getCache("queries");
+		super.init(_connectionFactory, _container, _purchasingResponseTimeTopic);
+
 		_siCache = _container.getCache("serviceInvocations");
-		
-		try {
-			_connection = _connectionFactory.createConnection();
-			_session = _connection.createSession(true, Session.AUTO_ACKNOWLEDGE);
-			_purchasingResponseTimeTopicProducer = _session.createProducer(_purchasingResponseTimeTopic);
-		} catch(Exception e) {
-			LOG.log(Level.SEVERE, "Failed to setup JMS connection/session", e);
-		}
 	}
 
 	@PreDestroy
 	public void close() {
-		try {
-			_session.close();
-			_connection.close();
-		} catch(Exception e) {
-			LOG.log(Level.SEVERE, "Failed to close JMS connection/session", e);
-		}
+		super.close();
 	}
 
-	protected ActiveQuery<ActivityAnalysis> getActiveQuery() {
-		DefaultActiveQuery<ActivityAnalysis> ret=_cache.get(ACTIVE_QUERY_NAME);
+	protected ActivityAnalysis transform(ActivitySummary activity) {
+		ActivityAnalysis ret=null;
 		
-		if (ret == null) {
-			ret = new DefaultActiveQuery<ActivityAnalysis>(ACTIVE_QUERY_NAME, null);
-			_cache.put(ACTIVE_QUERY_NAME, ret);
+		// Check if service interaction with correlation
+		if (activity.getServiceInvocation() != null &&
+				activity.getServiceInvocation().getCorrelation() != null) {
+			String correlation=activity.getServiceInvocation().getCorrelation();
 			
-			if (LOG.isLoggable(Level.FINE)) {
-				LOG.fine("Creating Active Query: "+ACTIVE_QUERY_NAME+" = "+ret);
-			}
-		} else {
-			if (LOG.isLoggable(Level.FINE)) {
-				LOG.fine("Using existing Active Query: "+ACTIVE_QUERY_NAME+" = "+ret);
+			// Check if correlated invocation already exists
+			ActivitySummary other=_siCache.get(correlation);
+			
+			if (other == null) {
+				_siCache.put(correlation, activity, 150, TimeUnit.SECONDS);
+			} else {
+				// Create activity results object for correlated match
+				ret = new ActivityAnalysis();
+				
+				long responseTime=activity.getTimestamp()-other.getTimestamp();
+				
+				ret.addProperty("requestTimestamp", Long.class.getName(), other.getTimestamp());
+				ret.addProperty("requestId", String.class.getName(), other.getId());
+				ret.addProperty("responseId", String.class.getName(), activity.getId());
+				ret.addProperty("responseTime", Long.class.getName(), responseTime);
+				ret.addProperty("serviceType", String.class.getName(), activity.getServiceInvocation().getServiceType());
+				ret.addProperty("operation", String.class.getName(), activity.getServiceInvocation().getOperation());
+				ret.addProperty("fault", String.class.getName(), activity.getServiceInvocation().getFault());
+				ret.addProperty("principal", String.class.getName(), activity.getPrincipal());
 			}
 		}
 		
 		return(ret);
-	}
-	
-	public void onMessage(Message message) {
-		
-		if (message instanceof ObjectMessage) {
-			try {
-				@SuppressWarnings("unchecked")
-				java.util.List<ActivitySummary> activities=
-							(java.util.List<ActivitySummary>)((ObjectMessage)message).getObject();
-				java.util.Vector<ActivityAnalysis> forward=null;
-				
-				for (ActivitySummary activity : activities) {
-					// Check if service interaction with correlation
-					if (activity.getServiceInvocation() != null &&
-							activity.getServiceInvocation().getCorrelation() != null) {
-						String correlation=activity.getServiceInvocation().getCorrelation();
-						
-						// Check if correlated invocation already exists
-						ActivitySummary other=_siCache.get(correlation);
-						
-						if (other == null) {
-							_siCache.put(correlation, activity, 150, TimeUnit.SECONDS);
-						} else {
-							// Create activity results object for correlated match
-							ActivityAnalysis aa=new ActivityAnalysis();
-							
-							long responseTime=activity.getTimestamp()-other.getTimestamp();
-							
-							aa.addProperty("requestTimestamp", Long.class.getName(), other.getTimestamp());
-							aa.addProperty("requestId", String.class.getName(), other.getId());
-							aa.addProperty("responseId", String.class.getName(), activity.getId());
-							aa.addProperty("responseTime", Long.class.getName(), responseTime);
-							aa.addProperty("serviceType", String.class.getName(), activity.getServiceInvocation().getServiceType());
-							aa.addProperty("operation", String.class.getName(), activity.getServiceInvocation().getOperation());
-							aa.addProperty("fault", String.class.getName(), activity.getServiceInvocation().getFault());
-							aa.addProperty("principal", String.class.getName(), activity.getPrincipal());
-							
-							ActiveQuery<ActivityAnalysis> aq=getActiveQuery();
-							
-							if (aq.add(aa)) {
-								
-								// Propagate to child queries and topics
-								if (LOG.isLoggable(Level.FINEST)) {
-									LOG.finest("AQ "+ACTIVE_QUERY_NAME+" propagate activity = "+activity);
-								}
-								
-								if (forward == null) {
-									forward = new java.util.Vector<ActivityAnalysis>();
-								}
-								
-								forward.add(aa);
-								
-							} else if (LOG.isLoggable(Level.FINEST)) {
-								LOG.finest("AQ "+ACTIVE_QUERY_NAME+" ignore activity = "+activity);
-							}
-						}
-					}
-				}
-				
-				if (forward != null) {
-					Message m=_session.createObjectMessage(forward);
-					m.setBooleanProperty("include", true); // Whether activity should be added or removed
-					
-					_purchasingResponseTimeTopicProducer.send(m);					
-				}
-				
-			} catch(Exception e) {
-				e.printStackTrace();
-			}
-		}
 	}
 }
