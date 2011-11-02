@@ -52,7 +52,7 @@ public class ActiveQueryProxy<T> implements ActiveQuery<T> {
 	 * @return The name
 	 */
 	public String getName() {
-		return (_activeQuery.getName());
+		return (getSource().getName());
 	}
 	
 	/**
@@ -62,7 +62,7 @@ public class ActiveQueryProxy<T> implements ActiveQuery<T> {
 	 * @return The predicate
 	 */
 	public Predicate<T> getPredicate() {
-		return (_activeQuery.getPredicate());
+		return (getSource().getPredicate());
 	}
 	
 	/**
@@ -116,7 +116,7 @@ public class ActiveQueryProxy<T> implements ActiveQuery<T> {
 	 * @return Whether the value was added
 	 */
 	public boolean add(T value) {
-		boolean ret=_activeQuery.add(value);
+		boolean ret=getSource().add(value);
 		
 		if (ret) {
 			notifyAddition(value);
@@ -143,7 +143,7 @@ public class ActiveQueryProxy<T> implements ActiveQuery<T> {
 	 * @return Whether the value was added
 	 */
 	public boolean remove(T value) {
-		boolean ret=_activeQuery.remove(value);
+		boolean ret=getSource().remove(value);
 			
 		if (ret) {
 			notifyRemoval(value);						
@@ -168,7 +168,7 @@ public class ActiveQueryProxy<T> implements ActiveQuery<T> {
 	 * @return The iterator
 	 */
 	public java.util.Iterator<T> getResults() {
-		return (_activeQuery.getResults());
+		return (getSource().getResults());
 	}
 	
 	/**
@@ -178,7 +178,7 @@ public class ActiveQueryProxy<T> implements ActiveQuery<T> {
 	 * @return The size
 	 */
 	public int size() {
-		return (_activeQuery.size());
+		return (getSource().size());
 	}
 	
 	/**

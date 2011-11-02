@@ -34,15 +34,29 @@ public class DefaultActiveQuery<T> implements ActiveQuery<T>, java.io.Serializab
 	private String _name=null;
 	private Predicate<T> _predicate=null;
 	private java.util.List<T> _contents=new java.util.Vector<T>();
+	private boolean _copyOnRead=false;
 
 	/**
 	 * The constructor for the active query.
 	 * 
 	 * @param name The name of the active query
+	 * @param predicate The predicate
 	 */
 	public DefaultActiveQuery(String name, Predicate<T> predicate) {
 		_name = name;
 		_predicate = predicate;
+	}
+	
+	/**
+	 * The constructor for the active query.
+	 * 
+	 * @param name The name of the active query
+	 * @param predicate The predicate
+	 * @param copyOnRead Whether to copy the query results before client reads
+	 */
+	public DefaultActiveQuery(String name, Predicate<T> predicate, boolean copyOnRead) {
+		this(name, predicate);
+		_copyOnRead = copyOnRead;
 	}
 	
 	/**
@@ -159,7 +173,12 @@ public class DefaultActiveQuery<T> implements ActiveQuery<T>, java.io.Serializab
 	 * @return The iterator
 	 */
 	public java.util.Iterator<T> getResults() {
-		return (_contents.iterator());
+		if (_copyOnRead) {
+			java.util.Vector<T> copy=new java.util.Vector<T>(_contents);
+			return (copy.iterator());
+		} else {
+			return (_contents.iterator());
+		}
 	}
 	
 	/**
