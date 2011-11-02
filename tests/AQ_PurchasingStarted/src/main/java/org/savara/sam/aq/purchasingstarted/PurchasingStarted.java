@@ -26,22 +26,14 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
-import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
-import javax.jms.Message;
 import javax.jms.MessageListener;
-import javax.jms.MessageProducer;
-import javax.jms.ObjectMessage;
-import javax.jms.Session;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.savara.sam.activity.ActivitySummary;
 import org.savara.sam.activity.ActivitySummary.ServiceInvocationSummary;
-import org.savara.sam.aq.ActiveQuery;
-import org.savara.sam.aq.DefaultActiveQuery;
 import org.savara.sam.aq.Predicate;
+import org.savara.sam.aq.server.JEEActiveQueryManager;
 
 @MessageDriven(name = "PurchasingStarted", messageListenerInterface = MessageListener.class,
                activationConfig =
@@ -51,101 +43,36 @@ import org.savara.sam.aq.Predicate;
                      })
 @TransactionManagement(value= TransactionManagementType.CONTAINER)
 @TransactionAttribute(value= TransactionAttributeType.REQUIRED)
-public class PurchasingStarted implements MessageListener {
+public class PurchasingStarted extends JEEActiveQueryManager<ActivitySummary> implements MessageListener {
 	
-	private static final Logger LOG=Logger.getLogger(PurchasingStarted.class.getName());
-
 	private static final String ACTIVE_QUERY_NAME = "PurchasingStarted";
 
 	@Resource(mappedName = "java:/JmsXA")
 	ConnectionFactory _connectionFactory;
 	
-	Connection _connection=null;
-	Session _session=null;
-	MessageProducer _purchasingStartedTopicProducer=null;
-
 	@Resource(mappedName = "java:/topics/aq/PurchasingStarted")
 	Destination _purchasingStartedTopic;
 
 	@Resource(mappedName="java:jboss/infinispan/sam")
 	private org.infinispan.manager.CacheContainer _container;
-	private org.infinispan.Cache<String, DefaultActiveQuery<ActivitySummary>> _cache;
-	
-	//private DefaultActiveQuery<ActivitySummary> _activeQuery=null;
 	
 	public PurchasingStarted() {
+		super(ACTIVE_QUERY_NAME);
 	}
 	
 	@PostConstruct
 	public void init() {
-		_cache = _container.getCache("queries");
-		
-		try {
-			_connection = _connectionFactory.createConnection();
-			_session = _connection.createSession(true, Session.AUTO_ACKNOWLEDGE);
-			_purchasingStartedTopicProducer = _session.createProducer(_purchasingStartedTopic);
-		} catch(Exception e) {
-			LOG.log(Level.SEVERE, "Failed to setup JMS connection/session", e);
-		}
+		super.init(_connectionFactory, _container, _purchasingStartedTopic);
 	}
 
 	@PreDestroy
 	public void close() {
-		try {
-			_session.close();
-			_connection.close();
-		} catch(Exception e) {
-			LOG.log(Level.SEVERE, "Failed to close JMS connection/session", e);
-		}
-	}
-
-	protected ActiveQuery<ActivitySummary> getActiveQuery() {
-		DefaultActiveQuery<ActivitySummary> ret=_cache.get(ACTIVE_QUERY_NAME);
-		
-		if (ret == null) {
-			ret = new DefaultActiveQuery<ActivitySummary>(ACTIVE_QUERY_NAME, new PurchasingStartedPredicate());
-			_cache.put(ACTIVE_QUERY_NAME, ret);
-			
-			if (LOG.isLoggable(Level.FINE)) {
-				LOG.fine("Creating Active Query: "+ACTIVE_QUERY_NAME+" = "+ret);
-			}
-		} else {
-			if (LOG.isLoggable(Level.FINE)) {
-				LOG.fine("Using existing Active Query: "+ACTIVE_QUERY_NAME+" = "+ret);
-			}
-		}
-		
-		return(ret);
+		super.close();
 	}
 	
-	public void onMessage(Message message) {
-		
-		if (message instanceof ObjectMessage) {
-			try {
-				ActivitySummary activity=(ActivitySummary)((ObjectMessage)message).getObject();
-				
-				ActiveQuery<ActivitySummary> aq=getActiveQuery();
-				
-				if (aq.add(activity)) {
-					
-					// Propagate to child queries and topics
-					if (LOG.isLoggable(Level.FINEST)) {
-						LOG.finest("AQ "+ACTIVE_QUERY_NAME+" propagate activity = "+activity);
-					}
-					
-					Message m=_session.createObjectMessage(activity);
-					m.setBooleanProperty("include", true); // Whether activity should be added or removed
-					
-					_purchasingStartedTopicProducer.send(m);
-					
-				} else if (LOG.isLoggable(Level.FINEST)) {
-					LOG.finest("AQ "+ACTIVE_QUERY_NAME+" ignore activity = "+activity);
-				}
-				
-			} catch(Exception e) {
-				e.printStackTrace();
-			}
-		}
+	@Override
+	protected Predicate<ActivitySummary> getPredicate() {
+		return(new PurchasingStartedPredicate());
 	}
 	
 	public static class PurchasingStartedPredicate implements Predicate<ActivitySummary>, java.io.Serializable {
