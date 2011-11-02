@@ -104,31 +104,40 @@ public class JEEActiveQueryManager<T> implements MessageListener {
 		
 		if (message instanceof ObjectMessage) {
 			try {
-				// TODO: Replace object message with bytes, and allow multiple messages to be dealt with
-				
 				@SuppressWarnings("unchecked")
-				T activity=(T)((ObjectMessage)message).getObject();
+				java.util.List<T> activities=(java.util.List<T>)((ObjectMessage)message).getObject();
+				java.util.Vector<T> forward=null;
 				
 				ActiveQuery<T> aq=getActiveQuery();
 				
-				if (aq.add(activity)) {
-					
-					// Propagate to child queries and topics
-					if (LOG.isLoggable(Level.FINEST)) {
-						LOG.finest("AQ "+_activeQueryName+" propagate activity = "+activity);
+				for (T activity : activities) {
+					if (aq.add(activity)) {
+						
+						// Propagate to child queries and topics
+						if (LOG.isLoggable(Level.FINEST)) {
+							LOG.finest("AQ "+_activeQueryName+" propagate activity = "+activity);
+						}
+						
+						if (forward == null) {
+							forward = new java.util.Vector<T>();
+						}
+						
+						forward.add(activity);
+						
+					} else if (LOG.isLoggable(Level.FINEST)) {
+						LOG.finest("AQ "+_activeQueryName+" ignore activity = "+activity);
 					}
-					
-					Message m=_session.createObjectMessage((java.io.Serializable)activity);
+				}
+				
+				if (forward != null) {
+					Message m=_session.createObjectMessage(forward);
 					m.setBooleanProperty("include", true); // Whether activity should be added or removed
 					
 					for (MessageProducer mp : _producers) {
 						mp.send(m);
 					}
-
-				} else if (LOG.isLoggable(Level.FINEST)) {
-					LOG.finest("AQ "+_activeQueryName+" ignore activity = "+activity);
 				}
-				
+
 			} catch(Exception e) {
 				LOG.log(Level.SEVERE, "Failed to handle activity event '"+message+"'", e);
 			}

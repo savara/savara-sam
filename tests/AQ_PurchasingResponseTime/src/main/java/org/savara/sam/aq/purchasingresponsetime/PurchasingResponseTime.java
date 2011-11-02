@@ -123,51 +123,64 @@ public class PurchasingResponseTime implements MessageListener {
 		
 		if (message instanceof ObjectMessage) {
 			try {
-				ActivitySummary activity=(ActivitySummary)((ObjectMessage)message).getObject();
+				@SuppressWarnings("unchecked")
+				java.util.List<ActivitySummary> activities=
+							(java.util.List<ActivitySummary>)((ObjectMessage)message).getObject();
+				java.util.Vector<ActivityAnalysis> forward=null;
 				
-				// Check if service interaction with correlation
-				if (activity.getServiceInvocation() != null &&
-						activity.getServiceInvocation().getCorrelation() != null) {
-					String correlation=activity.getServiceInvocation().getCorrelation();
-					
-					// Check if correlated invocation already exists
-					ActivitySummary other=_siCache.get(correlation);
-					
-					if (other == null) {
-						_siCache.put(correlation, activity, 150, TimeUnit.SECONDS);
-					} else {
-						// Create activity results object for correlated match
-						ActivityAnalysis aa=new ActivityAnalysis();
+				for (ActivitySummary activity : activities) {
+					// Check if service interaction with correlation
+					if (activity.getServiceInvocation() != null &&
+							activity.getServiceInvocation().getCorrelation() != null) {
+						String correlation=activity.getServiceInvocation().getCorrelation();
 						
-						long responseTime=activity.getTimestamp()-other.getTimestamp();
+						// Check if correlated invocation already exists
+						ActivitySummary other=_siCache.get(correlation);
 						
-						aa.addProperty("requestTimestamp", Long.class.getName(), other.getTimestamp());
-						aa.addProperty("requestId", String.class.getName(), other.getId());
-						aa.addProperty("responseId", String.class.getName(), activity.getId());
-						aa.addProperty("responseTime", Long.class.getName(), responseTime);
-						aa.addProperty("serviceType", String.class.getName(), activity.getServiceInvocation().getServiceType());
-						aa.addProperty("operation", String.class.getName(), activity.getServiceInvocation().getOperation());
-						aa.addProperty("fault", String.class.getName(), activity.getServiceInvocation().getFault());
-						aa.addProperty("principal", String.class.getName(), activity.getPrincipal());
-						
-						ActiveQuery<ActivityAnalysis> aq=getActiveQuery();
-						
-						if (aq.add(aa)) {
+						if (other == null) {
+							_siCache.put(correlation, activity, 150, TimeUnit.SECONDS);
+						} else {
+							// Create activity results object for correlated match
+							ActivityAnalysis aa=new ActivityAnalysis();
 							
-							// Propagate to child queries and topics
-							if (LOG.isLoggable(Level.FINEST)) {
-								LOG.finest("AQ "+ACTIVE_QUERY_NAME+" propagate activity = "+activity);
+							long responseTime=activity.getTimestamp()-other.getTimestamp();
+							
+							aa.addProperty("requestTimestamp", Long.class.getName(), other.getTimestamp());
+							aa.addProperty("requestId", String.class.getName(), other.getId());
+							aa.addProperty("responseId", String.class.getName(), activity.getId());
+							aa.addProperty("responseTime", Long.class.getName(), responseTime);
+							aa.addProperty("serviceType", String.class.getName(), activity.getServiceInvocation().getServiceType());
+							aa.addProperty("operation", String.class.getName(), activity.getServiceInvocation().getOperation());
+							aa.addProperty("fault", String.class.getName(), activity.getServiceInvocation().getFault());
+							aa.addProperty("principal", String.class.getName(), activity.getPrincipal());
+							
+							ActiveQuery<ActivityAnalysis> aq=getActiveQuery();
+							
+							if (aq.add(aa)) {
+								
+								// Propagate to child queries and topics
+								if (LOG.isLoggable(Level.FINEST)) {
+									LOG.finest("AQ "+ACTIVE_QUERY_NAME+" propagate activity = "+activity);
+								}
+								
+								if (forward == null) {
+									forward = new java.util.Vector<ActivityAnalysis>();
+								}
+								
+								forward.add(aa);
+								
+							} else if (LOG.isLoggable(Level.FINEST)) {
+								LOG.finest("AQ "+ACTIVE_QUERY_NAME+" ignore activity = "+activity);
 							}
-							
-							Message m=_session.createObjectMessage(aa);
-							m.setBooleanProperty("include", true); // Whether activity should be added or removed
-							
-							_purchasingResponseTimeTopicProducer.send(m);
-							
-						} else if (LOG.isLoggable(Level.FINEST)) {
-							LOG.finest("AQ "+ACTIVE_QUERY_NAME+" ignore activity = "+activity);
 						}
 					}
+				}
+				
+				if (forward != null) {
+					Message m=_session.createObjectMessage(forward);
+					m.setBooleanProperty("include", true); // Whether activity should be added or removed
+					
+					_purchasingResponseTimeTopicProducer.send(m);					
 				}
 				
 			} catch(Exception e) {

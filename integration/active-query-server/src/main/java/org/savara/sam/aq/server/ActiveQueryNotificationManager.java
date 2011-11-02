@@ -54,7 +54,14 @@ public class ActiveQueryNotificationManager implements MessageListener {
 			if (message instanceof ObjectMessage && message.getJMSDestination() instanceof javax.jms.Topic) {
 				String dest=((javax.jms.Topic)message.getJMSDestination()).getTopicName();
 				Object val=((ObjectMessage)message).getObject();
-				dispatch(dest, val, message.getBooleanProperty("include"));
+				
+				if (val instanceof java.util.List<?>) {
+					for (Object subval : (java.util.List<?>)val) {
+						dispatch(dest, subval, message.getBooleanProperty("include"));
+					}
+				} else {
+					dispatch(dest, val, message.getBooleanProperty("include"));
+				}
 			}
 		} catch(Exception e) {
 			LOG.log(Level.SEVERE, "Failed to handle notification", e);

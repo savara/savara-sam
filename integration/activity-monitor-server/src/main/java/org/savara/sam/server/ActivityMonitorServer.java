@@ -111,6 +111,8 @@ public class ActivityMonitorServer implements MessageListener {
 			
 			// TODO: Need to provide utility mechanism for building messages
 			// for sending to an active query (or analyser)
+			java.util.Vector<ActivitySummary> list=new java.util.Vector<ActivitySummary>();
+			
 			do {
 				try {
 					int len=((BytesMessage)message).readInt();
@@ -129,9 +131,12 @@ public class ActivityMonitorServer implements MessageListener {
 						_cache.put(id, act);
 						
 						// Create the activity summary
-						ActivitySummary summary=new ActivitySummary(id, act);
-								
-						Message m=_session.createObjectMessage(summary);
+						list.add(new ActivitySummary(id, act));						
+						
+					} else {
+						finished = true;
+
+						Message m=_session.createObjectMessage(list);
 						m.setBooleanProperty("include", true); // Whether activity should be added or removed
 						
 						if (LOG.isLoggable(Level.FINEST)) {
@@ -139,8 +144,6 @@ public class ActivityMonitorServer implements MessageListener {
 						}
 						
 						_producer.send(m);
-					} else {
-						finished = true;
 					}
 				} catch(Exception e) {
 					LOG.log(Level.SEVERE, "Failed to process activity event batch", e);
