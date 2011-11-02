@@ -43,7 +43,7 @@ import org.savara.sam.aq.server.JEEActiveQueryManager;
                      })
 @TransactionManagement(value= TransactionManagementType.CONTAINER)
 @TransactionAttribute(value= TransactionAttributeType.REQUIRED)
-public class PurchasingSuccessful extends JEEActiveQueryManager<ActivitySummary> implements MessageListener {
+public class PurchasingSuccessful extends JEEActiveQueryManager<ActivitySummary,ActivitySummary> implements MessageListener {
 	
 	private static final String ACTIVE_QUERY_NAME = "PurchasingSuccessful";
 

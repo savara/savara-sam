@@ -32,7 +32,7 @@ import org.savara.sam.aq.ActiveQuery;
 import org.savara.sam.aq.DefaultActiveQuery;
 import org.savara.sam.aq.Predicate;
 
-public class JEEActiveQueryManager<T> implements MessageListener {
+public class JEEActiveQueryManager<S,T> implements MessageListener {
 	
 	private static final Logger LOG=Logger.getLogger(JEEActiveQueryManager.class.getName());
 	
@@ -100,32 +100,44 @@ public class JEEActiveQueryManager<T> implements MessageListener {
 		return(null);
 	}
 	
+	@SuppressWarnings("unchecked")
+	protected T transform(S sourceActivity) {
+		return((T)sourceActivity);
+	}
+	
 	public void onMessage(Message message) {
 		
 		if (message instanceof ObjectMessage) {
 			try {
 				@SuppressWarnings("unchecked")
-				java.util.List<T> activities=(java.util.List<T>)((ObjectMessage)message).getObject();
+				java.util.List<S> activities=(java.util.List<S>)((ObjectMessage)message).getObject();
 				java.util.Vector<T> forward=null;
 				
 				ActiveQuery<T> aq=getActiveQuery();
 				
-				for (T activity : activities) {
-					if (aq.add(activity)) {
-						
-						// Propagate to child queries and topics
-						if (LOG.isLoggable(Level.FINEST)) {
-							LOG.finest("AQ "+_activeQueryName+" propagate activity = "+activity);
+				for (S sourceActivity : activities) {
+					
+					T activity=transform(sourceActivity);
+					
+					if (activity != null) {
+						if (aq.add(activity)) {
+							
+							// Propagate to child queries and topics
+							if (LOG.isLoggable(Level.FINEST)) {
+								LOG.finest("AQ "+_activeQueryName+" propagate activity = "+activity);
+							}
+							
+							if (forward == null) {
+								forward = new java.util.Vector<T>();
+							}
+							
+							forward.add(activity);
+							
+						} else if (LOG.isLoggable(Level.FINEST)) {
+							LOG.finest("AQ "+_activeQueryName+" ignore activity = "+activity);
 						}
-						
-						if (forward == null) {
-							forward = new java.util.Vector<T>();
-						}
-						
-						forward.add(activity);
-						
 					} else if (LOG.isLoggable(Level.FINEST)) {
-						LOG.finest("AQ "+_activeQueryName+" ignore activity = "+activity);
+						LOG.finest("AQ "+_activeQueryName+" didn't transform source activity = "+sourceActivity);
 					}
 				}
 				
