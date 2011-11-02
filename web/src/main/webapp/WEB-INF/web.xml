@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE web-app
+    PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
+    "http://java.sun.com/dtd/web-app_2_3.dtd">
+
+<web-app>
+
+  <servlet>
+     <servlet-name>gwtProxy</servlet-name>
+     <description>GWT Proxy</description>
+     <servlet-class>org.savara.sam.web.server.proxy.XmlHttpProxyServlet</servlet-class>
+     <init-param>
+         <param-name>config.name</param-name>
+         <param-value>gwt-proxy.properties</param-value>
+     </init-param>
+     <load-on-startup>1</load-on-startup>
+  </servlet>
+ 
+  <servlet-mapping>
+      <servlet-name>gwtProxy</servlet-name>
+      <url-pattern>/app/proxy/*</url-pattern>
+  </servlet-mapping>
+    
+  <!-- Default page to serve -->
+  <welcome-file-list>
+    <welcome-file>ApplicationModule.html</welcome-file>
+  </welcome-file-list>
+
+</web-app>
