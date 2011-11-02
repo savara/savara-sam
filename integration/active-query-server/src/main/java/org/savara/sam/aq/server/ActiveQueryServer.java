@@ -56,9 +56,8 @@ public class ActiveQueryServer implements ActiveQueryManager {
 	/**
 	 * {@inheritDoc}
 	 */
-	@SuppressWarnings("unchecked")
 	public <T> ActiveQuery<T> getActiveQuery(String name) {
-		return (new JEEActiveQueryProxy<T>((ActiveQuery<T>)_cache.get(name)));
+		return (new JEEActiveQueryProxy<T>(name, _cache));
 	}
 
 	/**

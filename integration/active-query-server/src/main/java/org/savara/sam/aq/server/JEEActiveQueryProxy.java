@@ -26,12 +26,25 @@ import org.savara.sam.aq.ActiveQueryProxy;
 public class JEEActiveQueryProxy<T> extends ActiveQueryProxy<T> {
 
 	private static final Logger LOG=Logger.getLogger(JEEActiveQueryProxy.class.getName());
+	
+	private String _activeQueryName;
+	private org.infinispan.Cache<String, ActiveQuery<?>> _cache;
 
-	public JEEActiveQueryProxy(ActiveQuery<T> aq) {
-		super(aq);
+	public JEEActiveQueryProxy(String activeQueryName, org.infinispan.Cache<String, ActiveQuery<?>> cache) {
+		super(null);
+		
+		_activeQueryName = activeQueryName;
+		_cache = cache;
+		
 		if (LOG.isLoggable(Level.FINEST)) {
-			LOG.finest("Create JEE ActiveQueryProxy "+this+" for AQ "+aq.getName());
+			LOG.finest("Create JEE ActiveQueryProxy "+this+" for AQ "+_activeQueryName);
 		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	protected ActiveQuery<T> getSource() {
+		return ((ActiveQuery<T>)_cache.get(_activeQueryName));
 	}
 	
 	public void addActiveListener(ActiveListener<T> l) {
