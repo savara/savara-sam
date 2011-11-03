@@ -53,8 +53,8 @@ public class JEEActiveQueryProxy<T> extends ActiveQueryProxy<T> {
 	protected ActiveQuery<T> getSource() {
 		ActiveQuery<T> ret=(ActiveQuery<T>)_cache.get(getName());
 		
-		if (LOG.isLoggable(Level.FINE)) {
-			LOG.fine("Initial AQ '"+getName()+"' = "+ret);
+		if (LOG.isLoggable(Level.FINEST)) {
+			LOG.finest("Initial AQ '"+getName()+"' = "+ret);
 		}
 
 		if (ret == null && !_sentInitRequest) {
@@ -79,8 +79,8 @@ public class JEEActiveQueryProxy<T> extends ActiveQueryProxy<T> {
 			}
 		}
 		
-		if (LOG.isLoggable(Level.FINE)) {
-			LOG.fine("Returning AQ '"+getName()+"' = "+ret);
+		if (LOG.isLoggable(Level.FINEST)) {
+			LOG.finest("Returning AQ '"+getName()+"' = "+ret);
 		}
 
 		return (ret);
