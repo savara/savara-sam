@@ -82,9 +82,15 @@ public class JMSActivityCollectorImpl implements ActivityCollector {
 			 synchronized(this) {
 				 
 				 // Cancel any current scheduled task
-				 if (_timerTask != null) {
-					 _timerTask.cancel();
-					 _timerTask = null;
+				 if (_timerTask == null) {
+					 _timerTask = new TimerTask() {
+							public void run() {
+								sendMessage();
+							}						 
+						 };
+						 
+					 // Schedule send
+					 _timer.schedule(_timerTask, 500);
 				 }
 				 
 				 if (_currentMessage == null) {
@@ -97,15 +103,6 @@ public class JMSActivityCollectorImpl implements ActivityCollector {
 
 				 if (_messageCounter > 1000) {
 					 sendMessage();
-				 } else {
-					 _timerTask = new TimerTask() {
-							public void run() {
-								sendMessage();
-							}						 
-						 };
-						 
-					 // Schedule send
-					 _timer.schedule(_timerTask, 500);
 				 }
 			 }
 			 

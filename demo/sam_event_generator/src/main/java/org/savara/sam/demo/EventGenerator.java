@@ -34,7 +34,7 @@ public class EventGenerator {
 	private java.util.Random _random=new java.util.Random(System.currentTimeMillis());
 	
 	private java.util.concurrent.ThreadPoolExecutor _executor=
-			new java.util.concurrent.ThreadPoolExecutor(20, 100, 10,
+			new java.util.concurrent.ThreadPoolExecutor(200, 200, 10,
 					TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(10000));
 
 	public static void main(String[] args) throws Exception {
