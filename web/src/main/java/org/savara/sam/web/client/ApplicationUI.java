@@ -19,15 +19,16 @@ package org.savara.sam.web.client;
 
 import org.savara.sam.web.client.auth.CurrentUser;
 import org.savara.sam.web.client.presenter.LoginPresenter;
+import org.savara.sam.web.client.presenter.MainLayoutPresenter;
 
 import com.google.gwt.event.shared.EventBus;
+import com.google.gwt.inject.client.AsyncProvider;
 import com.google.gwt.inject.client.GinModules;
 import com.google.gwt.inject.client.Ginjector;
 import com.google.inject.Provider;
 import com.gwtplatform.mvp.client.annotations.DefaultGatekeeper;
 import com.gwtplatform.mvp.client.proxy.Gatekeeper;
 import com.gwtplatform.mvp.client.proxy.PlaceManager;
-import com.gwtplatform.mvp.client.proxy.ProxyFailureHandler;
 
 /**
  * @author: Jeff Yu
@@ -42,9 +43,9 @@ public interface ApplicationUI extends Ginjector {
 
     EventBus getEventBus();
 
-    ProxyFailureHandler getProxyFailureHandler();
-
     Provider<LoginPresenter> getLoginPresenter();
+    
+    AsyncProvider<MainLayoutPresenter> getMainLayoutPresenter();
 
     @DefaultGatekeeper
     Gatekeeper getLoggedInGateKeeper();

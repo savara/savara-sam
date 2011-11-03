@@ -20,18 +20,18 @@ package org.savara.sam.web.client;
 import org.savara.sam.web.client.auth.CurrentUser;
 import org.savara.sam.web.client.auth.LoggedInGateKeeper;
 import org.savara.sam.web.client.presenter.LoginPresenter;
+import org.savara.sam.web.client.presenter.MainLayoutPresenter;
 import org.savara.sam.web.client.view.LoginPageView;
+import org.savara.sam.web.client.view.MainLayoutViewImpl;
 
 import com.google.gwt.event.shared.EventBus;
 import com.google.gwt.event.shared.SimpleEventBus;
 import com.google.inject.Singleton;
-import com.gwtplatform.mvp.client.DefaultProxyFailureHandler;
 import com.gwtplatform.mvp.client.RootPresenter;
 import com.gwtplatform.mvp.client.gin.AbstractPresenterModule;
 import com.gwtplatform.mvp.client.proxy.Gatekeeper;
 import com.gwtplatform.mvp.client.proxy.ParameterTokenFormatter;
 import com.gwtplatform.mvp.client.proxy.PlaceManager;
-import com.gwtplatform.mvp.client.proxy.ProxyFailureHandler;
 import com.gwtplatform.mvp.client.proxy.TokenFormatter;
 
 /**
@@ -46,7 +46,6 @@ public class ApplicationModule extends AbstractPresenterModule {
         bind(PlaceManager.class).to(ApplicationPlaceManager.class).in(Singleton.class);
         bind(TokenFormatter.class).to(ParameterTokenFormatter.class).in(Singleton.class);
         bind(RootPresenter.class).asEagerSingleton();
-        bind(ProxyFailureHandler.class).to(DefaultProxyFailureHandler.class).in(Singleton.class);
 
         bind(Gatekeeper.class).to(LoggedInGateKeeper.class);
         bind(CurrentUser.class).in(Singleton.class);
@@ -56,6 +55,8 @@ public class ApplicationModule extends AbstractPresenterModule {
         //Presenters
         bindPresenter(LoginPresenter.class, LoginPresenter.LoginView.class, LoginPageView.class,
                 LoginPresenter.LoginProxy.class);
+        bindPresenter(MainLayoutPresenter.class, MainLayoutPresenter.MainLayoutView.class, MainLayoutViewImpl.class,
+        		MainLayoutPresenter.MainLayoutProxy.class);
 
     }
 }

@@ -24,5 +24,6 @@ package org.savara.sam.web.client;
 public class NameTokens {
 
     public static final String LOGIN_VIEW = "login";
-
+    
+    public static final String MAIN_VIEW = "main";
 }
