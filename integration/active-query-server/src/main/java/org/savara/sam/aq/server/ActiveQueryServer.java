@@ -48,20 +48,6 @@ public class ActiveQueryServer implements ActiveQueryManager {
 	 
 	public ActiveQueryServer() {
 	}
-	
-	/**
-	 * This constructor explicitly creates an instance of the active query manager
-	 * supplying the JMS connection factory and cache container.
-	 * 
-	 * @param cf The connection factory
-	 * @param cc The cache container
-	 */
-	public ActiveQueryServer(ConnectionFactory cf, org.infinispan.manager.CacheContainer cc) {
-		_connectionFactory = cf;
-		_container = cc;
-		
-		init();	// When injection working, this won't be necessary
-	}
 
 	/**
 	 * {@inheritDoc}

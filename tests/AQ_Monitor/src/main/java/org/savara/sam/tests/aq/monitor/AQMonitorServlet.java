@@ -1,3 +1,20 @@
+/*
+ * JBoss, Home of Professional Open Source
+ * Copyright 2008-11, Red Hat Middleware LLC, and others contributors as indicated
+ * by the @authors tag. All rights reserved.
+ * See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
+ * This copyrighted material is made available to anyone wishing to use,
+ * modify, copy, or redistribute it subject to the terms and conditions
+ * of the GNU Lesser General Public License, v. 2.1.
+ * This program is distributed in the hope that it will be useful, but WITHOUT A
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+ * PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more details.
+ * You should have received a copy of the GNU Lesser General Public License,
+ * v.2.1 along with this distribution; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+ * MA  02110-1301, USA.
+ */
 package org.savara.sam.tests.aq.monitor;
 
 import java.io.IOException;
@@ -5,10 +22,8 @@ import java.io.PrintWriter;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-import javax.annotation.Resource;
 import javax.enterprise.context.ApplicationScoped;
-import javax.jms.ConnectionFactory;
-//import javax.inject.Inject;
+import javax.inject.Inject;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -21,7 +36,6 @@ import org.savara.sam.aq.ActiveListener;
 import org.savara.sam.aq.ActiveQuery;
 import org.savara.sam.aq.ActiveQueryManager;
 import org.savara.sam.aq.Predicate;
-import org.savara.sam.aq.server.ActiveQueryServer;
 
 @SuppressWarnings("serial")
 @WebServlet("/Main")
@@ -32,14 +46,8 @@ public class AQMonitorServlet extends HttpServlet {
 
    static String PAGE_FOOTER = "</body></html>";
 
-	//@Inject
+	@Inject
 	ActiveQueryManager _activeQueryManager;
-	
-	@Resource(mappedName="java:jboss/infinispan/sam")
-	private org.infinispan.manager.CacheContainer _container;
-
-	@Resource(mappedName = "java:/JmsXA")
-	private ConnectionFactory _connectionFactory;
 	
 	private ActiveQuery<ActivityAnalysis> _purchasingResponseTime;
 	private ActiveListener<ActivityAnalysis> _purchasingResponseTimeListener;
@@ -56,16 +64,14 @@ public class AQMonitorServlet extends HttpServlet {
 	private StringBuffer _txnRatioReport=new StringBuffer();
 	private StringBuffer _slaWarningsReport=new StringBuffer();
 	
+	private boolean _initialized=false;
+	
 	@PostConstruct
 	public void init() {
 				
 		// Appears that init is being called twice????
-		if (_activeQueryManager == null) {
+		if (!_initialized) {
 		
-			// TODO: Should be via injection, but does not seem to work across deployments, even
-			// when dependency setup in the manifest - to be investigated further
-			_activeQueryManager = new ActiveQueryServer(_connectionFactory, _container);
-			
 			_startedTxns = _activeQueryManager.getActiveQuery("PurchasingStarted");
 			_completedTxns = _activeQueryManager.getActiveQuery("PurchasingSuccessful");
 			_failedTxns = _activeQueryManager.getActiveQuery("PurchasingUnsuccessful");
@@ -92,6 +98,7 @@ public class AQMonitorServlet extends HttpServlet {
 
 	@PreDestroy
 	public void close() {
+		_initialized = false;
 	}
 
 	@Override
