@@ -17,18 +17,18 @@
  */
 package org.savara.sam.aq;
 
-public class TestPredicate implements Predicate {
+public class TestPredicate<T> implements Predicate<T> {
 
-	private Object[] _validObjects=null;
+	private T[] _validObjects=null;
 	
-	public TestPredicate(Object[] validObjects) {
+	public TestPredicate(T[] validObjects) {
 		_validObjects = validObjects;
 	}
 	
-	public boolean evaluate(Object value) {
+	public boolean evaluate(T value) {
 		boolean ret=false;
 		
-		for (Object obj : _validObjects) {
+		for (T obj : _validObjects) {
 			if (value == obj) {
 				ret = true;
 				break;

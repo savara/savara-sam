@@ -26,6 +26,7 @@ import javax.ejb.TransactionManagementType;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
+import javax.jms.TextMessage;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -51,16 +52,23 @@ public class ActiveQueryNotificationManager implements MessageListener {
 	public void onMessage(Message message) {
 		
 		try {
-			if (message instanceof ObjectMessage && message.getJMSDestination() instanceof javax.jms.Topic) {
+			if (message.getJMSDestination() instanceof javax.jms.Topic) {
 				String dest=((javax.jms.Topic)message.getJMSDestination()).getTopicName();
-				Object val=((ObjectMessage)message).getObject();
-				
-				if (val instanceof java.util.List<?>) {
-					for (Object subval : (java.util.List<?>)val) {
-						dispatch(dest, subval, message.getBooleanProperty("include"));
+
+				if (message instanceof ObjectMessage) {
+					Object val=((ObjectMessage)message).getObject();
+					
+					if (val instanceof java.util.List<?>) {
+						for (Object subval : (java.util.List<?>)val) {
+							dispatch(dest, subval, message.getBooleanProperty("include"));
+						}
+					} else {
+						dispatch(dest, val, message.getBooleanProperty("include"));
 					}
-				} else {
-					dispatch(dest, val, message.getBooleanProperty("include"));
+				} else if (message instanceof TextMessage) {
+					String command=((TextMessage)message).getText();
+					
+					dispatch(dest, command);
 				}
 			}
 		} catch(Exception e) {
@@ -68,6 +76,20 @@ public class ActiveQueryNotificationManager implements MessageListener {
 		}
 	}
 	
+	protected static void dispatch(String dest, String command) {
+		synchronized(_listeners) {
+			java.util.List<JEEActiveQueryProxy<?>> list=_listeners.get(dest);
+			if (list != null) {
+				for (JEEActiveQueryProxy<?> aq : list) {
+					if (LOG.isLoggable(Level.FINE)) {
+						LOG.fine("Dispatch command '"+command+"' to AQ ["+dest+"]");
+					}
+					
+					aq.notifyRefresh();
+				}
+			}
+		}
+	}
 	protected static void dispatch(String dest, Object val, boolean addition) {
 		synchronized(_listeners) {
 			java.util.List<JEEActiveQueryProxy<?>> list=_listeners.get(dest);

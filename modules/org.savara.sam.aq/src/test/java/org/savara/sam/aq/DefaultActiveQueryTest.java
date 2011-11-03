@@ -29,7 +29,7 @@ public class DefaultActiveQueryTest {
 		String obj2="World";
 		String obj3="Message";
 		
-		TestPredicate pred=new TestPredicate(new Object[] {obj2});
+		TestPredicate<String> pred=new TestPredicate<String>(new String[] {obj2});
 	
 		ActiveQuery<String> aq=new DefaultActiveQuery<String>("aq1", pred);
 		

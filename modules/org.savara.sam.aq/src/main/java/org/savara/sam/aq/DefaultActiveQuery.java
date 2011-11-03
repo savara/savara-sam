@@ -43,8 +43,31 @@ public class DefaultActiveQuery<T> implements ActiveQuery<T>, java.io.Serializab
 	 * @param predicate The predicate
 	 */
 	public DefaultActiveQuery(String name, Predicate<T> predicate) {
+		this(name, predicate, null);
+	}
+	
+	/**
+	 * The constructor for the active query, initialized from the parent active
+	 * query.
+	 * 
+	 * @param name The name of the active query
+	 * @param predicate The predicate
+	 * @param parent The parent active query
+	 */
+	public DefaultActiveQuery(String name, Predicate<T> predicate, ActiveQuery<T> parent) {
 		_name = name;
 		_predicate = predicate;
+		
+		// Process the parent contents against the supplied predicate
+		if (parent != null) {
+			java.util.Iterator<T> iter=parent.getResults();
+			while (iter.hasNext()) {
+				T val=iter.next();
+				if (predicate == null || predicate.evaluate(val)) {
+					_contents.add(val);
+				}
+			}
+		}
 	}
 	
 	/**

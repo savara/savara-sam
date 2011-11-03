@@ -17,6 +17,7 @@
  */
 package org.savara.sam.aq;
 
+import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -29,6 +30,7 @@ public class ActiveQueryProxy<T> implements ActiveQuery<T> {
 
 	private static final Logger LOG=Logger.getLogger(ActiveQueryProxy.class.getName());
 	
+	private String _name=null;
 	private ActiveQuery<T> _activeQuery=null;
 	private java.util.Set<ActiveListener<T>> _listeners=new java.util.HashSet<ActiveListener<T>>();
 	private ChangeHandler _changeHandler=new ChangeHandler();
@@ -36,9 +38,11 @@ public class ActiveQueryProxy<T> implements ActiveQuery<T> {
 	/**
 	 * This is the constructor for the active query proxy.
 	 * 
+	 * @param name The query name
 	 * @param aq The active query
 	 */
-	public ActiveQueryProxy(ActiveQuery<T> aq) {
+	public ActiveQueryProxy(String name, ActiveQuery<T> aq) {
+		_name = name;
 		_activeQuery = aq;
 	}
 	
@@ -52,7 +56,7 @@ public class ActiveQueryProxy<T> implements ActiveQuery<T> {
 	 * @return The name
 	 */
 	public String getName() {
-		return (getSource().getName());
+		return (_name);
 	}
 	
 	/**
@@ -62,6 +66,10 @@ public class ActiveQueryProxy<T> implements ActiveQuery<T> {
 	 * @return The predicate
 	 */
 	public Predicate<T> getPredicate() {
+		ActiveQuery<T> aq=getSource();
+		if (aq == null) {
+			return (null);
+		}
 		return (getSource().getPredicate());
 	}
 	
@@ -116,10 +124,15 @@ public class ActiveQueryProxy<T> implements ActiveQuery<T> {
 	 * @return Whether the value was added
 	 */
 	public boolean add(T value) {
-		boolean ret=getSource().add(value);
+		boolean ret=false;
 		
-		if (ret) {
-			notifyAddition(value);
+		ActiveQuery<T> aq=getSource();
+		
+		if (aq != null) {
+			ret = aq.add(value);
+			if (ret) {
+				notifyAddition(value);
+			}
 		}
 		
 		return (ret);
@@ -167,8 +180,25 @@ public class ActiveQueryProxy<T> implements ActiveQuery<T> {
 	 * 
 	 * @return The iterator
 	 */
+	@SuppressWarnings("unchecked")
 	public java.util.Iterator<T> getResults() {
-		return (getSource().getResults());
+		ActiveQuery<T> aq=getSource();
+		
+		if (aq != null) {
+			return (getSource().getResults());
+		}
+		
+		return (Collections.EMPTY_LIST.iterator());
+	}
+	
+	protected void notifyRefresh() {
+		if (_listeners.size() > 0) {
+			synchronized(_listeners) {
+				for (ActiveListener<T> l : _listeners) {
+					l.refresh();						
+				}
+			}
+		}
 	}
 	
 	/**
@@ -178,7 +208,13 @@ public class ActiveQueryProxy<T> implements ActiveQuery<T> {
 	 * @return The size
 	 */
 	public int size() {
-		return (getSource().size());
+		ActiveQuery<T> aq=getSource();
+		
+		if (aq != null) {
+			return (getSource().size());
+		}
+		
+		return (0);
 	}
 	
 	/**
@@ -199,5 +235,8 @@ public class ActiveQueryProxy<T> implements ActiveQuery<T> {
 			remove(value);
 		}
 		
+		public void refresh() {
+			notifyRefresh();
+		}
 	}
 }

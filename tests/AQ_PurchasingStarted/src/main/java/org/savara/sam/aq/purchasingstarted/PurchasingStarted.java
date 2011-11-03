@@ -46,6 +46,7 @@ import org.savara.sam.aq.server.JEEActiveQueryManager;
 public class PurchasingStarted extends JEEActiveQueryManager<ActivitySummary,ActivitySummary> implements MessageListener {
 	
 	private static final String ACTIVE_QUERY_NAME = "PurchasingStarted";
+	private static final String PARENT_ACTIVE_QUERY_NAME = "Purchasing";
 
 	@Resource(mappedName = "java:/JmsXA")
 	ConnectionFactory _connectionFactory;
@@ -57,7 +58,7 @@ public class PurchasingStarted extends JEEActiveQueryManager<ActivitySummary,Act
 	private org.infinispan.manager.CacheContainer _container;
 	
 	public PurchasingStarted() {
-		super(ACTIVE_QUERY_NAME);
+		super(ACTIVE_QUERY_NAME, PARENT_ACTIVE_QUERY_NAME);
 	}
 	
 	@PostConstruct

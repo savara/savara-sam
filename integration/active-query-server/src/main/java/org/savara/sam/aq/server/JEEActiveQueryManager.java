@@ -25,6 +25,7 @@ import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
 import javax.jms.ObjectMessage;
 import javax.jms.Session;
+import javax.jms.TextMessage;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -37,6 +38,7 @@ public class JEEActiveQueryManager<S,T> implements MessageListener {
 	private static final Logger LOG=Logger.getLogger(JEEActiveQueryManager.class.getName());
 	
 	private String _activeQueryName=null;
+	private String _parentActiveQueryName=null;
 	private ConnectionFactory _connectionFactory=null;
 	private Connection _connection=null;
 	private Session _session=null;
@@ -45,8 +47,9 @@ public class JEEActiveQueryManager<S,T> implements MessageListener {
 	private org.infinispan.manager.CacheContainer _container;
 	private org.infinispan.Cache<String, DefaultActiveQuery<T>> _cache;
 	
-	public JEEActiveQueryManager(String name) {
+	public JEEActiveQueryManager(String name, String parentName) {
 		_activeQueryName = name;
+		_parentActiveQueryName = parentName;
 	}
 	
 	public void init(ConnectionFactory connectionFactory, org.infinispan.manager.CacheContainer container,
@@ -76,16 +79,55 @@ public class JEEActiveQueryManager<S,T> implements MessageListener {
 			LOG.log(Level.SEVERE, "Failed to close JMS connection/session", e);
 		}
 	}
+	
+	protected void initRootAQ(ActiveQuery<T> root) {
+	}
 
 	protected ActiveQuery<T> getActiveQuery() {
 		DefaultActiveQuery<T> ret=_cache.get(_activeQueryName);
 		
 		if (ret == null) {
-			ret = new DefaultActiveQuery<T>(_activeQueryName, getPredicate());
-			_cache.put(_activeQueryName, ret);
+			boolean refresh=false;
 			
 			if (LOG.isLoggable(Level.FINE)) {
-				LOG.fine("Creating Active Query: "+_activeQueryName+" = "+ret);
+				LOG.fine("Active Query '"+_activeQueryName+"' not available in cache");
+			}
+
+			// Get parent AQ
+			if (_parentActiveQueryName == null) {
+				ret = new DefaultActiveQuery<T>(_activeQueryName, getPredicate());
+				initRootAQ(ret);
+				
+				refresh = true;
+				
+			} else {			
+				DefaultActiveQuery<T> parent=_cache.get(_parentActiveQueryName);
+				
+				if (LOG.isLoggable(Level.FINE)) {
+					LOG.fine("Parent Active Query '"+_parentActiveQueryName+"' of AQ '"
+								+_activeQueryName+"' not available in cache");
+				}
+
+				if (parent == null) {
+					// Need to go through init procedure
+					sendInitRequest();
+				} else {
+					ret = new DefaultActiveQuery<T>(_activeQueryName, getPredicate(), parent);
+					
+					refresh = true;
+				}
+			}
+			
+			if (ret != null) {
+				_cache.put(_activeQueryName, ret);
+				
+				if (LOG.isLoggable(Level.FINE)) {
+					LOG.fine("Creating Active Query: "+_activeQueryName+" = "+ret);
+				}
+				
+				if (refresh) {
+					sendRefresh();
+				}
 			}
 		} else {
 			if (LOG.isLoggable(Level.FINE)) {
@@ -103,6 +145,44 @@ public class JEEActiveQueryManager<S,T> implements MessageListener {
 	@SuppressWarnings("unchecked")
 	protected T transform(S sourceActivity) {
 		return((T)sourceActivity);
+	}
+	
+	protected void sendInitRequest() {
+		if (LOG.isLoggable(Level.FINE)) {
+			LOG.fine("Active Query '"+_activeQueryName
+					+"' sending 'init' to parent AQ '"+_parentActiveQueryName+"'");
+		}
+
+		try {
+			Message m=_session.createTextMessage("init");
+			Destination dest=_session.createQueue(_parentActiveQueryName);
+			MessageProducer mp=_session.createProducer(dest);
+			
+			mp.send(m);
+			
+			mp.close();
+		} catch(Exception e) {
+			LOG.log(Level.SEVERE, "AQ '"+_activeQueryName+
+					"' failed to send init request to parent AQ '"+
+					_parentActiveQueryName+"'", e);
+		}
+	}
+	
+	protected void sendRefresh() {
+		if (LOG.isLoggable(Level.FINE)) {
+			LOG.fine("Active Query '"+_activeQueryName+"' sending refresh to child AQs");
+		}
+
+		try {
+			Message m=_session.createTextMessage("refresh");
+			
+			for (MessageProducer mp : _producers) {
+				mp.send(m);
+			}
+		} catch(Exception e) {
+			LOG.log(Level.SEVERE, "AQ '"+_activeQueryName+
+					"' failed to send refresh to child AQs", e);
+		}
 	}
 	
 	public void onMessage(Message message) {
@@ -152,6 +232,32 @@ public class JEEActiveQueryManager<S,T> implements MessageListener {
 
 			} catch(Exception e) {
 				LOG.log(Level.SEVERE, "Failed to handle activity event '"+message+"'", e);
+			}
+		} else if (message instanceof TextMessage) {
+			try {
+				String command=((TextMessage)message).getText();
+				
+				if (LOG.isLoggable(Level.FINE)) {
+					LOG.fine("AQ '"+_activeQueryName+"' received '"+command+"' command");
+				}
+
+				// Process command
+				if (command.equals("init")) {
+					// Attempt to get active query - if not available, then requests
+					// init of parent	
+					getActiveQuery();
+				} else if (command.equals("refresh")) {
+					if (getActiveQuery() == null) {
+						if (LOG.isLoggable(Level.FINE)) {
+							LOG.fine("Refresh of '"+_activeQueryName+
+									"' returned an empty active query, so have re-initiated the parent");
+						}
+					} else {
+						sendRefresh();
+					}
+				}
+			} catch(Exception e) {
+				LOG.log(Level.SEVERE, "Failed to handle command '"+message+"'", e);
 			}
 		}
 	}

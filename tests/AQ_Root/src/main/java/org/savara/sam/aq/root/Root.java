@@ -61,7 +61,7 @@ public class Root extends JEEActiveQueryManager<ActivitySummary,ActivitySummary>
 	private org.infinispan.manager.CacheContainer _container;
 	
 	public Root() {
-		super(ACTIVE_QUERY_NAME);
+		super(ACTIVE_QUERY_NAME, null);
 	}
 	
 	@PostConstruct

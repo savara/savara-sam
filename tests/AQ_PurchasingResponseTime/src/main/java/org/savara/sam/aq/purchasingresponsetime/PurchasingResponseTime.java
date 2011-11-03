@@ -59,8 +59,11 @@ public class PurchasingResponseTime extends JEEActiveQueryManager<ActivitySummar
 
 	private org.infinispan.Cache<String, ActivitySummary> _siCache;
 	
+	// TODO: Determine how best to handle this type of active query, that has
+	// multiple parent AQs???
+	
 	public PurchasingResponseTime() {
-		super(ACTIVE_QUERY_NAME);
+		super(ACTIVE_QUERY_NAME, null);
 	}
 	
 	@PostConstruct

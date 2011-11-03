@@ -44,8 +44,8 @@ public class JMSActiveQueryProxy<T> extends ActiveQueryProxy<T> {
 	Session _session;
 	MessageConsumer _consumer;
 
-	public JMSActiveQueryProxy(ConnectionFactory cf, ActiveQuery<T> aq) {
-		super(aq);
+	public JMSActiveQueryProxy(String name, ConnectionFactory cf, ActiveQuery<T> aq) {
+		super(name, aq);
 		_connectionFactory = cf;
 	}
 	

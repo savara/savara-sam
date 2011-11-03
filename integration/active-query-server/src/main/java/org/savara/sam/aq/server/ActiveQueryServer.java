@@ -20,7 +20,11 @@ package org.savara.sam.aq.server;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.Session;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.savara.sam.aq.ActiveQuery;
 import org.savara.sam.aq.ActiveQueryManager;
@@ -34,6 +38,12 @@ public class ActiveQueryServer implements ActiveQueryManager {
 	
 	@Resource(mappedName="java:jboss/infinispan/sam")
 	private org.infinispan.manager.CacheContainer _container;
+	
+	@Resource(mappedName = "java:/JmsXA")
+	private ConnectionFactory _connectionFactory;
+	
+	private Connection _connection=null;
+	private Session _session=null;
 	private org.infinispan.Cache<String, ActiveQuery<?>> _cache;
 	 
 	public ActiveQueryServer() {
@@ -46,8 +56,8 @@ public class ActiveQueryServer implements ActiveQueryManager {
 	 * @param cf The connection factory
 	 * @param cc The cache container
 	 */
-	public ActiveQueryServer(org.infinispan.manager.CacheContainer cc) {
-		//_connectionFactory = cf;
+	public ActiveQueryServer(ConnectionFactory cf, org.infinispan.manager.CacheContainer cc) {
+		_connectionFactory = cf;
 		_container = cc;
 		
 		init();	// When injection working, this won't be necessary
@@ -57,7 +67,7 @@ public class ActiveQueryServer implements ActiveQueryManager {
 	 * {@inheritDoc}
 	 */
 	public <T> ActiveQuery<T> getActiveQuery(String name) {
-		return (new JEEActiveQueryProxy<T>(name, _cache));
+		return (new JEEActiveQueryProxy<T>(name, _session, _cache));
 	}
 
 	/**
@@ -65,7 +75,7 @@ public class ActiveQueryServer implements ActiveQueryManager {
 	 */
 	public <T> ActiveQuery<T> createActiveQuery(ActiveQuery<T> parent,
 			Predicate<T> predicate) {
-		ActiveQuery<T> ret=new ActiveQueryProxy<T>(new DefaultActiveQuery<T>(null, predicate, true));
+		ActiveQuery<T> ret=new ActiveQueryProxy<T>(null, new DefaultActiveQuery<T>(null, predicate, true));
 		
 		parent.addActiveListener(ret.getChangeHandler());
 		
@@ -76,11 +86,26 @@ public class ActiveQueryServer implements ActiveQueryManager {
 	public void init() {
 		LOG.info("Initialize Active Query Server");
 		
+		try {
+			_connection = _connectionFactory.createConnection();
+			_session = _connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+		} catch(Exception e) {
+			LOG.log(Level.SEVERE, "Failed to setup JMS connection/session", e);
+		}
+
 		_cache = _container.getCache("queries");
 	}
 	
 	@PreDestroy
 	public void close() {
 		LOG.info("Closing Active Query Server");
+
+		try {						
+			_session.close();
+			_connection.close();
+			
+		} catch(Exception e) {
+			LOG.log(Level.SEVERE, "Failed to close JMS connection/session", e);
+		}
 	}
 }

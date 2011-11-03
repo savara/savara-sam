@@ -46,7 +46,7 @@
                 </formatter>
             </console-handler>
             <periodic-rotating-file-handler name="FILE" autoflush="true">
-                <level name="INFO"/>
+                <level name="DEBUG"/>
                 <formatter>
                     <pattern-formatter pattern="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
                 </formatter>
@@ -54,6 +54,9 @@
                 <suffix value=".yyyy-MM-dd"/>
                 <append value="true"/>
             </periodic-rotating-file-handler>
+            <logger category="org.savara">
+                <level name="DEBUG"/>
+            </logger>
             <logger category="com.arjuna">
                 <level name="WARN"/>
             </logger>

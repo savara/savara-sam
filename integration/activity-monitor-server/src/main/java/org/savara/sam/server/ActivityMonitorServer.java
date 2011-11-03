@@ -67,6 +67,7 @@ public class ActivityMonitorServer implements MessageListener {
 	Session _session=null;
 	MessageProducer _producer=null;
 	java.util.Random _random=new java.util.Random();
+	private int _messageCount=0;
 
 	public ActivityMonitorServer() {
 	}
@@ -78,6 +79,7 @@ public class ActivityMonitorServer implements MessageListener {
 		try {
 			_connection = _connectionFactory.createConnection();
 			_session = _connection.createSession(true, Session.AUTO_ACKNOWLEDGE);
+			
 			_producer = _session.createProducer(_root);
 		} catch(Exception e) {
 			LOG.log(Level.SEVERE, "Failed to initialize JMS", e);
@@ -105,8 +107,8 @@ public class ActivityMonitorServer implements MessageListener {
 			
 			boolean finished=false;
 			
-			if (LOG.isLoggable(Level.FINEST)) {
-				LOG.finest("ActivityMonitorServer: Received activity event batch: "+message);
+			if (LOG.isLoggable(Level.FINE)) {
+				LOG.fine("ActivityMonitorServer("+this+"): Received activity event batch: "+message);
 			}
 			
 			// TODO: Need to provide utility mechanism for building messages
@@ -131,7 +133,9 @@ public class ActivityMonitorServer implements MessageListener {
 						_cache.put(id, act);
 						
 						// Create the activity summary
-						list.add(new ActivitySummary(id, act));						
+						list.add(new ActivitySummary(id, act));
+						
+						_messageCount++;
 						
 					} else {
 						finished = true;
@@ -139,8 +143,8 @@ public class ActivityMonitorServer implements MessageListener {
 						Message m=_session.createObjectMessage(list);
 						m.setBooleanProperty("include", true); // Whether activity should be added or removed
 						
-						if (LOG.isLoggable(Level.FINEST)) {
-							LOG.finest("ActivityMonitorServer: Sending activity: "+m);
+						if (LOG.isLoggable(Level.FINE)) {
+							LOG.fine("ActivityMonitorServer ("+this+") messageCount="+_messageCount+" : Sending activity: "+m);
 						}
 						
 						_producer.send(m);

@@ -21,6 +21,7 @@ public class TestActiveListener implements ActiveListener<String> {
 
 	private java.util.List<String> _added=new java.util.Vector<String>();
 	private java.util.List<String> _removed=new java.util.Vector<String>();
+	private boolean _refreshed=false;
 	
 	public void valueAdded(String value) {
 		_added.add(value);
@@ -30,11 +31,19 @@ public class TestActiveListener implements ActiveListener<String> {
 		_removed.add(value);
 	}
 	
+	public void refresh() {
+		_refreshed = true;
+	}
+	
 	public java.util.List<String> getAdded() {
 		return (_added);
 	}
 	
 	public java.util.List<String> getRemoved() {
 		return (_removed);
+	}
+	
+	public boolean getRefreshed() {
+		return (_refreshed);
 	}
 }

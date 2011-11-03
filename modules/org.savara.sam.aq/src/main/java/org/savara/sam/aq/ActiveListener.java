@@ -40,4 +40,10 @@ public interface ActiveListener<T> {
 	 */
 	public void valueRemoved(T value);
 	
+	/**
+	 * This method notifies the listener that the active
+	 * query has been refreshed.
+	 */
+	public void refresh();
+	
 }

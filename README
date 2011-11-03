@@ -38,22 +38,22 @@ Running the Demo:
 	./standalone.sh
 
 
+4) Start a browser and navigate to URL: http://localhost:8080/AQ_Monitor/
+
+This will show a report based on the 'purchasing response time' and the ratio between started/successful/failed purchasing transactions. Pressing the refresh button on the browser can be used to show the changes to the information, although the actual report information is only regenerated when an update occurs, not when the browser requests the page, demonstrating how notifications could also (eventually) be used to prompt the browser to refresh.
+
+
 4) Generate a buy request and (after approx. 5 to 10 second delay) response from the Broker service by:
 
 a) opening a command window in the $AS7/demo/event_generator folder
 b) running "mvn test"
 
-This will display a menu of options. Select option 1, and 1 iteration. This will send activity events representing a 'successful' purchase transaction. This will initialise the demo - currently necessary, to initialise all of the active queries, but eventually will not be required.
+This will display a menu of options. Select option 1, and 1 iteration. This will send activity events representing a 'successful' purchase transaction.
 
 NOTE: The event generator has been updated to provide some flexibility in the type of events/transactions generated, as well as supporting random generation of transactions. However as the demo/prototype evolves, the generator will also be enhanced to enable relevant activities to be generated.
 
 
-5) Start a browser and navigate to URL: http://localhost:8080/AQ_Monitor/
-
-This will show a report based on the 'purchasing response time' and the ratio between started/successful/failed purchasing transactions. Pressing the refresh button on the browser can be used to show the changes to the information, although the actual report information is only regenerated when an update occurs, not when the browser requests the page, demonstrating how notifications could also (eventually) be used to prompt the browser to refresh.
-
-
-6) Generate further activity events
+5) Generate further activity events
 
 For example, select option 3 from the menu to generate a random set of successful and unsuccessful purchase transactions concurrently. Then periodically refresh the browser to see the updated results from the activities being processed.
 

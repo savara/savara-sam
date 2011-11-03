@@ -19,6 +19,12 @@ package org.savara.sam.aq.server;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.jms.Destination;
+import javax.jms.MessageProducer;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+
 import org.savara.sam.aq.ActiveListener;
 import org.savara.sam.aq.ActiveQuery;
 import org.savara.sam.aq.ActiveQueryProxy;
@@ -27,24 +33,57 @@ public class JEEActiveQueryProxy<T> extends ActiveQueryProxy<T> {
 
 	private static final Logger LOG=Logger.getLogger(JEEActiveQueryProxy.class.getName());
 	
-	private String _activeQueryName;
 	private org.infinispan.Cache<String, ActiveQuery<?>> _cache;
+	private Session _session=null;
+	private boolean _sentInitRequest=false;
 
-	public JEEActiveQueryProxy(String activeQueryName, org.infinispan.Cache<String, ActiveQuery<?>> cache) {
-		super(null);
+	public JEEActiveQueryProxy(String activeQueryName, Session session, org.infinispan.Cache<String, ActiveQuery<?>> cache) {
+		super(activeQueryName, null);
 		
-		_activeQueryName = activeQueryName;
-		_cache = cache;
+		_session = session;
+		_cache = cache;	
 		
 		if (LOG.isLoggable(Level.FINEST)) {
-			LOG.finest("Create JEE ActiveQueryProxy "+this+" for AQ "+_activeQueryName);
+			LOG.finest("Create JEE ActiveQueryProxy "+this+" for AQ "+activeQueryName);
 		}
 	}
 	
 	@SuppressWarnings("unchecked")
 	@Override
 	protected ActiveQuery<T> getSource() {
-		return ((ActiveQuery<T>)_cache.get(_activeQueryName));
+		ActiveQuery<T> ret=(ActiveQuery<T>)_cache.get(getName());
+		
+		if (LOG.isLoggable(Level.FINE)) {
+			LOG.fine("Initial AQ '"+getName()+"' = "+ret);
+		}
+
+		if (ret == null && !_sentInitRequest) {
+			try {
+				// Send init request
+				Destination dest=_session.createQueue(getName());
+				MessageProducer mp=_session.createProducer(dest);
+				
+				TextMessage m=_session.createTextMessage("init");				
+				mp.send(m);
+				
+				//mp.close();
+				
+				if (LOG.isLoggable(Level.FINE)) {
+					LOG.fine("Sent 'init' command for AQ '"+getName()+"' on destination: "+dest);
+				}
+				
+				_sentInitRequest = true;
+				
+			} catch(Exception e) {
+				LOG.log(Level.SEVERE, "Failed to send initialisation request", e);
+			}
+		}
+		
+		if (LOG.isLoggable(Level.FINE)) {
+			LOG.fine("Returning AQ '"+getName()+"' = "+ret);
+		}
+
+		return (ret);
 	}
 	
 	public void addActiveListener(ActiveListener<T> l) {
@@ -71,6 +110,12 @@ public class JEEActiveQueryProxy<T> extends ActiveQueryProxy<T> {
 	@SuppressWarnings("unchecked")
 	protected void notifyRemoval(Object val) {
 		super.notifyRemoval((T) val);
+	}
+	
+	@Override
+	protected void notifyRefresh() {
+		super.notifyRefresh();
+		_sentInitRequest = false;
 	}
 	
 	protected void init() {

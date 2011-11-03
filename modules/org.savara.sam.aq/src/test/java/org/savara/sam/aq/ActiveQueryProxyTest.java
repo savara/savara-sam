@@ -29,9 +29,9 @@ public class ActiveQueryProxyTest {
 		String obj2="World";
 		String obj3="Message";
 		
-		TestPredicate pred=new TestPredicate(new Object[] {obj1, obj2});
+		TestPredicate<String> pred=new TestPredicate<String>(new String[] {obj1, obj2});
 	
-		ActiveQuery<String> aq=new ActiveQueryProxy<String>(new DefaultActiveQuery<String>("aq1", pred));
+		ActiveQuery<String> aq=new ActiveQueryProxy<String>("aq1", new DefaultActiveQuery<String>("aq1", pred));
 		
 		TestActiveListener l=new TestActiveListener();
 		aq.addActiveListener(l);
@@ -83,13 +83,13 @@ public class ActiveQueryProxyTest {
 		String obj2="World";
 		String obj3="Message";
 		
-		TestPredicate pred1=new TestPredicate(new Object[] {obj1, obj2});
+		TestPredicate<String> pred1=new TestPredicate<String>(new String[] {obj1, obj2});
 	
-		ActiveQuery<String> aq1=new ActiveQueryProxy<String>(new DefaultActiveQuery<String>("aq1", pred1));
+		ActiveQuery<String> aq1=new ActiveQueryProxy<String>("aq1", new DefaultActiveQuery<String>("aq1", pred1));
 		
-		TestPredicate pred2=new TestPredicate(new Object[] {obj2});
+		TestPredicate<String> pred2=new TestPredicate<String>(new String[] {obj2});
 
-		ActiveQuery<String> aq2=new ActiveQueryProxy<String>(new DefaultActiveQuery<String>("aq2", pred2));
+		ActiveQuery<String> aq2=new ActiveQueryProxy<String>("aq2", new DefaultActiveQuery<String>("aq2", pred2));
 		aq1.addActiveListener(aq2.getChangeHandler());
 		
 		if (aq1.size() != 0) {

@@ -7,6 +7,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import javax.enterprise.context.ApplicationScoped;
+import javax.jms.ConnectionFactory;
 //import javax.inject.Inject;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -36,8 +37,10 @@ public class AQMonitorServlet extends HttpServlet {
 	
 	@Resource(mappedName="java:jboss/infinispan/sam")
 	private org.infinispan.manager.CacheContainer _container;
-	//private org.infinispan.Cache<String, DefaultActiveQuery<ActivitySummary>> _cache;
 
+	@Resource(mappedName = "java:/JmsXA")
+	private ConnectionFactory _connectionFactory;
+	
 	private ActiveQuery<ActivityAnalysis> _purchasingResponseTime;
 	private ActiveListener<ActivityAnalysis> _purchasingResponseTimeListener;
 	
@@ -53,23 +56,15 @@ public class AQMonitorServlet extends HttpServlet {
 	private StringBuffer _txnRatioReport=new StringBuffer();
 	private StringBuffer _slaWarningsReport=new StringBuffer();
 	
-	// NOTES:
-	// Need to see whether cache update notification should be used? But then won't be
-	// same - would need to see what form the notification takes, and whether could be
-	// translated into current notification form.
-	// Otherwise need to find way for 'active query proxy' to get notifications. Possibly
-	// each AQ needs to provide a topic based MDB that the AQProxy can hook into?
-	
-	
 	@PostConstruct
 	public void init() {
-		
+				
 		// Appears that init is being called twice????
 		if (_activeQueryManager == null) {
 		
 			// TODO: Should be via injection, but does not seem to work across deployments, even
 			// when dependency setup in the manifest - to be investigated further
-			_activeQueryManager = new ActiveQueryServer(_container);
+			_activeQueryManager = new ActiveQueryServer(_connectionFactory, _container);
 			
 			_startedTxns = _activeQueryManager.getActiveQuery("PurchasingStarted");
 			_completedTxns = _activeQueryManager.getActiveQuery("PurchasingSuccessful");
@@ -135,6 +130,11 @@ public class AQMonitorServlet extends HttpServlet {
 		public void valueRemoved(ActivitySummary value) {
 			buildReport();
 		}		
+
+		@Override
+		public void refresh() {
+			buildReport();
+		}		
 	}
 
 	public class ResponseTimeNotifier implements ActiveListener<ActivityAnalysis> {
@@ -166,6 +166,11 @@ public class AQMonitorServlet extends HttpServlet {
 		public void valueRemoved(ActivityAnalysis value) {
 			buildReport();
 		}		
+
+		@Override
+		public void refresh() {
+			buildReport();
+		}		
 	}
 
 	public class SLAWarningsNotifier implements ActiveListener<ActivityAnalysis> {
@@ -195,6 +200,11 @@ public class AQMonitorServlet extends HttpServlet {
 
 		@Override
 		public void valueRemoved(ActivityAnalysis value) {
+			buildReport();
+		}		
+
+		@Override
+		public void refresh() {
 			buildReport();
 		}		
 	}
