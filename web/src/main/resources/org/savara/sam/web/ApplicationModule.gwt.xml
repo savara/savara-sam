@@ -7,6 +7,7 @@
   <inherits name="com.smartgwt.SmartGwt" />
   <inherits name="com.gwtplatform.mvp.Mvp" />
   <inherits name="com.google.gwt.inject.Inject" />
+  <inherits name="com.google.gwt.visualization.Visualization"/>
 
   <!-- Specify the app entry point class.                         -->
   <entry-point class='org.savara.sam.web.client.ApplicationEntryPoint'/>

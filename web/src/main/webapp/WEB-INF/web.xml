@@ -6,19 +6,13 @@
 <web-app>
 
   <servlet>
-     <servlet-name>gwtProxy</servlet-name>
-     <description>GWT Proxy</description>
-     <servlet-class>org.savara.sam.web.server.proxy.XmlHttpProxyServlet</servlet-class>
-     <init-param>
-         <param-name>config.name</param-name>
-         <param-value>gwt-proxy.properties</param-value>
-     </init-param>
-     <load-on-startup>1</load-on-startup>
+     <servlet-name>AQMoniterService</servlet-name>
+     <servlet-class>org.savara.sam.web.server.AQMonitorServiceImpl</servlet-class>
   </servlet>
  
   <servlet-mapping>
-      <servlet-name>gwtProxy</servlet-name>
-      <url-pattern>/app/proxy/*</url-pattern>
+      <servlet-name>AQMoniterService</servlet-name>
+      <url-pattern>/ApplicationModule/AQMoniterService</url-pattern>
   </servlet-mapping>
     
   <!-- Default page to serve -->

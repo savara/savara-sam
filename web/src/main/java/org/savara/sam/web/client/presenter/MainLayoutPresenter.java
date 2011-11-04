@@ -5,12 +5,18 @@ package org.savara.sam.web.client.presenter;
 
 import org.savara.sam.web.client.BootstrapContext;
 import org.savara.sam.web.client.NameTokens;
+import org.savara.sam.web.shared.AQMonitorService;
+import org.savara.sam.web.shared.AQMonitorServiceAsync;
+import org.savara.sam.web.shared.dto.Statistic;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.shared.EventBus;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
 import com.gwtplatform.mvp.client.Presenter;
 import com.gwtplatform.mvp.client.View;
 import com.gwtplatform.mvp.client.annotations.NameToken;
+import com.gwtplatform.mvp.client.annotations.NoGatekeeper;
 import com.gwtplatform.mvp.client.annotations.ProxyCodeSplit;
 import com.gwtplatform.mvp.client.proxy.ProxyPlace;
 import com.gwtplatform.mvp.client.proxy.RevealRootLayoutContentEvent;
@@ -24,12 +30,17 @@ public class MainLayoutPresenter extends Presenter<MainLayoutPresenter.MainLayou
 	
 	private BootstrapContext bootstrap;
 	
+	private AQMonitorServiceAsync service;
+		
 	public interface MainLayoutView extends View {
+		
+		public void setStatistics(Statistic[] value);
 		
 	}
 	
 	@ProxyCodeSplit
 	@NameToken(NameTokens.MAIN_VIEW)
+	@NoGatekeeper
 	public interface MainLayoutProxy extends ProxyPlace<MainLayoutPresenter>{}
 	
     @Inject
@@ -39,6 +50,7 @@ public class MainLayoutPresenter extends Presenter<MainLayoutPresenter.MainLayou
             MainLayoutProxy proxy, BootstrapContext bootstrap) {
         super(eventBus, view, proxy);
         this.bootstrap = bootstrap;
+        service = (AQMonitorServiceAsync)GWT.create(AQMonitorService.class);
     }
 	
     
@@ -46,6 +58,21 @@ public class MainLayoutPresenter extends Presenter<MainLayoutPresenter.MainLayou
 	@Override
 	protected void revealInParent() {
 		RevealRootLayoutContentEvent.fire(this, this);
+	}
+	
+	public void onBind() {
+		super.onBind();
+		service.getStatistics(new AsyncCallback<Statistic[]>() {
+			public void onFailure(Throwable t) {
+				System.out.println(t);
+			}
+
+			public void onSuccess(Statistic[] value) {
+				getView().setStatistics(value);
+				System.out.println("==========> " + value);
+			}
+			
+		});
 	}
 	
 }

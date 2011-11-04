@@ -83,7 +83,43 @@
       <artifactId>junit</artifactId>
       <version>${junit.version}</version>
       <scope>test</scope>
-    </dependency>		
+    </dependency>
+    
+    <!-- server dependency -->
+     <dependency>
+        <groupId>org.savara.sam.modules</groupId>
+        <artifactId>org.savara.sam.activity</artifactId>
+        <version>${project.version}</version>
+     </dependency>
+     <dependency>
+        <groupId>org.savara.sam.modules</groupId>
+        <artifactId>org.savara.sam.aq</artifactId>
+        <version>${project.version}</version>
+     </dependency>
+     <dependency>
+        <groupId>org.savara.sam.integration</groupId>
+        <artifactId>active-query-server</artifactId>
+        <version>${project.version}</version>
+     </dependency>
+	<dependency>
+	    <groupId>org.infinispan</groupId>
+	    <artifactId>infinispan-core</artifactId>
+	    <version>5.0.1.FINAL</version>
+	    <scope>provided</scope>
+	</dependency>
+	<dependency>
+	    <groupId>org.jboss.javaee</groupId>
+	    <artifactId>jboss-jms-api</artifactId>
+	    <version>1.1.0.GA</version>
+	    <scope>provided</scope>
+	</dependency>
+    <dependency>
+        <groupId>javax.enterprise</groupId>
+        <artifactId>cdi-api</artifactId>
+        <version>1.0</version>
+        <scope>provided</scope>
+     </dependency>
+    		
   </dependencies>
 
   <build>
@@ -101,6 +137,7 @@
           <execution>
             <goals>
               <goal>compile</goal>
+              <goal>generateAsync</goal>             
             </goals>
           </execution>
         </executions>
