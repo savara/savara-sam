@@ -48,11 +48,11 @@ public class Root extends JEEActiveQueryManager<ActivitySummary,ActivitySummary>
 	@Resource(mappedName = "java:/JmsXA")
 	ConnectionFactory _connectionFactory;
 	
-	@Resource(mappedName = "java:/queues/aq/Purchasing")
+	@Resource(mappedName = "java:/queue/aq/Purchasing")
 	Destination _purchasing;
 	
-	@Resource(mappedName = "java:/topics/aq/Root")
-	Destination _rootTopic;
+	@Resource(mappedName = "java:/topic/aq/Notifications")
+	Destination _notificationTopic;
 	
 	//@Inject
 	//ActiveQueryManager _activeQueryManager;
@@ -66,7 +66,7 @@ public class Root extends JEEActiveQueryManager<ActivitySummary,ActivitySummary>
 	
 	@PostConstruct
 	public void init() {
-		super.init(_connectionFactory, _container, _purchasing, _rootTopic);
+		super.init(_connectionFactory, _container, _purchasing, _notificationTopic);
 	}
 
 	@PreDestroy

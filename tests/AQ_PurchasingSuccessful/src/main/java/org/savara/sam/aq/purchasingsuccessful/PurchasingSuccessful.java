@@ -51,8 +51,8 @@ public class PurchasingSuccessful extends JEEActiveQueryManager<ActivitySummary,
 	@Resource(mappedName = "java:/JmsXA")
 	ConnectionFactory _connectionFactory;
 	
-	@Resource(mappedName = "java:/topics/aq/PurchasingSuccessful")
-	Destination _purchasingSuccessfulTopic;
+	@Resource(mappedName = "java:/topic/aq/Notifications")
+	Destination _notificationTopic;
 
 	@Resource(mappedName="java:jboss/infinispan/sam")
 	private org.infinispan.manager.CacheContainer _container;
@@ -63,7 +63,7 @@ public class PurchasingSuccessful extends JEEActiveQueryManager<ActivitySummary,
 	
 	@PostConstruct
 	public void init() {
-		super.init(_connectionFactory, _container, _purchasingSuccessfulTopic);
+		super.init(_connectionFactory, _container, _notificationTopic);
 	}
 
 	@PreDestroy

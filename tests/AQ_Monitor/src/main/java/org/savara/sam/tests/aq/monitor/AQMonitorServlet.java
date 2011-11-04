@@ -19,6 +19,7 @@ package org.savara.sam.tests.aq.monitor;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.logging.Level;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -68,7 +69,7 @@ public class AQMonitorServlet extends HttpServlet {
 	
 	@PostConstruct
 	public void init() {
-				
+java.util.logging.Logger.getLogger(AQMonitorServlet.class.getName()).log(Level.SEVERE, "INIT CALLED", new Throwable("INIT CALLED"));
 		// Appears that init is being called twice????
 		if (!_initialized) {
 		

@@ -50,20 +50,20 @@ public class Purchasing extends JEEActiveQueryManager<ActivitySummary,ActivitySu
 	@Resource(mappedName = "java:/JmsXA")
 	ConnectionFactory _connectionFactory;
 	
-	@Resource(mappedName = "java:/queues/aq/PurchasingStarted")
+	@Resource(mappedName = "java:/queue/aq/PurchasingStarted")
 	Destination _purchasingStarted;
 	
-	@Resource(mappedName = "java:/queues/aq/PurchasingSuccessful")
+	@Resource(mappedName = "java:/queue/aq/PurchasingSuccessful")
 	Destination _purchasingSuccessful;
 	
-	@Resource(mappedName = "java:/queues/aq/PurchasingUnsuccessful")
+	@Resource(mappedName = "java:/queue/aq/PurchasingUnsuccessful")
 	Destination _purchasingUnsuccessful;
 	
-	@Resource(mappedName = "java:/queues/aq/PurchasingResponseTime")
+	@Resource(mappedName = "java:/queue/aq/PurchasingResponseTime")
 	Destination _purchasingResponseTime;
 	
-	@Resource(mappedName = "java:/topics/aq/Purchasing")
-	Destination _purchasingTopic;
+	@Resource(mappedName = "java:/topic/aq/Notifications")
+	Destination _notificationTopic;
 
 	@Resource(mappedName="java:jboss/infinispan/sam")
 	private org.infinispan.manager.CacheContainer _container;
@@ -75,7 +75,7 @@ public class Purchasing extends JEEActiveQueryManager<ActivitySummary,ActivitySu
 	@PostConstruct
 	public void init() {
 		super.init(_connectionFactory, _container, _purchasingStarted, _purchasingSuccessful,
-				_purchasingUnsuccessful, _purchasingResponseTime, _purchasingTopic);
+				_purchasingUnsuccessful, _purchasingResponseTime, _notificationTopic);
 	}
 
 	@PreDestroy

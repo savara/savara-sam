@@ -51,8 +51,8 @@ public class PurchasingUnsuccessful extends JEEActiveQueryManager<ActivitySummar
 	@Resource(mappedName = "java:/JmsXA")
 	ConnectionFactory _connectionFactory;
 	
-	@Resource(mappedName = "java:/topics/aq/PurchasingUnsuccessful")
-	Destination _purchasingUnsuccessfulTopic;
+	@Resource(mappedName = "java:/topic/aq/Notifications")
+	Destination _notificationTopic;
 
 	@Resource(mappedName="java:jboss/infinispan/sam")
 	private org.infinispan.manager.CacheContainer _container;
@@ -63,7 +63,7 @@ public class PurchasingUnsuccessful extends JEEActiveQueryManager<ActivitySummar
 	
 	@PostConstruct
 	public void init() {
-		super.init(_connectionFactory, _container, _purchasingUnsuccessfulTopic);
+		super.init(_connectionFactory, _container, _notificationTopic);
 	}
 
 	@PreDestroy

@@ -51,8 +51,8 @@ public class PurchasingResponseTime extends JEEActiveQueryManager<ActivitySummar
 	@Resource(mappedName = "java:/JmsXA")
 	ConnectionFactory _connectionFactory;
 	
-	@Resource(mappedName = "java:/topics/aq/PurchasingResponseTime")
-	Destination _purchasingResponseTimeTopic;
+	@Resource(mappedName = "java:/topic/aq/Notifications")
+	Destination _notificationTopic;
 
 	@Resource(mappedName="java:jboss/infinispan/sam")
 	private org.infinispan.manager.CacheContainer _container;
@@ -68,7 +68,7 @@ public class PurchasingResponseTime extends JEEActiveQueryManager<ActivitySummar
 	
 	@PostConstruct
 	public void init() {
-		super.init(_connectionFactory, _container, _purchasingResponseTimeTopic);
+		super.init(_connectionFactory, _container, _notificationTopic);
 
 		_siCache = _container.getCache("serviceInvocations");
 	}

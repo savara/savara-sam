@@ -223,7 +223,9 @@ public class JEEActiveQueryManager<S,T> implements MessageListener {
 				
 				if (forward != null) {
 					Message m=_session.createObjectMessage(forward);
-					m.setBooleanProperty("include", true); // Whether activity should be added or removed
+					m.setBooleanProperty(AQDefinitions.AQ_INCLUDE_PROPERTY, true); // Whether activity should be added or removed
+					
+					m.setStringProperty(AQDefinitions.ACTIVE_QUERY_NAME, _activeQueryName);
 					
 					for (MessageProducer mp : _producers) {
 						mp.send(m);

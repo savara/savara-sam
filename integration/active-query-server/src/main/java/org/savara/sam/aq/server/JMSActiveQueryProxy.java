@@ -82,7 +82,7 @@ public class JMSActiveQueryProxy<T> extends ActiveQueryProxy<T> {
 							@SuppressWarnings("unchecked")
 							T value=(T)((ObjectMessage)m).getObject();
 							
-							if (m.getBooleanProperty("include")) {
+							if (m.getBooleanProperty(AQDefinitions.AQ_INCLUDE_PROPERTY)) {
 								notifyAddition(value);
 							} else {
 								notifyRemoval(value);

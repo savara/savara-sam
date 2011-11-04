@@ -35,7 +35,7 @@ import java.util.logging.Logger;
                activationConfig =
                      {
                         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Topic"),
-                        @ActivationConfigProperty(propertyName = "destination", propertyValue = "topic/aq/*")
+                        @ActivationConfigProperty(propertyName = "destination", propertyValue = "topic/aq/Notifications")
                      })
 @TransactionManagement(value= TransactionManagementType.CONTAINER)
 @TransactionAttribute(value= TransactionAttributeType.REQUIRED)
@@ -52,25 +52,24 @@ public class ActiveQueryNotificationManager implements MessageListener {
 	public void onMessage(Message message) {
 		
 		try {
-			if (message.getJMSDestination() instanceof javax.jms.Topic) {
-				String dest=((javax.jms.Topic)message.getJMSDestination()).getTopicName();
+			String aqname=message.getStringProperty(AQDefinitions.ACTIVE_QUERY_NAME);
 
-				if (message instanceof ObjectMessage) {
-					Object val=((ObjectMessage)message).getObject();
-					
-					if (val instanceof java.util.List<?>) {
-						for (Object subval : (java.util.List<?>)val) {
-							dispatch(dest, subval, message.getBooleanProperty("include"));
-						}
-					} else {
-						dispatch(dest, val, message.getBooleanProperty("include"));
+			if (message instanceof ObjectMessage) {
+				Object val=((ObjectMessage)message).getObject();
+				
+				if (val instanceof java.util.List<?>) {
+					for (Object subval : (java.util.List<?>)val) {
+						dispatch(aqname, subval, message.getBooleanProperty(AQDefinitions.AQ_INCLUDE_PROPERTY));
 					}
-				} else if (message instanceof TextMessage) {
-					String command=((TextMessage)message).getText();
-					
-					dispatch(dest, command);
+				} else {
+					dispatch(aqname, val, message.getBooleanProperty(AQDefinitions.AQ_INCLUDE_PROPERTY));
 				}
+			} else if (message instanceof TextMessage) {
+				String command=((TextMessage)message).getText();
+				
+				dispatch(aqname, command);
 			}
+
 		} catch(Exception e) {
 			LOG.log(Level.SEVERE, "Failed to handle notification", e);
 		}

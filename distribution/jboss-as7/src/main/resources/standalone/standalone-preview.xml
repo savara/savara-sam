@@ -293,47 +293,34 @@
                 <jms-queue name="testQueue">
                     <entry name="queue/test"/>
                 </jms-queue>
-                <jms-queue name="ActivityMonitorServer">
-                    <entry name="queues/ActivityMonitorServer"/>
-                </jms-queue>
-                <jms-queue name="Root">
-                    <entry name="queues/aq/Root"/>
-                </jms-queue>
-                <jms-queue name="PurchasingSuccessful">
-                    <entry name="queues/aq/PurchasingSuccessful"/>
-                </jms-queue>
-                <jms-queue name="PurchasingStarted">
-                    <entry name="queues/aq/PurchasingStarted"/>
-                </jms-queue>
-                <jms-queue name="PurchasingUnsuccessful">
-                    <entry name="queues/aq/PurchasingUnsuccessful"/>
-                </jms-queue>
-                <jms-queue name="Purchasing">
-                    <entry name="queues/aq/Purchasing"/>
-                </jms-queue>
-                <jms-queue name="PurchasingResponseTime">
-                    <entry name="queues/aq/PurchasingResponseTime"/>
-                </jms-queue>
                 <jms-topic name="testTopic">
                     <entry name="topic/test"/>
                 </jms-topic>
-                <jms-topic name="Purchasing">
-                    <entry name="topics/aq/Purchasing"/>
-                </jms-topic>
-                <jms-topic name="PurchasingUnsuccessful">
-                    <entry name="topics/aq/PurchasingUnsuccessful"/>
-                </jms-topic>
-                <jms-topic name="PurchasingStarted">
-                    <entry name="topics/aq/PurchasingStarted"/>
-                </jms-topic>
-                <jms-topic name="PurchasingSuccessful">
-                    <entry name="topics/aq/PurchasingSuccessful"/>
-                </jms-topic>
-                <jms-topic name="PurchasingResponseTime">
-                    <entry name="topics/aq/PurchasingResponseTime"/>
-                </jms-topic>
-                <jms-topic name="Root">
-                    <entry name="topics/aq/Root"/>
+
+                <jms-queue name="ActivityMonitorServer">
+                    <entry name="queue/ActivityMonitorServer"/>
+                </jms-queue>
+                <jms-queue name="Root">
+                    <entry name="queue/aq/Root"/>
+                </jms-queue>
+                <jms-queue name="PurchasingSuccessful">
+                    <entry name="queue/aq/PurchasingSuccessful"/>
+                </jms-queue>
+                <jms-queue name="PurchasingStarted">
+                    <entry name="queue/aq/PurchasingStarted"/>
+                </jms-queue>
+                <jms-queue name="PurchasingUnsuccessful">
+                    <entry name="queue/aq/PurchasingUnsuccessful"/>
+                </jms-queue>
+                <jms-queue name="Purchasing">
+                    <entry name="queue/aq/Purchasing"/>
+                </jms-queue>
+                <jms-queue name="PurchasingResponseTime">
+                    <entry name="queue/aq/PurchasingResponseTime"/>
+                </jms-queue>
+
+                <jms-topic name="Notifications">
+                    <entry name="topic/aq/Notifications"/>
                 </jms-topic>
             </jms-destinations>
         </subsystem>

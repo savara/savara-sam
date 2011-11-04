@@ -38,6 +38,11 @@
             <filtered>true</filtered>
         </file>
         <file>
+            <source>src/main/resources/standalone/standalone.xml</source>
+            <outputDirectory>/standalone/configuration</outputDirectory>
+            <filtered>true</filtered>
+        </file>
+        <file>
             <source>src/main/resources/standalone/standalone-preview.xml</source>
             <outputDirectory>/standalone/configuration</outputDirectory>
             <filtered>true</filtered>
