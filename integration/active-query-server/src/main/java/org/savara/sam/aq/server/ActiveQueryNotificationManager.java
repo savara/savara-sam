@@ -28,6 +28,9 @@ import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
 import javax.jms.TextMessage;
 
+import org.jboss.ejb3.annotation.Pool;
+import org.jboss.ejb3.annotation.defaults.*;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -35,10 +38,12 @@ import java.util.logging.Logger;
                activationConfig =
                      {
                         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Topic"),
-                        @ActivationConfigProperty(propertyName = "destination", propertyValue = "topic/aq/Notifications")
+                        @ActivationConfigProperty(propertyName = "destination", propertyValue = "topic/aq/Notifications"),
+                        @ActivationConfigProperty(propertyName = "maxSession", propertyValue = "1")
                      })
 @TransactionManagement(value= TransactionManagementType.CONTAINER)
 @TransactionAttribute(value= TransactionAttributeType.REQUIRED)
+@Pool(value = PoolDefaults.POOL_IMPLEMENTATION_STRICTMAX, maxSize = 1, timeout = 10000)
 public class ActiveQueryNotificationManager implements MessageListener {
 	
 	private static final Logger LOG=Logger.getLogger(ActiveQueryNotificationManager.class.getName());
@@ -46,28 +51,56 @@ public class ActiveQueryNotificationManager implements MessageListener {
 	private static java.util.Map<String, java.util.List<JEEActiveQueryProxy<?>>> _listeners=
 							new java.util.HashMap<String, java.util.List<JEEActiveQueryProxy<?>>>();
 	
+	private static java.util.List<String> _messageIds=new java.util.Vector<String>();
+	
 	public ActiveQueryNotificationManager() {
 	}
 	
 	public void onMessage(Message message) {
 		
 		try {
-			String aqname=message.getStringProperty(AQDefinitions.ACTIVE_QUERY_NAME);
+			boolean handle=false;
+			
+			// TODO: Temporary workaround as setting poolsize does not seem to work,
+			// so tries to process a message through two MDB instances
+			synchronized(_messageIds) {
+				if (!_messageIds.contains(message.getJMSMessageID())) {
+					_messageIds.add(message.getJMSMessageID());
+					handle = true;
 
-			if (message instanceof ObjectMessage) {
-				Object val=((ObjectMessage)message).getObject();
-				
-				if (val instanceof java.util.List<?>) {
-					for (Object subval : (java.util.List<?>)val) {
-						dispatch(aqname, subval, message.getBooleanProperty(AQDefinitions.AQ_INCLUDE_PROPERTY));
-					}
-				} else {
-					dispatch(aqname, val, message.getBooleanProperty(AQDefinitions.AQ_INCLUDE_PROPERTY));
+					// Check if some messages should be flushed
+					if (_messageIds.size() > 500) {
+						for (int i=0; i < 100; i++) {
+							_messageIds.remove(0);
+						}
+					}					
 				}
-			} else if (message instanceof TextMessage) {
-				String command=((TextMessage)message).getText();
-				
-				dispatch(aqname, command);
+			}
+
+			if (handle) {
+				String aqname=message.getStringProperty(AQDefinitions.ACTIVE_QUERY_NAME);
+	
+				if (message instanceof ObjectMessage) {
+					
+					Object val=((ObjectMessage)message).getObject();
+					
+					if (LOG.isLoggable(Level.FINEST)) {
+						LOG.info("Received Notification="+
+									message+" for AQ="+message.getStringProperty(AQDefinitions.ACTIVE_QUERY_NAME));
+					}
+					
+					if (val instanceof java.util.List<?>) {
+						for (Object subval : (java.util.List<?>)val) {
+							dispatch(aqname, subval, message.getBooleanProperty(AQDefinitions.AQ_INCLUDE_PROPERTY));
+						}
+					} else {
+						dispatch(aqname, val, message.getBooleanProperty(AQDefinitions.AQ_INCLUDE_PROPERTY));
+					}
+				} else if (message instanceof TextMessage) {
+					String command=((TextMessage)message).getText();
+					
+					dispatch(aqname, command);
+				}
 			}
 
 		} catch(Exception e) {

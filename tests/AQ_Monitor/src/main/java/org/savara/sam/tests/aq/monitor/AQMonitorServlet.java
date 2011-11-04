@@ -19,11 +19,7 @@ package org.savara.sam.tests.aq.monitor;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.logging.Level;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -38,14 +34,13 @@ import org.savara.sam.aq.ActiveQuery;
 import org.savara.sam.aq.ActiveQueryManager;
 import org.savara.sam.aq.Predicate;
 
-@SuppressWarnings("serial")
 @WebServlet("/Main")
-@ApplicationScoped
 public class AQMonitorServlet extends HttpServlet {
 
-   static String PAGE_HEADER = "<html><head /><body>";
+	private static final long serialVersionUID = -5486684388851115619L;
 
-   static String PAGE_FOOTER = "</body></html>";
+	static String PAGE_HEADER = "<html><head /><body>";
+	static String PAGE_FOOTER = "</body></html>";
 
 	@Inject
 	ActiveQueryManager _activeQueryManager;
@@ -65,41 +60,29 @@ public class AQMonitorServlet extends HttpServlet {
 	private StringBuffer _txnRatioReport=new StringBuffer();
 	private StringBuffer _slaWarningsReport=new StringBuffer();
 	
-	private boolean _initialized=false;
-	
-	@PostConstruct
 	public void init() {
-java.util.logging.Logger.getLogger(AQMonitorServlet.class.getName()).log(Level.SEVERE, "INIT CALLED", new Throwable("INIT CALLED"));
-		// Appears that init is being called twice????
-		if (!_initialized) {
+
+		_startedTxns = _activeQueryManager.getActiveQuery("PurchasingStarted");
+		_completedTxns = _activeQueryManager.getActiveQuery("PurchasingSuccessful");
+		_failedTxns = _activeQueryManager.getActiveQuery("PurchasingUnsuccessful");
+		_txnRatioListener = new TxnRatioNotifier();
+		_startedTxns.addActiveListener(_txnRatioListener);
+		_completedTxns.addActiveListener(_txnRatioListener);
+		_failedTxns.addActiveListener(_txnRatioListener);
+
+		_purchasingResponseTime = _activeQueryManager.getActiveQuery("PurchasingResponseTime");
+		_purchasingResponseTimeListener = new ResponseTimeNotifier();
+		_purchasingResponseTime.addActiveListener(_purchasingResponseTimeListener);
 		
-			_startedTxns = _activeQueryManager.getActiveQuery("PurchasingStarted");
-			_completedTxns = _activeQueryManager.getActiveQuery("PurchasingSuccessful");
-			_failedTxns = _activeQueryManager.getActiveQuery("PurchasingUnsuccessful");
-			_txnRatioListener = new TxnRatioNotifier();
-			_startedTxns.addActiveListener(_txnRatioListener);
-			_completedTxns.addActiveListener(_txnRatioListener);
-			_failedTxns.addActiveListener(_txnRatioListener);
-
-			_purchasingResponseTime = _activeQueryManager.getActiveQuery("PurchasingResponseTime");
-			_purchasingResponseTimeListener = new ResponseTimeNotifier();
-			_purchasingResponseTime.addActiveListener(_purchasingResponseTimeListener);
-			
-			_slaWarnings = _activeQueryManager.createActiveQuery(_purchasingResponseTime,
-								new Predicate<ActivityAnalysis>() {
-				public boolean evaluate(ActivityAnalysis value) {
-					long responseTime=(Long)value.getProperty("responseTime").getValue();
-					return responseTime > 9000;
-				}
-			});
-			_slaWarningsListener = new SLAWarningsNotifier();
-			_slaWarnings.addActiveListener(_slaWarningsListener);
-		}
-	}
-
-	@PreDestroy
-	public void close() {
-		_initialized = false;
+		_slaWarnings = _activeQueryManager.createActiveQuery(_purchasingResponseTime,
+							new Predicate<ActivityAnalysis>() {
+			public boolean evaluate(ActivityAnalysis value) {
+				long responseTime=(Long)value.getProperty("responseTime").getValue();
+				return responseTime > 9000;
+			}
+		});
+		_slaWarningsListener = new SLAWarningsNotifier();
+		_slaWarnings.addActiveListener(_slaWarningsListener);
 	}
 
 	@Override

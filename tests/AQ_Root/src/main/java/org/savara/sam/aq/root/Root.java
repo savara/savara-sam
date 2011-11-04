@@ -54,9 +54,6 @@ public class Root extends JEEActiveQueryManager<ActivitySummary,ActivitySummary>
 	@Resource(mappedName = "java:/topic/aq/Notifications")
 	Destination _notificationTopic;
 	
-	//@Inject
-	//ActiveQueryManager _activeQueryManager;
-	
 	@Resource(mappedName="java:jboss/infinispan/sam")
 	private org.infinispan.manager.CacheContainer _container;
 	
