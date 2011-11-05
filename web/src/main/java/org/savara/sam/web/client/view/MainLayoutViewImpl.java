@@ -11,6 +11,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.visualization.client.DataTable;
 import com.google.gwt.visualization.client.VisualizationUtils;
 import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
+import com.google.gwt.visualization.client.visualizations.corechart.LineChart;
 import com.google.gwt.visualization.client.visualizations.corechart.Options;
 import com.google.gwt.visualization.client.visualizations.corechart.PieChart;
 import com.google.inject.Inject;
@@ -22,6 +23,7 @@ import com.smartgwt.client.types.LayoutPolicy;
 import com.smartgwt.client.types.Overflow;
 import com.smartgwt.client.types.VerticalAlignment;
 import com.smartgwt.client.types.VisibilityMode;
+import com.smartgwt.client.widgets.Canvas;
 import com.smartgwt.client.widgets.HTMLFlow;
 import com.smartgwt.client.widgets.HeaderControl;
 import com.smartgwt.client.widgets.Label;
@@ -44,13 +46,33 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 	private VLayout panel;
 	
 	private Statistic[] data;
-	
-	private VLayout txnRatioPanel = new VLayout();
-	
+		
 	private PortalLayout portal;
+	
+	private Portlet txnRatio;
+	
+	private VLayout txnRatioPanel;
 	
 	@Inject
 	public MainLayoutViewImpl() {
+		
+        Runnable onloadCallback = new Runnable() {
+			public void run() {
+				PieChart pc = createTxnRatioChart(data);
+				pc.setVisible(true);
+				initializeWindow();
+				txnRatioPanel = new VLayout();
+				txnRatioPanel.setMargin(25);
+				txnRatio.addChild(txnRatioPanel);
+				
+				txnRatioPanel.addChild(pc);
+			}        	
+        };
+                
+        VisualizationUtils.loadVisualizationApi(onloadCallback, PieChart.PACKAGE, LineChart.PACKAGE);
+	}
+
+	private void initializeWindow() {
 		panel = new VLayout();
 		panel.setWidth("100%");
 		panel.setAlign(Alignment.CENTER);
@@ -70,7 +92,7 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 		main.setMargin(10);
 		body.addMember(main);
 		
-		final int portalColumn = 3;
+		final int portalColumn = 2;
 		portal = new PortalLayout(portalColumn);
 		portal.setWidth100();
 		portal.setHeight100();
@@ -83,22 +105,11 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 		
         main.addMember(portal);
         
-        Portlet txnRatio = createPortlet("Txn Ratio");       
+        txnRatio = createPortlet("Txn Ratio");       
         portal.addPortlet(txnRatio, 0, 0);
-        txnRatio.addChild(txnRatioPanel);
-        
-        
-        Runnable onloadCallback = new Runnable() {
-			public void run() {
-				PieChart pc = createTxnRatioChart(data);
-				panel.addChild(pc);
-			}        	
-        };
-                
-        VisualizationUtils.loadVisualizationApi(onloadCallback, PieChart.PACKAGE);
         
         // create portlets...  
-        for (int i = 1; i < 6; i++) {  
+        for (int i = 1; i < 4; i++) {  
             Portlet portlet = createPortlet("AQ Chart");
         	
             Label label = new Label();  
@@ -127,11 +138,11 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 		}
 		
 		Options options = Options.create();
-		options.setWidth(120);
-		options.setHeight(100);
-		options.setTitle("Txn Ratio");
-
+		options.setWidth(450);
+		options.setHeight(250);
+		
 		PieChart pc = new PieChart(dt, options);
+		
 		return pc;
 	}
 	
@@ -147,7 +158,7 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
         portlet.setAnimateMinimize(true);
         
         
-        portlet.setWidth(300);
+        portlet.setWidth(500);
         portlet.setHeight(300);
         portlet.setCanDragResize(false);
         
@@ -187,7 +198,6 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 		dashboard.addItem(flow);
 		
 		linkStack.addSection(dashboard);
-		linkStack.draw();
 		
 		body.addMember(linkStack);
 	}
