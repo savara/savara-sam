@@ -3,6 +3,7 @@
  */
 package org.savara.sam.web.shared;
 
+import org.savara.sam.web.shared.dto.ResponseTime;
 import org.savara.sam.web.shared.dto.Statistic;
 
 import com.google.gwt.user.client.rpc.RemoteService;
@@ -16,4 +17,7 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 public interface AQMonitorService extends RemoteService{
 	
 	public Statistic[] getStatistics();
+	
+	public ResponseTime[] getResponseTimes();
+	
 }
