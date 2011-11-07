@@ -51,6 +51,8 @@
 
 	<properties>
 		<sam.version>1.0.0-SNAPSHOT</sam.version>
+		<savara.version>2.0.0-SNAPSHOT</savara.version>
+		<scribble.version>2.0.0-SNAPSHOT</scribble.version>
 		<protobuf.version>2.4.0a</protobuf.version>
 		<junit.version>4.4</junit.version>
 	</properties>

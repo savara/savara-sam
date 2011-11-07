@@ -336,6 +336,9 @@
 	                <jms-queue name="PurchasingResponseTime">
 	                    <entry name="queue/aq/PurchasingResponseTime"/>
 	                </jms-queue>
+	                <jms-queue name="PurchasingConversation">
+	                    <entry name="queue/aq/PurchasingConversation"/>
+	                </jms-queue>
 
 	                <jms-topic name="Notifications">
 	                    <entry name="topic/aq/Notifications"/>

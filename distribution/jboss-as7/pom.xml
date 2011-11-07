@@ -43,11 +43,6 @@
             <artifactId>org.savara.sam.aq</artifactId>
 	    <version>${sam.version}</version>
         </dependency>
-         <dependency>
-            <groupId>com.google.protobuf</groupId>
-            <artifactId>protobuf-java</artifactId>
-	    <version>${protobuf.version}</version>
-        </dependency>
         <dependency>
             <groupId>org.savara.sam.integration</groupId>
             <artifactId>activity-monitor-server</artifactId>
@@ -57,6 +52,76 @@
             <groupId>org.savara.sam.integration</groupId>
             <artifactId>active-query-server</artifactId>
 	    <version>${sam.version}</version>
+        </dependency>
+
+	<!-- Savara core module dependencies -->
+        <dependency>
+            <groupId>org.scribble.bundles</groupId>
+            <artifactId>org.scribble.common</artifactId>
+	    <version>${scribble.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.scribble.bundles</groupId>
+            <artifactId>org.scribble.protocol</artifactId>
+	    <version>${scribble.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.scribble.bundles</groupId>
+            <artifactId>org.scribble.protocol.parser</artifactId>
+	    <version>${scribble.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.scribble.bundles</groupId>
+            <artifactId>org.scribble.protocol.projection</artifactId>
+	    <version>${scribble.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.scribble.bundles</groupId>
+            <artifactId>org.scribble.protocol.export.monitor</artifactId>
+	    <version>${scribble.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.scribble.bundles</groupId>
+            <artifactId>org.scribble.protocol.monitor</artifactId>
+	    <version>${scribble.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.savara.bundles</groupId>
+            <artifactId>org.savara.common</artifactId>
+	    <version>${savara.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.savara.bundles</groupId>
+            <artifactId>org.savara.contract</artifactId>
+	    <version>${savara.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.savara.bundles</groupId>
+            <artifactId>org.savara.monitor</artifactId>
+	    <version>${savara.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.savara.bundles</groupId>
+            <artifactId>org.savara.pi4soa.cdm</artifactId>
+	    <version>${savara.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.savara.bundles</groupId>
+            <artifactId>org.savara.protocol</artifactId>
+	    <version>${savara.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.savara.bundles</groupId>
+            <artifactId>org.savara.wsdl</artifactId>
+	    <version>${savara.version}</version>
+        </dependency>
+
+
+	<!-- Google module dependencies -->
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+	    <version>${protobuf.version}</version>
         </dependency>
 
 	<!-- Test deployments -->
@@ -88,6 +153,11 @@
         <dependency>
             <groupId>org.savara.sam.tests</groupId>
             <artifactId>AQ_PurchasingResponseTime</artifactId>
+	    <version>${sam.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.savara.sam.tests</groupId>
+            <artifactId>AQ_PurchasingConversation</artifactId>
 	    <version>${sam.version}</version>
         </dependency>
         <dependency>

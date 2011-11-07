@@ -61,6 +61,8 @@ public class AQMonitorServlet extends HttpServlet {
 	private StringBuffer _slaWarningsReport=new StringBuffer();
 	
 	public void init() {
+		// Alternative means of retrieving the active query manager, if injection cannot be used
+		//_activeQueryManager = org.savara.sam.aq.server.ActiveQueryServer.getInstance();
 
 		_startedTxns = _activeQueryManager.getActiveQuery("PurchasingStarted");
 		_completedTxns = _activeQueryManager.getActiveQuery("PurchasingSuccessful");

@@ -23,6 +23,7 @@ import javax.annotation.Resource;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Session;
+import javax.naming.InitialContext;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -45,8 +46,34 @@ public class ActiveQueryServer implements ActiveQueryManager {
 	private Connection _connection=null;
 	private Session _session=null;
 	private org.infinispan.Cache<String, ActiveQuery<?>> _cache;
+	
+	private static ActiveQueryServer _instance=null;
 	 
-	public ActiveQueryServer() {
+	protected ActiveQueryServer() {
+		_instance = this;
+	}
+	
+	protected ActiveQueryServer(ConnectionFactory cf, org.infinispan.manager.CacheContainer cc) {
+		_connectionFactory = cf;
+		_container = cc;
+		init();
+	}
+	
+	public static synchronized ActiveQueryServer getInstance() {
+		if (_instance == null) {
+			try {
+				InitialContext context=new InitialContext();
+				ConnectionFactory cf=(ConnectionFactory)context.lookup("java:/JmsXA");
+				org.infinispan.manager.CacheContainer cc=(org.infinispan.manager.CacheContainer)
+								context.lookup("java:jboss/infinispan/sam");
+				
+				_instance = new ActiveQueryServer(cf, cc);
+			} catch(Exception e) {
+				LOG.log(Level.SEVERE, "Failed to setup Active Query Server", e);
+			}
+		}
+		
+		return(_instance);
 	}
 
 	/**

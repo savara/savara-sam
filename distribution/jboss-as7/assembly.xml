@@ -33,6 +33,11 @@
             <filtered>true</filtered>
         </file>
         <file>
+            <source>src/main/resources/modules/savara/core/module.xml</source>
+            <outputDirectory>/modules/org/savara/main</outputDirectory>
+            <filtered>true</filtered>
+        </file>
+        <file>
             <source>src/main/resources/modules/google/protobuf/module.xml</source>
             <outputDirectory>/modules/com/google/protobuf/main</outputDirectory>
             <filtered>true</filtered>
@@ -79,6 +84,19 @@
             <outputDirectory>/modules/org/savara/sam/main</outputDirectory>
             <outputFileNameMapping>${artifact.artifactId}-${sam.version}.${artifact.extension}</outputFileNameMapping>
         </dependencySet>
+
+	<!-- Savara core -->
+        <dependencySet>
+            <useTransitiveDependencies>false</useTransitiveDependencies>
+            <includes>
+                <include>org.scribble.bundles:*</include>
+                <include>org.savara.bundles:*</include>
+            </includes>
+            <outputDirectory>/modules/org/savara/main</outputDirectory>
+            <outputFileNameMapping>${artifact.artifactId}-${savara.version}.${artifact.extension}</outputFileNameMapping>
+        </dependencySet>
+
+	<!-- Google protobuf -->
         <dependencySet>
             <useTransitiveDependencies>false</useTransitiveDependencies>
             <includes>
@@ -153,6 +171,14 @@
             <useTransitiveDependencies>false</useTransitiveDependencies>
             <includes>
                 <include>org.savara.sam.tests:AQ_PurchasingResponseTime</include>
+            </includes>
+            <outputDirectory>/standalone/deployments</outputDirectory>
+            <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
+        </dependencySet>
+        <dependencySet>
+            <useTransitiveDependencies>false</useTransitiveDependencies>
+            <includes>
+                <include>org.savara.sam.tests:AQ_PurchasingConversation</include>
             </includes>
             <outputDirectory>/standalone/deployments</outputDirectory>
             <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
