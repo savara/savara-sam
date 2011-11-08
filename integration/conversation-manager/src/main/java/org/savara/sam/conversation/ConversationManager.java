@@ -15,33 +15,20 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.savara.sam.aq.purchasingconversation;
+package org.savara.sam.conversation;
 
-import java.io.Serializable;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.annotation.Resource;
-import javax.ejb.ActivationConfigProperty;
-import javax.ejb.MessageDriven;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.ejb.TransactionManagement;
-import javax.ejb.TransactionManagementType;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.jms.MessageListener;
 
-import org.infinispan.Cache;
-import org.savara.common.config.Configuration;
 import org.savara.monitor.ConversationId;
 import org.savara.monitor.ConversationResolver;
 import org.savara.monitor.Message;
 import org.savara.monitor.MonitorResult;
-import org.savara.monitor.SessionStore;
 import org.savara.protocol.ProtocolCriteria;
 import org.savara.protocol.ProtocolCriteria.Direction;
 import org.savara.protocol.ProtocolId;
@@ -57,46 +44,31 @@ import org.scribble.protocol.model.ProtocolModel;
 import org.scribble.protocol.model.Role;
 import org.scribble.protocol.monitor.model.Description;
 
-@MessageDriven(name = "PurchasingConversation", messageListenerInterface = MessageListener.class,
-               activationConfig =
-                     {
-                        @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
-                        @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/aq/PurchasingConversation")
-                     })
-@TransactionManagement(value= TransactionManagementType.CONTAINER)
-@TransactionAttribute(value= TransactionAttributeType.REQUIRED)
-public class PurchasingConversation extends JEEActiveQueryManager<ActivitySummary,ActivitySummary> implements MessageListener {
+public class ConversationManager<S,T> extends JEEActiveQueryManager<S,T> implements MessageListener {
 	
-	private static final Logger LOG=Logger.getLogger(PurchasingConversation.class.getName());
-	
-	private static final String ACTIVE_QUERY_NAME = "PurchasingConversation";
-	
-	private static final String MODEL="PurchaseGoods.cdm";
-
-	@Resource(mappedName = "java:/JmsXA")
-	ConnectionFactory _connectionFactory;
-	
-	@Resource(mappedName = "java:/topic/aq/Notifications")
-	Destination _notificationTopic;
-
-	@Resource(mappedName="java:jboss/infinispan/sam")
-	private org.infinispan.manager.CacheContainer _container;
+	private static final Logger LOG=Logger.getLogger(ConversationManager.class.getName());
 	
 	private org.savara.monitor.Monitor _monitor=null;
 	private org.infinispan.Cache<String,Activity> _activities=null;
+	private org.infinispan.manager.CacheContainer _container=null;
 	
-	public PurchasingConversation() {
-		super(ACTIVE_QUERY_NAME, null);
+	public ConversationManager(String conversationName) {
+		super(conversationName, null);
 	}
 	
-	@PostConstruct
-	public void init() {
-		super.init(_connectionFactory, _container, _notificationTopic);
+	public void init(String model, ConnectionFactory connectionFactory,
+				org.infinispan.manager.CacheContainer container,
+							Destination... destinations) {
+		super.init(connectionFactory, container, destinations);
 		
-		java.net.URL url=getClass().getResource("/"+MODEL);
+		_container = container;
+		
+		java.net.URL url=Thread.currentThread().getContextClassLoader().getResource("/"+model);
+		
+		//java.net.URL url=getClass().getResource("/"+MODEL);
 
 		if (LOG.isLoggable(Level.FINE)) {
-			LOG.fine("Loading model '"+MODEL+"' from URL: "+url);		
+			LOG.fine("Loading model '"+model+"' from URL: "+url);		
 		}
 		
 		try {
@@ -140,100 +112,6 @@ System.out.println("GPB: ACTIVITY="+act+" RESULT="+result);
 		return(activity);
 	}
 		
-	@PreDestroy
-	public void close() {
-		super.close();
-	}
-	
-	public static class CachedSessionStore implements SessionStore {
-
-		private Cache<ProtocolConversationKey,Serializable> _cache=null;
-	
-		public CachedSessionStore(org.infinispan.manager.CacheContainer cc) {
-			_cache = cc.getCache("conversations");
-		}
-		
-		public Serializable create(ProtocolId pid, ConversationId cid,
-								Serializable value) {
-			java.io.Serializable ret=_cache.put(new ProtocolConversationKey(pid, cid), value);
-			
-			if (LOG.isLoggable(Level.FINEST)) {
-				LOG.finest("Create session for pid="+pid+" cid="+cid+" value="+value);			
-			}
-			
-			return (ret);
-		}
-
-		public Serializable find(ProtocolId pid, ConversationId cid) {
-			java.io.Serializable ret=_cache.get(new ProtocolConversationKey(pid, cid));
-			
-			if (LOG.isLoggable(Level.FINEST)) {
-				LOG.finest("Find session for pid="+pid+" cid="+cid+" ret="+ret);			
-			}
-			
-			return (ret);
-		}
-
-		public void remove(ProtocolId pid, ConversationId cid) {
-			if (LOG.isLoggable(Level.FINEST)) {
-				LOG.finest("Remove session for pid="+pid+" cid="+cid);			
-			}
-
-			_cache.remove(new ProtocolConversationKey(pid, cid));
-		}
-
-		public void setConfiguration(Configuration config) {
-		}
-
-		public void update(ProtocolId pid, ConversationId cid,
-						Serializable value) {
-			if (LOG.isLoggable(Level.FINEST)) {
-				LOG.finest("Update session for pid="+pid+" cid="+cid+" value="+value);			
-			}
-			
-			_cache.replace(new ProtocolConversationKey(pid, cid), value);
-		}
-		
-		public void close() {
-		}
-
-		public class ProtocolConversationKey implements java.io.Serializable {
-
-			private static final long serialVersionUID = 3223220549261325929L;
-			
-			private ProtocolId _protocolId=null;
-			private ConversationId _conversationId=null;
-			
-			public ProtocolConversationKey(ProtocolId pid, ConversationId cid) {
-				_protocolId = pid;
-				_conversationId = cid;
-			}
-			
-			public int hashCode() {
-				return (_protocolId.hashCode());
-			}
-			
-			public boolean equals(Object obj) {
-				boolean ret=false;
-				
-				if (obj instanceof ProtocolConversationKey) {
-					ProtocolConversationKey pck=(ProtocolConversationKey)obj;
-					
-					if (pck._protocolId.equals(_protocolId) &&
-							pck._conversationId.equals(_conversationId)) {
-						ret = true;
-					}
-				}
-				
-				return(ret);
-			}
-			
-			public String toString() {
-				return("["+_protocolId+"/"+_conversationId+"]");
-			}
-		}
-	}
-	
 	public static class InJarProtocolRepository implements ProtocolRepository {
 		
 		private ProtocolModel _model=null;

@@ -17,6 +17,7 @@
 	<modules>
 		<module>activity-monitor-server</module>
 		<module>active-query-server</module>
+		<module>conversation-manager</module>
 	</modules>
 
 </project>

@@ -78,7 +78,7 @@ public class PurchasingResponseTime extends JEEActiveQueryManager<ActivitySummar
 		super.close();
 	}
 
-	protected ActivityAnalysis transform(ActivitySummary activity) {
+	protected ActivityAnalysis process(ActivitySummary activity) {
 		ActivityAnalysis ret=null;
 		
 		// Check if service interaction with correlation

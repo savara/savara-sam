@@ -130,33 +130,142 @@ public class EventGenerator {
 		return(ret);
 	}
 	
+	protected String getMessageContent(String name) {
+		String ret=null;
+		String path="messages/"+name+".xml";
+		
+		java.io.InputStream is=ClassLoader.getSystemResourceAsStream(path);
+		
+		if (is == null) {
+			is = EventGenerator.class.getResourceAsStream("/"+path);
+		}
+		
+		if (is != null) {
+			try {
+				byte[] b=new byte[is.available()];
+				is.read(b);
+				is.close();
+				
+				ret = new String(b);
+			} catch(Exception e) {
+				e.printStackTrace();
+			}
+		} else {
+			System.err.println("Failed to get message content for '"+name+"'");
+		}
+		
+		return(ret);
+	}
+	
 	protected void sendSuccessfulPurchase(String id, String principal, long delay) {
 		String correlation="buy"+id;
 
-		ComponentId cid=ComponentId.newBuilder().setComponentType("Broker").setInstanceId(id).build();
+		// Buy Request
+		ComponentId cid=ComponentId.newBuilder().setComponentType("Store").setInstanceId(id).build();
 
-		// Request
-		ServiceInvocation si=ServiceInvocation.newBuilder().setServiceType("Broker").setCorrelation(correlation).
-					setOperation("buy").setInvocationType(ServiceInvocation.InvocationType.REQUEST).build();
+		Message m=Message.newBuilder().setMessageType("{http://www.jboss.org/examples/store}BuyRequest").
+									setContent(getMessageContent("BuyRequest")).build();
+		
+		ServiceInvocation si=ServiceInvocation.newBuilder().setServiceType("{http://www.jboss.org/examples/store}Store").setCorrelation(correlation).
+					setOperation("buy").setInvocationType(ServiceInvocation.InvocationType.REQUEST).
+					setDirection(ServiceInvocation.Direction.INBOUND).addMessage(m).
+					build();
 
 		Activity activity=Activity.newBuilder().setId(cid).setTimestamp(System.currentTimeMillis()).
 					setServiceInvocation(si).setPrincipal(principal).build();
 
 		_collector.process(activity);
 		
+		// Check Credit Request
+		cid = ComponentId.newBuilder().setComponentType("Store").setInstanceId(id).build();
+
+		m = Message.newBuilder().setMessageType("{http://www.jboss.org/examples/creditAgency}CreditCheckRequest").
+				setContent(getMessageContent("CreditCheckRequest")).build();
+
+		si = ServiceInvocation.newBuilder().setServiceType("{http://www.jboss.org/examples/creditAgency}CreditAgency").setCorrelation(correlation).
+				setOperation("checkCredit").setInvocationType(ServiceInvocation.InvocationType.REQUEST).
+				setDirection(ServiceInvocation.Direction.OUTBOUND).addMessage(m).
+				build();
+		
+		activity = Activity.newBuilder().setId(cid).setTimestamp(System.currentTimeMillis()).
+				setServiceInvocation(si).setPrincipal(principal).build();
+
+		_collector.process(activity);
+
 		if (delay > 0) {
 			try {
-				Thread.sleep(delay);
+				Thread.sleep(delay/2);
 			} catch(Exception e) {
 				e.printStackTrace();
 			}
 		}
 
-		cid = ComponentId.newBuilder().setComponentType("Broker").setInstanceId(id).build();
+		// Check Credit Response
+		cid = ComponentId.newBuilder().setComponentType("Store").setInstanceId(id).build();
 
-		// Normal response
-		si = ServiceInvocation.newBuilder().setServiceType("Broker").setCorrelation(correlation).
-				setOperation("buy").setInvocationType(ServiceInvocation.InvocationType.RESPONSE).build();
+		m = Message.newBuilder().setMessageType("{http://www.jboss.org/examples/creditAgency}CreditRating").
+				setContent(getMessageContent("CreditRating1")).build();
+
+		si = ServiceInvocation.newBuilder().setServiceType("{http://www.jboss.org/examples/creditAgency}CreditAgency").setCorrelation(correlation).
+				setOperation("checkCredit").setInvocationType(ServiceInvocation.InvocationType.RESPONSE).
+				setDirection(ServiceInvocation.Direction.INBOUND).addMessage(m).
+				build();
+		
+		activity = Activity.newBuilder().setId(cid).setTimestamp(System.currentTimeMillis()).
+				setServiceInvocation(si).setPrincipal(principal).build();
+
+		_collector.process(activity);
+
+		// Logistics Deliver Request
+		cid = ComponentId.newBuilder().setComponentType("Store").setInstanceId(id).build();
+
+		m = Message.newBuilder().setMessageType("{http://www.jboss.org/examples/logistics}DeliveryRequest").
+				setContent(getMessageContent("DeliveryRequest")).build();
+
+		si = ServiceInvocation.newBuilder().setServiceType("{http://www.jboss.org/examples/logistics}Logistics").setCorrelation(correlation).
+				setOperation("deliver").setInvocationType(ServiceInvocation.InvocationType.REQUEST).
+				setDirection(ServiceInvocation.Direction.OUTBOUND).addMessage(m).
+				build();
+		
+		activity = Activity.newBuilder().setId(cid).setTimestamp(System.currentTimeMillis()).
+				setServiceInvocation(si).setPrincipal(principal).build();
+
+		_collector.process(activity);
+
+		if (delay > 0) {
+			try {
+				Thread.sleep(delay/2);
+			} catch(Exception e) {
+				e.printStackTrace();
+			}
+		}
+
+		// Logistics Deliver Response
+		cid = ComponentId.newBuilder().setComponentType("Store").setInstanceId(id).build();
+
+		m = Message.newBuilder().setMessageType("{http://www.jboss.org/examples/logistics}DeliveryConfirmed").
+				setContent(getMessageContent("DeliveryConfirmed")).build();
+
+		si = ServiceInvocation.newBuilder().setServiceType("{http://www.jboss.org/examples/logistics}Logistics").setCorrelation(correlation).
+				setOperation("deliver").setInvocationType(ServiceInvocation.InvocationType.RESPONSE).
+				setDirection(ServiceInvocation.Direction.INBOUND).addMessage(m).
+				build();
+		
+		activity = Activity.newBuilder().setId(cid).setTimestamp(System.currentTimeMillis()).
+				setServiceInvocation(si).setPrincipal(principal).build();
+
+		_collector.process(activity);
+
+		// Buy Response
+		cid = ComponentId.newBuilder().setComponentType("Store").setInstanceId(id).build();
+
+		m = Message.newBuilder().setMessageType("{http://www.jboss.org/examples/store}BuyConfirmed").
+				setContent(getMessageContent("BuyConfirmed")).build();
+
+		si = ServiceInvocation.newBuilder().setServiceType("{http://www.jboss.org/examples/store}Store").setCorrelation(correlation).
+				setOperation("buy").setInvocationType(ServiceInvocation.InvocationType.RESPONSE).
+				setDirection(ServiceInvocation.Direction.OUTBOUND).addMessage(m).
+				build();
 
 		activity = Activity.newBuilder().setId(cid).setTimestamp(System.currentTimeMillis()).
 				setServiceInvocation(si).setPrincipal(principal).build();
@@ -167,10 +276,10 @@ public class EventGenerator {
 	protected void sendUnsuccessfulPurchase(String id, String principal, long delay) {
 		String correlation="buy"+id;
 
-		ComponentId cid=ComponentId.newBuilder().setComponentType("Broker").setInstanceId(id).build();
+		ComponentId cid=ComponentId.newBuilder().setComponentType("Store").setInstanceId(id).build();
 
 		// Request
-		ServiceInvocation si=ServiceInvocation.newBuilder().setServiceType("Broker").setCorrelation(correlation).
+		ServiceInvocation si=ServiceInvocation.newBuilder().setServiceType("Store").setCorrelation(correlation).
 					setOperation("buy").setInvocationType(ServiceInvocation.InvocationType.REQUEST).build();
 
 		Activity activity=Activity.newBuilder().setId(cid).setTimestamp(System.currentTimeMillis()).
@@ -186,10 +295,10 @@ public class EventGenerator {
 			}
 		}
 
-		cid = ComponentId.newBuilder().setComponentType("Broker").setInstanceId(id).build();
+		cid = ComponentId.newBuilder().setComponentType("Store").setInstanceId(id).build();
 
 		// Fault response
-		si = ServiceInvocation.newBuilder().setServiceType("Broker").setCorrelation(correlation).
+		si = ServiceInvocation.newBuilder().setServiceType("Store").setCorrelation(correlation).
 				setOperation("buy").setInvocationType(ServiceInvocation.InvocationType.RESPONSE).
 				setFault("BuyFailed").build();
 

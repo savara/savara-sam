@@ -62,6 +62,9 @@ public class Purchasing extends JEEActiveQueryManager<ActivitySummary,ActivitySu
 	@Resource(mappedName = "java:/queue/aq/PurchasingResponseTime")
 	Destination _purchasingResponseTime;
 	
+	@Resource(mappedName = "java:/queue/aq/PurchasingConversation")
+	Destination _purchasingConversation;
+	
 	@Resource(mappedName = "java:/topic/aq/Notifications")
 	Destination _notificationTopic;
 
@@ -75,7 +78,7 @@ public class Purchasing extends JEEActiveQueryManager<ActivitySummary,ActivitySu
 	@PostConstruct
 	public void init() {
 		super.init(_connectionFactory, _container, _purchasingStarted, _purchasingSuccessful,
-				_purchasingUnsuccessful, _purchasingResponseTime, _notificationTopic);
+				_purchasingUnsuccessful, _purchasingResponseTime, _purchasingConversation, _notificationTopic);
 	}
 
 	@PreDestroy
@@ -95,9 +98,9 @@ public class Purchasing extends JEEActiveQueryManager<ActivitySummary,ActivitySu
 		private static final java.util.List<String> SERVICE_TYPES=new java.util.Vector<String>();
 		
 		static {
-			SERVICE_TYPES.add("Broker");
-			SERVICE_TYPES.add("CreditAgency");
-			SERVICE_TYPES.add("Logistics");
+			SERVICE_TYPES.add("{http://www.jboss.org/examples/store}Store");
+			SERVICE_TYPES.add("{http://www.jboss.org/examples/creditAgency}CreditAgency");
+			SERVICE_TYPES.add("{http://www.jboss.org/examples/logistics}Logistics");
 		}
 
 		public PurchasingPredicate() {

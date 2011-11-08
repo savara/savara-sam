@@ -143,7 +143,7 @@ public class JEEActiveQueryManager<S,T> implements MessageListener {
 	}
 	
 	@SuppressWarnings("unchecked")
-	protected T transform(S sourceActivity) {
+	protected T process(S sourceActivity) {
 		return((T)sourceActivity);
 	}
 	
@@ -197,7 +197,7 @@ public class JEEActiveQueryManager<S,T> implements MessageListener {
 				
 				for (S sourceActivity : activities) {
 					
-					T activity=transform(sourceActivity);
+					T activity=process(sourceActivity);
 					
 					if (activity != null) {
 						if (aq.add(activity)) {

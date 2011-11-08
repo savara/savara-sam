@@ -89,11 +89,43 @@
         <dependencySet>
             <useTransitiveDependencies>false</useTransitiveDependencies>
             <includes>
-                <include>org.scribble.bundles:*</include>
                 <include>org.savara.bundles:*</include>
             </includes>
             <outputDirectory>/modules/org/savara/main</outputDirectory>
             <outputFileNameMapping>${artifact.artifactId}-${savara.version}.${artifact.extension}</outputFileNameMapping>
+        </dependencySet>
+        <dependencySet>
+            <useTransitiveDependencies>false</useTransitiveDependencies>
+            <includes>
+                <include>org.scribble.bundles:*</include>
+            </includes>
+            <outputDirectory>/modules/org/savara/main</outputDirectory>
+            <outputFileNameMapping>${artifact.artifactId}-${scribble.version}.${artifact.extension}</outputFileNameMapping>
+        </dependencySet>
+        <dependencySet>
+            <useTransitiveDependencies>false</useTransitiveDependencies>
+            <includes>
+                <include>org.pi4soa:*</include>
+            </includes>
+            <outputDirectory>/modules/org/savara/main</outputDirectory>
+            <outputFileNameMapping>${artifact.artifactId}-${pi4soa.version}.${artifact.extension}</outputFileNameMapping>
+        </dependencySet>
+        <dependencySet>
+            <useTransitiveDependencies>false</useTransitiveDependencies>
+            <includes>
+		<include>org.jboss.savara.dependencies.eclipse:emf-ecore</include>
+		<include>org.jboss.savara.dependencies.eclipse:emf-ecore-xmi</include>
+            </includes>
+            <outputDirectory>/modules/org/savara/main</outputDirectory>
+            <outputFileNameMapping>${artifact.artifactId}-${emfecore.version}.${artifact.extension}</outputFileNameMapping>
+        </dependencySet>
+        <dependencySet>
+            <useTransitiveDependencies>false</useTransitiveDependencies>
+            <includes>
+		<include>org.jboss.savara.dependencies.eclipse:emf-common</include>
+            </includes>
+            <outputDirectory>/modules/org/savara/main</outputDirectory>
+            <outputFileNameMapping>${artifact.artifactId}-${emfcommon.version}.${artifact.extension}</outputFileNameMapping>
         </dependencySet>
 
 	<!-- Google protobuf -->

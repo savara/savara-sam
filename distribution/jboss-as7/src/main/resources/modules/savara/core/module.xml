@@ -22,12 +22,30 @@
   -->
 <module xmlns="urn:jboss:module:1.0" name="org.savara">
     <resources>
-<!--
-        <resource-root path="org.savara.sam.activity-1.0.0-SNAPSHOT.jar"/>
--->
-        <!-- Insert resources here -->
+        <resource-root path="org.savara.common-2.0.0-SNAPSHOT.jar"/>
+        <resource-root path="org.savara.contract-2.0.0-SNAPSHOT.jar"/>
+        <resource-root path="org.savara.monitor-2.0.0-SNAPSHOT.jar"/>
+        <resource-root path="org.savara.pi4soa.cdm-2.0.0-SNAPSHOT.jar"/>
+        <resource-root path="org.savara.protocol-2.0.0-SNAPSHOT.jar"/>
+        <resource-root path="org.savara.wsdl-2.0.0-SNAPSHOT.jar"/>
+
+        <resource-root path="org.scribble.common-2.0.0-SNAPSHOT.jar"/>
+        <resource-root path="org.scribble.protocol.export.monitor-2.0.0-SNAPSHOT.jar"/>
+        <resource-root path="org.scribble.protocol.monitor-2.0.0-SNAPSHOT.jar"/>
+        <resource-root path="org.scribble.protocol.parser-2.0.0-SNAPSHOT.jar"/>
+        <resource-root path="org.scribble.protocol.projection-2.0.0-SNAPSHOT.jar"/>
+        <resource-root path="org.scribble.protocol-2.0.0-SNAPSHOT.jar"/>
+
+        <resource-root path="emf-common-2.3.0.jar"/>
+        <resource-root path="emf-ecore-2.3.1.jar"/>
+        <resource-root path="emf-ecore-xmi-2.3.1.jar"/>
+        <resource-root path="org.pi4soa.common-3.1.1-SNAPSHOT.jar"/>
+        <resource-root path="org.pi4soa.cdl-3.1.1-SNAPSHOT.jar"/>
+        <resource-root path="org.pi4soa.service-3.1.1-SNAPSHOT.jar"/>
     </resources>
 
     <dependencies>
+	<module name="javax.api" />
+	<module name="javax.xml.bind.api" />
     </dependencies>
 </module>

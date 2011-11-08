@@ -32,6 +32,12 @@
         <version>1.0.0-SNAPSHOT</version>
      </parent>
 
+	<properties>
+		<pi4soa.version>3.1.1-SNAPSHOT</pi4soa.version>
+		<emfcommon.version>2.3.0</emfcommon.version>
+		<emfecore.version>2.3.1</emfecore.version>
+	</properties>
+
     <dependencies>
         <dependency>
             <groupId>org.savara.sam.modules</groupId>
@@ -116,6 +122,36 @@
 	    <version>${savara.version}</version>
         </dependency>
 
+		<dependency>
+			<groupId>org.pi4soa</groupId>
+			<artifactId>org.pi4soa.common</artifactId>
+			<version>${pi4soa.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.pi4soa</groupId>
+			<artifactId>org.pi4soa.cdl</artifactId>
+			<version>${pi4soa.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.pi4soa</groupId>
+			<artifactId>org.pi4soa.service</artifactId>
+			<version>${pi4soa.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.jboss.savara.dependencies.eclipse</groupId>
+			<artifactId>emf-common</artifactId>
+			<version>${emfcommon.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.jboss.savara.dependencies.eclipse</groupId>
+			<artifactId>emf-ecore</artifactId>
+			<version>${emfecore.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.jboss.savara.dependencies.eclipse</groupId>
+			<artifactId>emf-ecore-xmi</artifactId>
+			<version>${emfecore.version}</version>
+		</dependency>
 
 	<!-- Google module dependencies -->
         <dependency>

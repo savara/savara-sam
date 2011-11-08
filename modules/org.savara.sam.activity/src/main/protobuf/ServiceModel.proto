@@ -22,7 +22,13 @@ message ServiceInvocation {
   }
   required InvocationType invocationType = 5 [default = REQUEST];
   
+  enum Direction {
+    INBOUND = 0;
+    OUTBOUND = 1;
+  }
+  required Direction direction = 6 [default = INBOUND];
+  
   // Set if service invocation is associated with a request/response pair,
   // to allow the request and response event details to be matched
-  optional string correlation = 6;
+  optional string correlation = 7;
 }
