@@ -138,21 +138,11 @@
             <outputFileNameMapping>${artifact.artifactId}-${protobuf.version}.${artifact.extension}</outputFileNameMapping>
         </dependencySet>
 
-	<!-- Activity Monitoring Server -->
+	<!-- Integration modules -->
         <dependencySet>
             <useTransitiveDependencies>false</useTransitiveDependencies>
             <includes>
-                <include>org.savara.sam.integration:activity-monitor-server</include>
-            </includes>
-            <outputDirectory>/standalone/deployments</outputDirectory>
-            <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
-        </dependencySet>
-
-	<!-- Active Query Server -->
-        <dependencySet>
-            <useTransitiveDependencies>false</useTransitiveDependencies>
-            <includes>
-                <include>org.savara.sam.integration:active-query-server</include>
+                <include>org.savara.sam.integration:*</include>
             </includes>
             <outputDirectory>/standalone/deployments</outputDirectory>
             <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
@@ -162,55 +152,7 @@
         <dependencySet>
             <useTransitiveDependencies>false</useTransitiveDependencies>
             <includes>
-                <include>org.savara.sam.tests:AQ_Root</include>
-            </includes>
-            <outputDirectory>/standalone/deployments</outputDirectory>
-            <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
-        </dependencySet>
-        <dependencySet>
-            <useTransitiveDependencies>false</useTransitiveDependencies>
-            <includes>
-                <include>org.savara.sam.tests:AQ_Purchasing</include>
-            </includes>
-            <outputDirectory>/standalone/deployments</outputDirectory>
-            <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
-        </dependencySet>
-        <dependencySet>
-            <useTransitiveDependencies>false</useTransitiveDependencies>
-            <includes>
-                <include>org.savara.sam.tests:AQ_PurchasingStarted</include>
-            </includes>
-            <outputDirectory>/standalone/deployments</outputDirectory>
-            <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
-        </dependencySet>
-        <dependencySet>
-            <useTransitiveDependencies>false</useTransitiveDependencies>
-            <includes>
-                <include>org.savara.sam.tests:AQ_PurchasingSuccessful</include>
-            </includes>
-            <outputDirectory>/standalone/deployments</outputDirectory>
-            <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
-        </dependencySet>
-        <dependencySet>
-            <useTransitiveDependencies>false</useTransitiveDependencies>
-            <includes>
-                <include>org.savara.sam.tests:AQ_PurchasingUnsuccessful</include>
-            </includes>
-            <outputDirectory>/standalone/deployments</outputDirectory>
-            <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
-        </dependencySet>
-        <dependencySet>
-            <useTransitiveDependencies>false</useTransitiveDependencies>
-            <includes>
-                <include>org.savara.sam.tests:AQ_PurchasingResponseTime</include>
-            </includes>
-            <outputDirectory>/standalone/deployments</outputDirectory>
-            <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
-        </dependencySet>
-        <dependencySet>
-            <useTransitiveDependencies>false</useTransitiveDependencies>
-            <includes>
-                <include>org.savara.sam.tests:AQ_PurchasingConversation</include>
+                <include>org.savara.sam.tests:*</include>
             </includes>
             <outputDirectory>/standalone/deployments</outputDirectory>
             <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>

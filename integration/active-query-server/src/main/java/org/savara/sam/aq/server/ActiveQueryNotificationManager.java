@@ -85,7 +85,7 @@ public class ActiveQueryNotificationManager implements MessageListener {
 					Object val=((ObjectMessage)message).getObject();
 					
 					if (LOG.isLoggable(Level.FINEST)) {
-						LOG.info("Received Notification="+
+						LOG.finest("Received Notification="+
 									message+" for AQ="+message.getStringProperty(AQDefinitions.ACTIVE_QUERY_NAME));
 					}
 					

@@ -34,7 +34,7 @@ public class CachedSessionStore implements SessionStore {
 	private Cache<ProtocolConversationKey,Serializable> _cache=null;
 
 	public CachedSessionStore(org.infinispan.manager.CacheContainer cc) {
-		_cache = cc.getCache("conversations");
+		_cache = cc.getCache("conversationSessions");
 	}
 	
 	public Serializable create(ProtocolId pid, ConversationId cid,

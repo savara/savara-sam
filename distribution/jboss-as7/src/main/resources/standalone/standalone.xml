@@ -72,7 +72,7 @@
             </console-handler>
 
             <periodic-rotating-file-handler name="FILE">
-                <level name="DEBUG"/>
+                <level name="INFO"/>
                 <formatter>
                     <pattern-formatter pattern="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
                 </formatter>
@@ -82,7 +82,10 @@
             </periodic-rotating-file-handler>
 
             <logger category="org.savara">
-                <level name="DEBUG"/>
+                <level name="FINEST"/>
+            </logger>
+            <logger category="org.scribble">
+                <level name="FINEST"/>
             </logger>
             <logger category="com.arjuna">
                 <level name="WARN"/>
@@ -199,7 +202,11 @@
                     <eviction strategy="LRU" max-entries="10000"/>
                     <expiration max-idle="100000"/>
                 </local-cache>
-                <local-cache name="conversations">
+                <local-cache name="conversationSessions">
+                    <eviction strategy="LRU" max-entries="10000"/>
+                    <expiration max-idle="100000"/>
+                </local-cache>
+                <local-cache name="conversationDetails">
                     <eviction strategy="LRU" max-entries="10000"/>
                     <expiration max-idle="100000"/>
                 </local-cache>

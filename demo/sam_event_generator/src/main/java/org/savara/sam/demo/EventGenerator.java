@@ -130,7 +130,7 @@ public class EventGenerator {
 		return(ret);
 	}
 	
-	protected String getMessageContent(String name) {
+	protected String getMessageContent(String id, String name) {
 		String ret=null;
 		String path="messages/"+name+".xml";
 		
@@ -147,6 +147,9 @@ public class EventGenerator {
 				is.close();
 				
 				ret = new String(b);
+				
+				ret = ret.replaceAll("%CID%", id);
+				
 			} catch(Exception e) {
 				e.printStackTrace();
 			}
@@ -158,15 +161,17 @@ public class EventGenerator {
 	}
 	
 	protected void sendSuccessfulPurchase(String id, String principal, long delay) {
-		String correlation="buy"+id;
+		String buyCorrelation="buy"+id;
+		String checkCreditCorrelation="checkCredit"+id;
+		String deliverCorrelation="deliver"+id;
 
 		// Buy Request
 		ComponentId cid=ComponentId.newBuilder().setComponentType("Store").setInstanceId(id).build();
 
 		Message m=Message.newBuilder().setMessageType("{http://www.jboss.org/examples/store}BuyRequest").
-									setContent(getMessageContent("BuyRequest")).build();
+									setContent(getMessageContent(id, "BuyRequest")).build();
 		
-		ServiceInvocation si=ServiceInvocation.newBuilder().setServiceType("{http://www.jboss.org/examples/store}Store").setCorrelation(correlation).
+		ServiceInvocation si=ServiceInvocation.newBuilder().setServiceType("{http://www.jboss.org/examples/store}Store").setCorrelation(buyCorrelation).
 					setOperation("buy").setInvocationType(ServiceInvocation.InvocationType.REQUEST).
 					setDirection(ServiceInvocation.Direction.INBOUND).addMessage(m).
 					build();
@@ -180,9 +185,9 @@ public class EventGenerator {
 		cid = ComponentId.newBuilder().setComponentType("Store").setInstanceId(id).build();
 
 		m = Message.newBuilder().setMessageType("{http://www.jboss.org/examples/creditAgency}CreditCheckRequest").
-				setContent(getMessageContent("CreditCheckRequest")).build();
+				setContent(getMessageContent(id, "CreditCheckRequest")).build();
 
-		si = ServiceInvocation.newBuilder().setServiceType("{http://www.jboss.org/examples/creditAgency}CreditAgency").setCorrelation(correlation).
+		si = ServiceInvocation.newBuilder().setServiceType("{http://www.jboss.org/examples/creditAgency}CreditAgency").setCorrelation(checkCreditCorrelation).
 				setOperation("checkCredit").setInvocationType(ServiceInvocation.InvocationType.REQUEST).
 				setDirection(ServiceInvocation.Direction.OUTBOUND).addMessage(m).
 				build();
@@ -204,9 +209,9 @@ public class EventGenerator {
 		cid = ComponentId.newBuilder().setComponentType("Store").setInstanceId(id).build();
 
 		m = Message.newBuilder().setMessageType("{http://www.jboss.org/examples/creditAgency}CreditRating").
-				setContent(getMessageContent("CreditRating1")).build();
+				setContent(getMessageContent(id, "CreditRating1")).build();
 
-		si = ServiceInvocation.newBuilder().setServiceType("{http://www.jboss.org/examples/creditAgency}CreditAgency").setCorrelation(correlation).
+		si = ServiceInvocation.newBuilder().setServiceType("{http://www.jboss.org/examples/creditAgency}CreditAgency").setCorrelation(checkCreditCorrelation).
 				setOperation("checkCredit").setInvocationType(ServiceInvocation.InvocationType.RESPONSE).
 				setDirection(ServiceInvocation.Direction.INBOUND).addMessage(m).
 				build();
@@ -220,9 +225,9 @@ public class EventGenerator {
 		cid = ComponentId.newBuilder().setComponentType("Store").setInstanceId(id).build();
 
 		m = Message.newBuilder().setMessageType("{http://www.jboss.org/examples/logistics}DeliveryRequest").
-				setContent(getMessageContent("DeliveryRequest")).build();
+				setContent(getMessageContent(id, "DeliveryRequest")).build();
 
-		si = ServiceInvocation.newBuilder().setServiceType("{http://www.jboss.org/examples/logistics}Logistics").setCorrelation(correlation).
+		si = ServiceInvocation.newBuilder().setServiceType("{http://www.jboss.org/examples/logistics}Logistics").setCorrelation(deliverCorrelation).
 				setOperation("deliver").setInvocationType(ServiceInvocation.InvocationType.REQUEST).
 				setDirection(ServiceInvocation.Direction.OUTBOUND).addMessage(m).
 				build();
@@ -244,9 +249,9 @@ public class EventGenerator {
 		cid = ComponentId.newBuilder().setComponentType("Store").setInstanceId(id).build();
 
 		m = Message.newBuilder().setMessageType("{http://www.jboss.org/examples/logistics}DeliveryConfirmed").
-				setContent(getMessageContent("DeliveryConfirmed")).build();
+				setContent(getMessageContent(id, "DeliveryConfirmed")).build();
 
-		si = ServiceInvocation.newBuilder().setServiceType("{http://www.jboss.org/examples/logistics}Logistics").setCorrelation(correlation).
+		si = ServiceInvocation.newBuilder().setServiceType("{http://www.jboss.org/examples/logistics}Logistics").setCorrelation(deliverCorrelation).
 				setOperation("deliver").setInvocationType(ServiceInvocation.InvocationType.RESPONSE).
 				setDirection(ServiceInvocation.Direction.INBOUND).addMessage(m).
 				build();
@@ -260,9 +265,9 @@ public class EventGenerator {
 		cid = ComponentId.newBuilder().setComponentType("Store").setInstanceId(id).build();
 
 		m = Message.newBuilder().setMessageType("{http://www.jboss.org/examples/store}BuyConfirmed").
-				setContent(getMessageContent("BuyConfirmed")).build();
+				setContent(getMessageContent(id, "BuyConfirmed")).build();
 
-		si = ServiceInvocation.newBuilder().setServiceType("{http://www.jboss.org/examples/store}Store").setCorrelation(correlation).
+		si = ServiceInvocation.newBuilder().setServiceType("{http://www.jboss.org/examples/store}Store").setCorrelation(buyCorrelation).
 				setOperation("buy").setInvocationType(ServiceInvocation.InvocationType.RESPONSE).
 				setDirection(ServiceInvocation.Direction.OUTBOUND).addMessage(m).
 				build();

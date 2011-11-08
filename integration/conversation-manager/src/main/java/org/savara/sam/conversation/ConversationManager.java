@@ -26,13 +26,13 @@ import javax.jms.Destination;
 import javax.jms.MessageListener;
 
 import org.savara.monitor.ConversationId;
-import org.savara.monitor.ConversationResolver;
 import org.savara.monitor.Message;
 import org.savara.monitor.MonitorResult;
 import org.savara.protocol.ProtocolCriteria;
 import org.savara.protocol.ProtocolCriteria.Direction;
 import org.savara.protocol.ProtocolId;
 import org.savara.protocol.repository.ProtocolRepository;
+import org.savara.sam.activity.ActivityAnalysis;
 import org.savara.sam.activity.ActivityModel.Activity;
 import org.savara.sam.activity.ActivitySummary;
 import org.savara.sam.activity.ServiceModel;
@@ -42,15 +42,17 @@ import org.scribble.protocol.DefaultProtocolContext;
 import org.scribble.protocol.ProtocolContext;
 import org.scribble.protocol.model.ProtocolModel;
 import org.scribble.protocol.model.Role;
-import org.scribble.protocol.monitor.model.Description;
 
-public class ConversationManager<S,T> extends JEEActiveQueryManager<S,T> implements MessageListener {
+public class ConversationManager extends JEEActiveQueryManager<ActivitySummary,ActivityAnalysis> implements MessageListener {
 	
 	private static final Logger LOG=Logger.getLogger(ConversationManager.class.getName());
 	
 	private org.savara.monitor.Monitor _monitor=null;
 	private org.infinispan.Cache<String,Activity> _activities=null;
+	private org.infinispan.Cache<ConversationId,ConversationDetails> _conversationDetails=null;
 	private org.infinispan.manager.CacheContainer _container=null;
+	
+	private XPathConversationResolver _resolver=new XPathConversationResolver();
 	
 	public ConversationManager(String conversationName) {
 		super(conversationName, null);
@@ -79,6 +81,11 @@ public class ConversationManager<S,T> extends JEEActiveQueryManager<S,T> impleme
 		}
 		
 		_activities = _container.getCache("activities");
+		_conversationDetails = _container.getCache("conversationDetails");
+	}
+	
+	protected XPathConversationResolver getResolver() {
+		return(_resolver);
 	}
 	
 	protected void initMonitor(java.net.URI uri) {
@@ -86,11 +93,12 @@ public class ConversationManager<S,T> extends JEEActiveQueryManager<S,T> impleme
 		
 		_monitor = new org.savara.monitor.impl.DefaultMonitor();
 		_monitor.setProtocolRepository(pr);
-		_monitor.setConversationResolver(new XPathConversationResolver());
+		_monitor.setConversationResolver(_resolver);
 		_monitor.setSessionStore(new CachedSessionStore(_container));
 	}
 
-	protected ActivitySummary process(ActivitySummary activity) {
+	protected ActivityAnalysis process(ActivitySummary activity) {
+		ActivityAnalysis ret=null;
 		
 		// Pull full activity event with message content
 		Activity act=_activities.get(activity.getId());
@@ -103,13 +111,49 @@ public class ConversationManager<S,T> extends JEEActiveQueryManager<S,T> impleme
 		for (org.savara.sam.activity.ServiceModel.Message sm :
 						act.getServiceInvocation().getMessageList()) {
 			mesg.getTypes().add(sm.getMessageType());
+			mesg.getValues().add(sm.getContent());
 		}
 		
 		MonitorResult result=_monitor.process(null, null, mesg);
 		
-System.out.println("GPB: ACTIVITY="+act+" RESULT="+result);
+		if (LOG.isLoggable(Level.FINEST)) {
+			LOG.finest("Monitored activity="+activity+" result="+result);
+		}
 		
-		return(activity);
+		if (result != null) {
+			
+			// TODO: Could have a retry mechanism here, if the result is invalid
+
+			if (result.getConversationId() != null) {
+				ret = new ActivityAnalysis();
+				ret.addProperty("conversationId", java.lang.String.class.getName(),
+							result.getConversationId().getId());
+				
+				// Add activity summary to conversation details
+				ConversationDetails cd=_conversationDetails.get(result.getConversationId());
+				
+				if (cd == null) {
+					if (LOG.isLoggable(Level.FINEST)) {
+						LOG.finest("Creating Conversation Details for "+result.getConversationId());
+					}
+					cd = new ConversationDetails(result.getConversationId());
+					_conversationDetails.put(result.getConversationId(), cd);
+				}
+				
+				cd.addActivity(activity, result);
+				
+				if (LOG.isLoggable(Level.FINEST)) {
+					LOG.finest("Updating Conversation Details for cid="+
+								result.getConversationId()+" : added activity "+activity);
+				}
+				_conversationDetails.replace(result.getConversationId(), cd);
+				
+			} else if (result.isValid()) {
+				LOG.severe("Monitor returned valid result, but with no conversation id");
+			}
+		}
+		
+		return(ret);
 	}
 		
 	public static class InJarProtocolRepository implements ProtocolRepository {
@@ -161,17 +205,6 @@ System.out.println("GPB: ACTIVITY="+act+" RESULT="+result);
 			}
 			
 			return (ret);
-		}
-		
-	}
-	
-	public static class XPathConversationResolver implements ConversationResolver {
-
-		//private java.util.Map<String,String> _locators=new java.util.HashMap<String, String>();
-		
-		public ConversationId getConversationId(Description arg0, Message arg1) {
-System.out.println("GPB: GET CONVERSATION ID: desc="+arg0+" mesg="+arg1);			
-			return (new ConversationId("cid1"));
 		}
 		
 	}
