@@ -35,7 +35,7 @@
 			<roles>
 				<role>Developer</role>
 			</roles>
-			<timezone>+8</timezone>
+			<timezone>+10</timezone>
 		</developer>
 		<developer>
 		    <name>Gary Brown</name>
