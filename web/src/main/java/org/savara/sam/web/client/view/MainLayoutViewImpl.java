@@ -82,6 +82,7 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 				txnRatioPanel.setMargin(25);
 				txnRatio.addChild(txnRatioPanel);
 				txnRatioPanel.addChild(pc);
+				txnRatioPanel.draw();
 				
 				System.out.println("Finished the PieChart....");
 				
@@ -90,6 +91,7 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 				txnsBarPanel.setMargin(25);
 				txnsBar.addChild(txnsBarPanel);
 				txnsBarPanel.addChild(cc);
+				txnsBarPanel.draw();
 				
 				System.out.println("Finished the ColumnChart");
 				LineChart lc = createResponseTimeLineChart(rtimes);
@@ -97,6 +99,7 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 				responseTimePanel.setMargin(25);
 				responseTime.addChild(responseTimePanel);
 				responseTimePanel.addChild(lc);
+				responseTimePanel.draw();
 				
 				System.out.println("Finished the LineChart, Done....");
 			}        	
@@ -142,10 +145,10 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 
 			public void onClick(ClickEvent event) {
 				presenter.setStatisticsData();
-				System.out.println("===> finished getting data again");
-				//txnRatioPanel.clear();
+				txnRatioPanel.clear();
 				PieChart thePC = createTxnRatioChart(data);
-				System.out.println("===> Finished refreshing chart");
+				txnRatioPanel.addChild(thePC);
+				txnRatioPanel.draw();
 			}
         	
         });       
@@ -153,16 +156,20 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
         
         txnsBar = createPortlet("Txn Bar Chart", new ClickHandler(){
 			public void onClick(ClickEvent event) {
-				//txnsBarPanel.clear();
-				
+				presenter.setStatisticsData();
+				txnsBarPanel.clear();
+				txnsBarPanel.addChild(createTxnBarChart(data));
+				txnsBarPanel.draw();
 			}        	
         });
         portal.addPortlet(txnsBar, 0, 1);
         
         responseTime = createPortlet("Response Time", new ClickHandler() {
 			public void onClick(ClickEvent event) {
-				//responseTimePanel.clear();
-				
+				presenter.setResponseTimes();
+				responseTimePanel.clear();
+				responseTimePanel.addChild(createResponseTimeLineChart(rtimes));
+				responseTimePanel.draw();
 			}        	
         });
         portal.addPortlet(responseTime, 1, 0);
@@ -258,6 +265,8 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
         
         //TODO: Drag portlet can cause the corresponding image lost.
         portlet.setCanDrag(false);
+        
+        portlet.setCloseConfirmationMessage("Are you going to close the " + title + "?");
         
         return portlet;
 	}

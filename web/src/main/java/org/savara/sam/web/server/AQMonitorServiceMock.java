@@ -52,7 +52,11 @@ public class AQMonitorServiceMock extends RemoteServiceServlet implements AQMoni
 		second.setRequestTime(new Date().getTime() + 1000);
 		second.setResponseTime(Long.valueOf(990));
 		
-		ResponseTime[] result = new ResponseTime[]{first, second};
+		ResponseTime third = new ResponseTime();
+		third.setRequestTime(new Date().getTime() + 1500);
+		third.setResponseTime(Long.valueOf(790));
+		
+		ResponseTime[] result = new ResponseTime[]{first, second, third};
 		return result;
 	}
 
