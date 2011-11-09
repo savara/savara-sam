@@ -63,7 +63,7 @@ public class Root extends JEEActiveQueryManager<ActivitySummary,ActivitySummary>
 	
 	@PostConstruct
 	public void init() {
-		super.init(_connectionFactory, _container, _purchasing, _notificationTopic);
+		super.init(_connectionFactory, _container, _notificationTopic, _purchasing);
 	}
 
 	@PreDestroy

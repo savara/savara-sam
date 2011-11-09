@@ -142,9 +142,14 @@ public class ActiveQueryProxy<T> implements ActiveQuery<T> {
 		if (_listeners.size() > 0) {
 			synchronized(_listeners) {
 				for (ActiveListener<T> l : _listeners) {
+					if (LOG.isLoggable(Level.FINEST)) {
+						LOG.finest("Dispatching addition of '"+value+"' to: "+l);
+					}
 					l.valueAdded(value);						
 				}
 			}
+		} else if (LOG.isLoggable(Level.FINEST)) {
+			LOG.finest("Dispatching addition of '"+value+"' but no listeners");
 		}
 	}
 	
@@ -169,9 +174,14 @@ public class ActiveQueryProxy<T> implements ActiveQuery<T> {
 		if (_listeners.size() > 0) {
 			synchronized(_listeners) {
 				for (ActiveListener<T> l : _listeners) {
+					if (LOG.isLoggable(Level.FINEST)) {
+						LOG.finest("Dispatching removal of '"+value+"' to: "+l);
+					}
 					l.valueRemoved(value);						
 				}
 			}
+		} else if (LOG.isLoggable(Level.FINEST)) {
+			LOG.finest("Dispatching removal of '"+value+"' but no listeners");
 		}
 	}
 	

@@ -15,16 +15,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.savara.sam.aq.server;
+package org.savara.sam.aq;
 
-public class AQDefinitions {
-
-	public static final String ACTIVE_QUERY_NAME="ActiveQueryName";
-	
-	public static final String AQ_CHANGETYPE_PROPERTY="ChangeType";
-	
-	// Commands
-	public static final String INIT_COMMAND="init";
-	public static final String REFRESH_COMMAND="refresh";
-	
+public enum ActiveChangeType {
+	Add,
+	Update,
+	Remove
 }

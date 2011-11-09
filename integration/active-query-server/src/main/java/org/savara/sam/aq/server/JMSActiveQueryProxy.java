@@ -28,6 +28,8 @@ import javax.jms.Session;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.savara.sam.aq.ActiveChangeType;
 import org.savara.sam.aq.ActiveListener;
 import org.savara.sam.aq.ActiveQuery;
 import org.savara.sam.aq.ActiveQueryProxy;
@@ -82,10 +84,16 @@ public class JMSActiveQueryProxy<T> extends ActiveQueryProxy<T> {
 							@SuppressWarnings("unchecked")
 							T value=(T)((ObjectMessage)m).getObject();
 							
-							if (m.getBooleanProperty(AQDefinitions.AQ_INCLUDE_PROPERTY)) {
+							ActiveChangeType changeType=ActiveChangeType.valueOf(
+											m.getStringProperty(AQDefinitions.AQ_CHANGETYPE_PROPERTY));
+							
+							switch(changeType) {
+							case Add:
 								notifyAddition(value);
-							} else {
+								break;
+							case Remove:
 								notifyRemoval(value);
+								break;
 							}
 						} catch(Exception e) {
 							LOG.log(Level.SEVERE, "Failed to retrieve active query notification", e);

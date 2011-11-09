@@ -25,6 +25,7 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
+import org.savara.sam.aq.ActiveChangeType;
 import org.savara.sam.aq.ActiveListener;
 import org.savara.sam.aq.ActiveQuery;
 import org.savara.sam.aq.ActiveQueryProxy;
@@ -36,6 +37,10 @@ public class JEEActiveQueryProxy<T> extends ActiveQueryProxy<T> {
 	private org.infinispan.Cache<String, ActiveQuery<?>> _cache;
 	private Session _session=null;
 	private boolean _sentInitRequest=false;
+	
+	private ClassLoader _classLoader=Thread.currentThread().getContextClassLoader();
+	private java.util.concurrent.BlockingQueue<Notification> _notifications=
+				new java.util.concurrent.ArrayBlockingQueue<Notification>(100);
 
 	public JEEActiveQueryProxy(String activeQueryName, Session session, org.infinispan.Cache<String, ActiveQuery<?>> cache) {
 		super(activeQueryName, null);
@@ -46,6 +51,20 @@ public class JEEActiveQueryProxy<T> extends ActiveQueryProxy<T> {
 		if (LOG.isLoggable(Level.FINEST)) {
 			LOG.finest("Create JEE ActiveQueryProxy "+this+" for AQ "+activeQueryName);
 		}
+		
+		// Start thread to receive notifications and dispatch them
+		new Thread(new Runnable() {
+			public void run() {
+				while (true) {
+					try {
+						Notification n=_notifications.take();
+						n.apply(JEEActiveQueryProxy.this);
+					} catch(Exception e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		}).start();
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -63,7 +82,7 @@ public class JEEActiveQueryProxy<T> extends ActiveQueryProxy<T> {
 				Destination dest=_session.createQueue(getName());
 				MessageProducer mp=_session.createProducer(dest);
 				
-				TextMessage m=_session.createTextMessage("init");				
+				TextMessage m=_session.createTextMessage(AQDefinitions.INIT_COMMAND);				
 				mp.send(m);
 				
 				//mp.close();
@@ -99,6 +118,10 @@ public class JEEActiveQueryProxy<T> extends ActiveQueryProxy<T> {
 		super.notifyAddition((T)val);
 	}
 	
+	protected void notifyAddition(final byte[] val) {
+		_notifications.add(new Notification(val, ActiveChangeType.Add));
+	}
+	
 	public void removeActiveListener(ActiveListener<T> l) {
 		super.removeActiveListener(l);
 		if (numberOfActiveListeners() == 0) {
@@ -110,6 +133,10 @@ public class JEEActiveQueryProxy<T> extends ActiveQueryProxy<T> {
 	@SuppressWarnings("unchecked")
 	protected void notifyRemoval(Object val) {
 		super.notifyRemoval((T) val);
+	}
+	
+	protected void notifyRemoval(final byte[] val) {
+		_notifications.add(new Notification(val, ActiveChangeType.Remove));
 	}
 	
 	@Override
@@ -124,5 +151,80 @@ public class JEEActiveQueryProxy<T> extends ActiveQueryProxy<T> {
 	
 	protected void close() {
 		ActiveQueryNotificationManager.unregister(this);
+	}
+
+	public Object getObject(byte[] bArr){
+		try{
+			java.io.ByteArrayInputStream bais = new java.io.ByteArrayInputStream(bArr);
+			CLObjectInputStream ois = new CLObjectInputStream(bais, _classLoader);
+			return ois.readObject();
+		} catch(Exception err) {
+			err.printStackTrace();
+		}
+		return null;
+	}
+
+	protected class Notification {
+		private byte[] _value=null;
+		private ActiveChangeType _changeType=null;
+		
+		public Notification(byte[] b, ActiveChangeType changeType) {
+			_value = b;
+			_changeType = changeType;
+		}
+		
+		public void apply(JEEActiveQueryProxy<?> proxy) {
+			
+			Object value=getObject(_value);
+			
+			if (value instanceof java.util.List<?>) {
+				for (Object val : (java.util.List<?>)value) {
+					if (_changeType == ActiveChangeType.Add) {
+						proxy.notifyAddition(val);
+					} else if (_changeType == ActiveChangeType.Remove) {
+						proxy.notifyRemoval(val);
+					}
+				}
+			} else {
+				if (_changeType == ActiveChangeType.Add) {
+					proxy.notifyAddition(value);
+				} else if (_changeType == ActiveChangeType.Remove) {
+					proxy.notifyRemoval(value);
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Alternate ObjectInputStream implementation required to load the classes
+	 * being deserialized from a nominated classloader.
+	 *
+	 */
+	public static class CLObjectInputStream extends java.io.ObjectInputStream {
+
+		private ClassLoader _classLoader=null;
+		
+		public CLObjectInputStream(java.io.InputStream in, ClassLoader cl) throws java.io.IOException {
+			super(in);
+			_classLoader = cl;
+		}
+
+		@Override
+		public Class<?> resolveClass(java.io.ObjectStreamClass desc) throws java.io.IOException,
+							ClassNotFoundException {
+			try {
+				Class<?> ret=_classLoader.loadClass(desc.getName());
+
+				if (LOG.isLoggable(Level.FINEST)) {
+					LOG.finest("Loading class '"+desc.getName()+"' = "+ret);				
+				}
+				
+				return ret;
+			} catch (Exception e) {
+				LOG.severe("Failed to load class '"+desc.getName()+"': "+e);
+			}
+		
+			return super.resolveClass(desc);
+		}
 	}
 }

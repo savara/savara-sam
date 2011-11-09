@@ -23,6 +23,7 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
+import javax.jms.BytesMessage;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
@@ -30,6 +31,7 @@ import javax.jms.TextMessage;
 
 import org.jboss.ejb3.annotation.Pool;
 import org.jboss.ejb3.annotation.defaults.*;
+import org.savara.sam.aq.ActiveChangeType;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -49,7 +51,7 @@ public class ActiveQueryNotificationManager implements MessageListener {
 	private static final Logger LOG=Logger.getLogger(ActiveQueryNotificationManager.class.getName());
 	
 	private static java.util.Map<String, java.util.List<JEEActiveQueryProxy<?>>> _listeners=
-							new java.util.HashMap<String, java.util.List<JEEActiveQueryProxy<?>>>();
+			new java.util.HashMap<String, java.util.List<JEEActiveQueryProxy<?>>>();
 	
 	private static java.util.List<String> _messageIds=new java.util.Vector<String>();
 	
@@ -79,6 +81,8 @@ public class ActiveQueryNotificationManager implements MessageListener {
 
 			if (handle) {
 				String aqname=message.getStringProperty(AQDefinitions.ACTIVE_QUERY_NAME);
+				ActiveChangeType changeType=ActiveChangeType.valueOf(
+						message.getStringProperty(AQDefinitions.AQ_CHANGETYPE_PROPERTY));
 	
 				if (message instanceof ObjectMessage) {
 					
@@ -91,11 +95,23 @@ public class ActiveQueryNotificationManager implements MessageListener {
 					
 					if (val instanceof java.util.List<?>) {
 						for (Object subval : (java.util.List<?>)val) {
-							dispatch(aqname, subval, message.getBooleanProperty(AQDefinitions.AQ_INCLUDE_PROPERTY));
+							dispatch(aqname, subval, changeType);
 						}
 					} else {
-						dispatch(aqname, val, message.getBooleanProperty(AQDefinitions.AQ_INCLUDE_PROPERTY));
+						dispatch(aqname, val, changeType);
 					}
+				} else if (message instanceof BytesMessage) {
+					
+					byte[] b=new byte[(int)((BytesMessage)message).getBodyLength()];
+					((BytesMessage)message).readBytes(b);
+					
+					if (LOG.isLoggable(Level.FINEST)) {
+						LOG.finest("Received Notification="+
+									message+" for AQ="+message.getStringProperty(AQDefinitions.ACTIVE_QUERY_NAME));
+					}
+					
+					dispatch(aqname, b, changeType);
+
 				} else if (message instanceof TextMessage) {
 					String command=((TextMessage)message).getText();
 					
@@ -117,24 +133,47 @@ public class ActiveQueryNotificationManager implements MessageListener {
 						LOG.fine("Dispatch command '"+command+"' to AQ ["+dest+"]");
 					}
 					
-					aq.notifyRefresh();
+					if (command.equals(AQDefinitions.REFRESH_COMMAND)) {
+						aq.notifyRefresh();
+					}
 				}
 			}
 		}
 	}
-	protected static void dispatch(String dest, Object val, boolean addition) {
+	
+	protected static void dispatch(String dest, Object val, ActiveChangeType changeType) {
 		synchronized(_listeners) {
 			java.util.List<JEEActiveQueryProxy<?>> list=_listeners.get(dest);
 			if (list != null) {
 				for (JEEActiveQueryProxy<?> aq : list) {
 					if (LOG.isLoggable(Level.FINE)) {
-						LOG.fine("Dispatch "+(addition ? "ADD" : "REMOVE")+
-									" notification "+val+" to AQ ["+dest+"]");
+						LOG.fine("Dispatch '"+changeType+
+									"' notification "+val+" to AQ ["+dest+"]");
 					}
 					
-					if (addition) {
+					if (changeType == ActiveChangeType.Add) {
 						aq.notifyAddition(val);
-					} else {
+					} else if (changeType == ActiveChangeType.Remove) {
+						aq.notifyRemoval(val);
+					}
+				}
+			}
+		}
+	}
+	
+	protected static void dispatch(String dest, byte[] val, ActiveChangeType changeType) {
+		synchronized(_listeners) {
+			java.util.List<JEEActiveQueryProxy<?>> list=_listeners.get(dest);
+			if (list != null) {
+				for (JEEActiveQueryProxy<?> aq : list) {
+					if (LOG.isLoggable(Level.FINE)) {
+						LOG.fine("Dispatch '"+changeType+
+									"' notification "+val+" to AQ ["+dest+"]");
+					}
+					
+					if (changeType == ActiveChangeType.Add) {
+						aq.notifyAddition(val);
+					} else if (changeType == ActiveChangeType.Remove) {
 						aq.notifyRemoval(val);
 					}
 				}
@@ -170,4 +209,5 @@ public class ActiveQueryNotificationManager implements MessageListener {
 			}
 		}
 	}
+	
 }

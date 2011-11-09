@@ -20,13 +20,13 @@ package org.savara.sam.tests.aq.monitor;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-import javax.inject.Inject;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.savara.monitor.ConversationId;
 import org.savara.sam.activity.ActivityAnalysis;
 import org.savara.sam.activity.ActivitySummary;
 import org.savara.sam.aq.ActiveListener;
@@ -42,7 +42,7 @@ public class AQMonitorServlet extends HttpServlet {
 	static String PAGE_HEADER = "<html><head /><body>";
 	static String PAGE_FOOTER = "</body></html>";
 
-	@Inject
+	//@javax.inject.Inject
 	ActiveQueryManager _activeQueryManager;
 	
 	private ActiveQuery<ActivityAnalysis> _purchasingResponseTime;
@@ -56,13 +56,17 @@ public class AQMonitorServlet extends HttpServlet {
 	private ActiveQuery<ActivitySummary> _failedTxns;
 	private ActiveListener<ActivitySummary> _txnRatioListener;
 	
+	private ActiveQuery<ActivityAnalysis> _purchasingConversation;
+	private ActiveListener<ActivityAnalysis> _purchasingConversationListener;
+	
 	private StringBuffer _responseTimeReport=new StringBuffer();
 	private StringBuffer _txnRatioReport=new StringBuffer();
 	private StringBuffer _slaWarningsReport=new StringBuffer();
+	private StringBuffer _purchasingConversationReport=new StringBuffer();
 	
 	public void init() {
 		// Alternative means of retrieving the active query manager, if injection cannot be used
-		//_activeQueryManager = org.savara.sam.aq.server.ActiveQueryServer.getInstance();
+		_activeQueryManager = org.savara.sam.aq.server.ActiveQueryServer.getInstance();
 
 		_startedTxns = _activeQueryManager.getActiveQuery("PurchasingStarted");
 		_completedTxns = _activeQueryManager.getActiveQuery("PurchasingSuccessful");
@@ -85,6 +89,11 @@ public class AQMonitorServlet extends HttpServlet {
 		});
 		_slaWarningsListener = new SLAWarningsNotifier();
 		_slaWarnings.addActiveListener(_slaWarningsListener);
+		
+		_purchasingConversation = _activeQueryManager.getActiveQuery("PurchasingConversation");
+		_purchasingConversationListener = new PurchasingConversationNotifier();
+		_purchasingConversation.addActiveListener(_purchasingConversationListener);
+		
 	}
 
 	@Override
@@ -95,6 +104,7 @@ public class AQMonitorServlet extends HttpServlet {
       writer.println(_txnRatioReport.toString());
       writer.println(_slaWarningsReport.toString());
       writer.println(_responseTimeReport.toString());
+      writer.println(_purchasingConversationReport.toString());
       writer.println(PAGE_FOOTER);
       writer.close();
    }
@@ -201,4 +211,41 @@ public class AQMonitorServlet extends HttpServlet {
 			buildReport();
 		}		
 	}
+	
+	public class PurchasingConversationNotifier implements ActiveListener<ActivityAnalysis> {
+
+		public PurchasingConversationNotifier() {
+			buildReport();
+		}
+		
+		protected void buildReport() {
+			java.util.Iterator<ActivityAnalysis> iter=_purchasingConversation.getResults();
+			_purchasingConversationReport = new StringBuffer();
+			
+			_purchasingConversationReport.append("<h3>Purchasing Conversation Report ("+new java.util.Date()+")</h3>");
+			
+			while (iter.hasNext()) {
+				ActivityAnalysis aa=iter.next();
+
+				ConversationId cid=(ConversationId)aa.getProperty("conversationId").getValue();
+				_purchasingConversationReport.append("<h5>Conversation id "+cid+"</h5>");
+			}
+		}
+		
+		@Override
+		public void valueAdded(ActivityAnalysis value) {
+			buildReport();
+		}
+
+		@Override
+		public void valueRemoved(ActivityAnalysis value) {
+			buildReport();
+		}		
+
+		@Override
+		public void refresh() {
+			buildReport();
+		}		
+	}
+
 }

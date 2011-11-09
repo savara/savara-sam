@@ -29,6 +29,8 @@ import javax.jms.TextMessage;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.savara.sam.aq.ActiveChangeType;
 import org.savara.sam.aq.ActiveQuery;
 import org.savara.sam.aq.DefaultActiveQuery;
 import org.savara.sam.aq.Predicate;
@@ -43,6 +45,7 @@ public class JEEActiveQueryManager<S,T> implements MessageListener {
 	private Connection _connection=null;
 	private Session _session=null;
 	private java.util.List<MessageProducer> _producers=new java.util.Vector<MessageProducer>();
+	private MessageProducer _notifier=null;
 
 	private org.infinispan.manager.CacheContainer _container;
 	private org.infinispan.Cache<String, DefaultActiveQuery<T>> _cache;
@@ -53,7 +56,7 @@ public class JEEActiveQueryManager<S,T> implements MessageListener {
 	}
 	
 	public void init(ConnectionFactory connectionFactory, org.infinispan.manager.CacheContainer container,
-						Destination... destinations) {
+						Destination notification, Destination... destinations) {
 		_connectionFactory = connectionFactory;
 		_container = container;		
 		
@@ -62,6 +65,10 @@ public class JEEActiveQueryManager<S,T> implements MessageListener {
 		try {
 			_connection = _connectionFactory.createConnection();
 			_session = _connection.createSession(true, Session.AUTO_ACKNOWLEDGE);
+			
+			if (notification != null) {
+				_notifier = _session.createProducer(notification);
+			}
 			
 			for (Destination d : destinations) {
 				_producers.add(_session.createProducer(d));
@@ -81,6 +88,10 @@ public class JEEActiveQueryManager<S,T> implements MessageListener {
 	}
 	
 	protected void initRootAQ(ActiveQuery<T> root) {
+	}
+	
+	protected String getActiveQueryName() {
+		return(_activeQueryName);
 	}
 
 	protected ActiveQuery<T> getActiveQuery() {
@@ -154,7 +165,7 @@ public class JEEActiveQueryManager<S,T> implements MessageListener {
 		}
 
 		try {
-			Message m=_session.createTextMessage("init");
+			Message m=_session.createTextMessage(AQDefinitions.INIT_COMMAND);
 			Destination dest=_session.createQueue(_parentActiveQueryName);
 			MessageProducer mp=_session.createProducer(dest);
 			
@@ -174,7 +185,7 @@ public class JEEActiveQueryManager<S,T> implements MessageListener {
 		}
 
 		try {
-			Message m=_session.createTextMessage("refresh");
+			Message m=_session.createTextMessage(AQDefinitions.REFRESH_COMMAND);
 			
 			for (MessageProducer mp : _producers) {
 				mp.send(m);
@@ -192,8 +203,13 @@ public class JEEActiveQueryManager<S,T> implements MessageListener {
 				@SuppressWarnings("unchecked")
 				java.util.List<S> activities=(java.util.List<S>)((ObjectMessage)message).getObject();
 				java.util.Vector<T> forward=null;
+				ActiveChangeType changeType=ActiveChangeType.valueOf(
+							message.getStringProperty(AQDefinitions.AQ_CHANGETYPE_PROPERTY));
 				
 				ActiveQuery<T> aq=getActiveQuery();
+				
+				// TODO: If active query not returned, then need to postpone change
+				// Can it be added back on the queue? retry?
 				
 				for (S sourceActivity : activities) {
 					
@@ -222,14 +238,7 @@ public class JEEActiveQueryManager<S,T> implements MessageListener {
 				}
 				
 				if (forward != null) {
-					Message m=_session.createObjectMessage(forward);
-					m.setBooleanProperty(AQDefinitions.AQ_INCLUDE_PROPERTY, true); // Whether activity should be added or removed
-					
-					m.setStringProperty(AQDefinitions.ACTIVE_QUERY_NAME, _activeQueryName);
-					
-					for (MessageProducer mp : _producers) {
-						mp.send(m);
-					}
+					forwardChange(forward, changeType);
 				}
 
 			} catch(Exception e) {
@@ -244,11 +253,11 @@ public class JEEActiveQueryManager<S,T> implements MessageListener {
 				}
 
 				// Process command
-				if (command.equals("init")) {
+				if (command.equals(AQDefinitions.INIT_COMMAND)) {
 					// Attempt to get active query - if not available, then requests
 					// init of parent	
 					getActiveQuery();
-				} else if (command.equals("refresh")) {
+				} else if (command.equals(AQDefinitions.REFRESH_COMMAND)) {
 					if (getActiveQuery() == null) {
 						if (LOG.isLoggable(Level.FINE)) {
 							LOG.fine("Refresh of '"+_activeQueryName+
@@ -262,5 +271,48 @@ public class JEEActiveQueryManager<S,T> implements MessageListener {
 				LOG.log(Level.SEVERE, "Failed to handle command '"+message+"'", e);
 			}
 		}
+	}
+	
+	protected void forwardChange(java.io.Serializable value, ActiveChangeType changeType)
+								throws Exception {
+		
+		// Forward to child AQs
+		Message m=_session.createObjectMessage(value);
+		m.setStringProperty(AQDefinitions.AQ_CHANGETYPE_PROPERTY, changeType.name());
+		
+		m.setStringProperty(AQDefinitions.ACTIVE_QUERY_NAME, _activeQueryName);
+		
+		for (MessageProducer mp : getMessageProducers()) {
+			mp.send(m);
+		}
+
+		// Send notification to interested listeners
+		if (_notifier != null) {
+			java.io.ByteArrayOutputStream baos=new java.io.ByteArrayOutputStream();
+			java.io.ObjectOutputStream oos=new java.io.ObjectOutputStream(baos);
+			oos.writeObject(value);
+			
+			byte[] b=baos.toByteArray();
+			
+			javax.jms.BytesMessage bm=_session.createBytesMessage();
+			bm.writeBytes(b);
+			
+			baos.close();
+			oos.close();
+			
+			bm.setStringProperty(AQDefinitions.AQ_CHANGETYPE_PROPERTY, changeType.name());
+			
+			bm.setStringProperty(AQDefinitions.ACTIVE_QUERY_NAME, _activeQueryName);
+		
+			_notifier.send(bm);
+		}
+	}
+	
+	protected java.util.List<MessageProducer> getMessageProducers() {
+		return(_producers);
+	}
+	
+	protected javax.jms.Session getJMSSession() {
+		return(_session);
 	}
 }

@@ -77,8 +77,8 @@ public class Purchasing extends JEEActiveQueryManager<ActivitySummary,ActivitySu
 	
 	@PostConstruct
 	public void init() {
-		super.init(_connectionFactory, _container, _purchasingStarted, _purchasingSuccessful,
-				_purchasingUnsuccessful, _purchasingResponseTime, _purchasingConversation, _notificationTopic);
+		super.init(_connectionFactory, _container, _notificationTopic, _purchasingStarted, _purchasingSuccessful,
+				_purchasingUnsuccessful, _purchasingResponseTime, _purchasingConversation);
 	}
 
 	@PreDestroy

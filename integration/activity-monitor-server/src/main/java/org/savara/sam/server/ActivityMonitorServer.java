@@ -40,6 +40,8 @@ import java.util.logging.Logger;
 import org.savara.sam.activity.ActivityModel;
 import org.savara.sam.activity.ActivityModel.Activity;
 import org.savara.sam.activity.ActivitySummary;
+import org.savara.sam.aq.ActiveChangeType;
+import org.savara.sam.aq.server.AQDefinitions;
 
 @MessageDriven(name = "ActivityMonitorServer", messageListenerInterface = MessageListener.class,
                activationConfig =
@@ -141,7 +143,7 @@ public class ActivityMonitorServer implements MessageListener {
 						finished = true;
 
 						Message m=_session.createObjectMessage(list);
-						m.setBooleanProperty("include", true); // Whether activity should be added or removed
+						m.setStringProperty(AQDefinitions.AQ_CHANGETYPE_PROPERTY, ActiveChangeType.Add.name());
 						
 						if (LOG.isLoggable(Level.FINE)) {
 							LOG.fine("ActivityMonitorServer ("+this+") messageCount="+_messageCount+" : Sending activity: "+m);

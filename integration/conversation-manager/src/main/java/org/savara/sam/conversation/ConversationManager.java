@@ -60,8 +60,8 @@ public class ConversationManager extends JEEActiveQueryManager<ActivitySummary,A
 	
 	public void init(String model, ConnectionFactory connectionFactory,
 				org.infinispan.manager.CacheContainer container,
-							Destination... destinations) {
-		super.init(connectionFactory, container, destinations);
+					Destination notification, Destination... destinations) {
+		super.init(connectionFactory, container, notification, destinations);
 		
 		_container = container;
 		
@@ -103,6 +103,11 @@ public class ConversationManager extends JEEActiveQueryManager<ActivitySummary,A
 		// Pull full activity event with message content
 		Activity act=_activities.get(activity.getId());
 		
+		if (act == null) {
+			LOG.severe("Conversation manager failed to retrieve activity '"+activity.getId()+"'");
+			return (null);
+		}
+		
 		Message mesg=new Message();
 		mesg.setDirection(act.getServiceInvocation().getDirection() ==
 					ServiceModel.ServiceInvocation.Direction.INBOUND ?
@@ -126,8 +131,8 @@ public class ConversationManager extends JEEActiveQueryManager<ActivitySummary,A
 
 			if (result.getConversationId() != null) {
 				ret = new ActivityAnalysis();
-				ret.addProperty("conversationId", java.lang.String.class.getName(),
-							result.getConversationId().getId());
+				ret.addProperty("conversationId", ConversationId.class.getName(),
+						result.getConversationId());
 				
 				// Add activity summary to conversation details
 				ConversationDetails cd=_conversationDetails.get(result.getConversationId());
@@ -206,6 +211,5 @@ public class ConversationManager extends JEEActiveQueryManager<ActivitySummary,A
 			
 			return (ret);
 		}
-		
 	}
 }
