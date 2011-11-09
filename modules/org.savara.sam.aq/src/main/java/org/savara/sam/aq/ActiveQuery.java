@@ -66,7 +66,7 @@ public interface ActiveQuery<T> {
 	
 	/**
 	 * This method evaluates the supplied value to determine
-	 * if it should be added to active query.
+	 * if it should be added to the active query.
 	 * 
 	 * @param value The value
 	 * @return Whether the value was added
@@ -75,7 +75,16 @@ public interface ActiveQuery<T> {
 	
 	/**
 	 * This method evaluates the supplied value to determine
-	 * if it should be removed to active query.
+	 * if it should be updated within the active query.
+	 * 
+	 * @param value The value
+	 * @return Whether the value was added
+	 */
+	public boolean update(T value);
+	
+	/**
+	 * This method evaluates the supplied value to determine
+	 * if it should be removed from the active query.
 	 * 
 	 * @param value The value
 	 * @return Whether the value was added

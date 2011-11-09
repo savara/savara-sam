@@ -20,11 +20,16 @@ package org.savara.sam.aq;
 public class TestActiveListener implements ActiveListener<String> {
 
 	private java.util.List<String> _added=new java.util.Vector<String>();
+	private java.util.List<String> _updated=new java.util.Vector<String>();
 	private java.util.List<String> _removed=new java.util.Vector<String>();
 	private boolean _refreshed=false;
 	
 	public void valueAdded(String value) {
 		_added.add(value);
+	}
+
+	public void valueUpdated(String value) {
+		_updated.add(value);
 	}
 
 	public void valueRemoved(String value) {
@@ -37,6 +42,10 @@ public class TestActiveListener implements ActiveListener<String> {
 	
 	public java.util.List<String> getAdded() {
 		return (_added);
+	}
+	
+	public java.util.List<String> getUpdated() {
+		return (_updated);
 	}
 	
 	public java.util.List<String> getRemoved() {

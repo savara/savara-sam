@@ -216,7 +216,21 @@ public class JEEActiveQueryManager<S,T> implements MessageListener {
 					T activity=process(sourceActivity);
 					
 					if (activity != null) {
-						if (aq.add(activity)) {
+						boolean process=false;
+						
+						switch(changeType) {
+						case Add:
+							process = aq.add(activity);
+							break;
+						case Update:
+							process = aq.update(activity);
+							break;
+						case Remove:
+							process = aq.remove(activity);
+							break;
+						}
+						
+						if (process) {
 							
 							// Propagate to child queries and topics
 							if (LOG.isLoggable(Level.FINEST)) {

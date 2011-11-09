@@ -130,6 +130,11 @@ public class AQMonitorServlet extends HttpServlet {
 		}
 
 		@Override
+		public void valueUpdated(ActivitySummary value) {
+			buildReport();
+		}
+
+		@Override
 		public void valueRemoved(ActivitySummary value) {
 			buildReport();
 		}		
@@ -160,6 +165,11 @@ public class AQMonitorServlet extends HttpServlet {
 		
 		@Override
 		public void valueAdded(ActivityAnalysis value) {
+			buildReport();
+		}
+
+		@Override
+		public void valueUpdated(ActivityAnalysis value) {
 			buildReport();
 		}
 
@@ -198,6 +208,11 @@ public class AQMonitorServlet extends HttpServlet {
 		}
 
 		@Override
+		public void valueUpdated(ActivityAnalysis value) {
+			buildReport();
+		}
+
+		@Override
 		public void valueRemoved(ActivityAnalysis value) {
 			buildReport();
 		}		
@@ -227,6 +242,11 @@ public class AQMonitorServlet extends HttpServlet {
 		
 		@Override
 		public void valueAdded(ActivityAnalysis value) {
+			buildReport();
+		}
+
+		@Override
+		public void valueUpdated(ActivityAnalysis value) {
 			buildReport();
 		}
 

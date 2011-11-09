@@ -154,6 +154,39 @@ public class ActiveQueryProxy<T> implements ActiveQuery<T> {
 	}
 	
 	/**
+	 * {@inheritDoc}
+	 */
+	public boolean update(T value) {
+		boolean ret=false;
+		
+		ActiveQuery<T> aq=getSource();
+		
+		if (aq != null) {
+			ret = aq.update(value);
+			if (ret) {
+				notifyUpdate(value);
+			}
+		}
+		
+		return (ret);
+	}
+	
+	protected void notifyUpdate(T value) {
+		if (_listeners.size() > 0) {
+			synchronized(_listeners) {
+				for (ActiveListener<T> l : _listeners) {
+					if (LOG.isLoggable(Level.FINEST)) {
+						LOG.finest("Dispatching update of '"+value+"' to: "+l);
+					}
+					l.valueUpdated(value);						
+				}
+			}
+		} else if (LOG.isLoggable(Level.FINEST)) {
+			LOG.finest("Dispatching update of '"+value+"' but no listeners");
+		}
+	}
+	
+	/**
 	 * This method evaluates the supplied value to determine
 	 * if it should be removed to active query.
 	 * 
@@ -253,6 +286,10 @@ public class ActiveQueryProxy<T> implements ActiveQuery<T> {
 
 		public void valueAdded(T value) {
 			add(value);
+		}
+
+		public void valueUpdated(T value) {
+			update(value);
 		}
 
 		public void valueRemoved(T value) {

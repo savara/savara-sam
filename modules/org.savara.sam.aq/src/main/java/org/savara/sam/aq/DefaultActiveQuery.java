@@ -129,11 +129,7 @@ public class DefaultActiveQuery<T> implements ActiveQuery<T>, java.io.Serializab
 	}
 	
 	/**
-	 * This method evaluates the supplied value to determine
-	 * if it should be added to active query.
-	 * 
-	 * @param value The value
-	 * @return Whether the value was added
+	 * {@inheritDoc}
 	 */
 	public boolean add(T value) {
 		boolean ret=false;
@@ -151,11 +147,28 @@ public class DefaultActiveQuery<T> implements ActiveQuery<T>, java.io.Serializab
 	}
 	
 	/**
-	 * This method evaluates the supplied value to determine
-	 * if it should be removed to active query.
-	 * 
-	 * @param value The value
-	 * @return Whether the value was added
+	 * {@inheritDoc}
+	 */
+	public boolean update(T value) {
+		boolean ret=false;
+		
+		if (evaluate(value)) {
+			ret = true;
+			
+			int index=_contents.indexOf(value);
+			
+			if (index == -1) {
+				_contents.add(value);
+			} else {
+				_contents.set(index, value);
+			}
+		}
+		
+		return (ret);
+	}
+	
+	/**
+	 * {@inheritDoc}
 	 */
 	public boolean remove(T value) {
 		boolean ret=false;

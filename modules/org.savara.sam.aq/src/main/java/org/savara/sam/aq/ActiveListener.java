@@ -34,6 +34,14 @@ public interface ActiveListener<T> {
 	
 	/**
 	 * This method notifies the listener that the supplied
+	 * value has been updated within the active query.
+	 * 
+	 * @param value The value
+	 */
+	public void valueUpdated(T value);
+	
+	/**
+	 * This method notifies the listener that the supplied
 	 * value has been removed from the active query.
 	 * 
 	 * @param value The value
