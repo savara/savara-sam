@@ -4,7 +4,8 @@
 package org.savara.sam.web.shared.dto;
 
 import java.io.Serializable;
-import java.util.Date;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Jeff Yu
@@ -14,17 +15,17 @@ public class ResponseTime implements Serializable {
 	
 	private static final long serialVersionUID = 3141906237887410242L;
 
-	private Date requestTime;
+	private Long requestTime;
 	
 	private String operation;
 	
-	private long responseTime;
+	private Long responseTime;
 
-	public Date getRequestTime() {
+	public Long getRequestTime() {
 		return requestTime;
 	}
 
-	public void setRequestTime(Date requestTime) {
+	public void setRequestTime(Long requestTime) {
 		this.requestTime = requestTime;
 	}
 
@@ -36,14 +37,12 @@ public class ResponseTime implements Serializable {
 		this.operation = operation;
 	}
 
-	public long getResponseTime() {
+	public Long getResponseTime() {
 		return responseTime;
 	}
 
-	public void setResponseTime(long responseTime) {
+	public void setResponseTime(Long responseTime) {
 		this.responseTime = responseTime;
 	}
-	
-	
 
 }

@@ -62,7 +62,13 @@
         <dependency>
             <groupId>org.savara.sam.integration</groupId>
             <artifactId>conversation-manager</artifactId>
-	    <version>${sam.version}</version>
+			<version>${sam.version}</version>
+		</dependency>
+		<dependency>	
+            <groupId>org.savara.sam</groupId>
+            <artifactId>sam-web</artifactId>
+			<type>war</type>
+	    	<version>${sam.version}</version>
         </dependency>
 
 	<!-- Savara core module dependencies -->

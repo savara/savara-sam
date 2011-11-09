@@ -8,7 +8,7 @@
     <version>1.0.0-SNAPSHOT</version>
   </parent>
   <groupId>org.savara.sam</groupId>
-  <artifactId>web</artifactId>
+  <artifactId>sam-web</artifactId>
   <packaging>war</packaging>
   <version>1.0.0-SNAPSHOT</version>
   <name>Savara SAM::Web</name>

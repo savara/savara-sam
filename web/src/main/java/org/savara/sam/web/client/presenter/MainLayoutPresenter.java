@@ -7,6 +7,7 @@ import org.savara.sam.web.client.BootstrapContext;
 import org.savara.sam.web.client.NameTokens;
 import org.savara.sam.web.shared.AQMonitorService;
 import org.savara.sam.web.shared.AQMonitorServiceAsync;
+import org.savara.sam.web.shared.dto.ResponseTime;
 import org.savara.sam.web.shared.dto.Statistic;
 
 import com.google.gwt.core.client.GWT;
@@ -36,6 +37,10 @@ public class MainLayoutPresenter extends Presenter<MainLayoutPresenter.MainLayou
 		
 		public void setStatistics(Statistic[] value);
 		
+		public void setResponsetime(ResponseTime[] rts);
+		
+		public void setPresenter(MainLayoutPresenter presenter);
+		
 	}
 	
 	@ProxyCodeSplit
@@ -62,6 +67,13 @@ public class MainLayoutPresenter extends Presenter<MainLayoutPresenter.MainLayou
 	
 	public void onBind() {
 		super.onBind();
+		getView().setPresenter(this);
+		setStatisticsData();
+		setResponseTimes();
+
+	}
+	
+	public void setStatisticsData() {
 		service.getStatistics(new AsyncCallback<Statistic[]>() {
 			public void onFailure(Throwable t) {
 				System.out.println(t);
@@ -69,10 +81,23 @@ public class MainLayoutPresenter extends Presenter<MainLayoutPresenter.MainLayou
 
 			public void onSuccess(Statistic[] value) {
 				getView().setStatistics(value);
-				System.out.println("==========> " + value);
 			}
 			
 		});
+	}
+	
+	public void setResponseTimes() {
+		service.getResponseTimes(new AsyncCallback<ResponseTime[]>() {
+
+			public void onFailure(Throwable t) {
+				System.out.println(t);
+			}
+
+			public void onSuccess(ResponseTime[] value) {
+				getView().setResponsetime(value);
+			}
+			
+		});		
 	}
 	
 }

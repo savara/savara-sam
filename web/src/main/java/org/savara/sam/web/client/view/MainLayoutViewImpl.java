@@ -3,14 +3,18 @@
  */
 package org.savara.sam.web.client.view;
 
+import java.util.Date;
+
+import org.savara.sam.web.client.presenter.MainLayoutPresenter;
 import org.savara.sam.web.client.presenter.MainLayoutPresenter.MainLayoutView;
+import org.savara.sam.web.shared.dto.ResponseTime;
 import org.savara.sam.web.shared.dto.Statistic;
 
-import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
 import com.google.gwt.visualization.client.DataTable;
 import com.google.gwt.visualization.client.VisualizationUtils;
-import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
+import com.google.gwt.visualization.client.visualizations.corechart.ColumnChart;
 import com.google.gwt.visualization.client.visualizations.corechart.LineChart;
 import com.google.gwt.visualization.client.visualizations.corechart.Options;
 import com.google.gwt.visualization.client.visualizations.corechart.PieChart;
@@ -21,12 +25,12 @@ import com.smartgwt.client.types.DragAppearance;
 import com.smartgwt.client.types.HeaderControls;
 import com.smartgwt.client.types.LayoutPolicy;
 import com.smartgwt.client.types.Overflow;
-import com.smartgwt.client.types.VerticalAlignment;
 import com.smartgwt.client.types.VisibilityMode;
-import com.smartgwt.client.widgets.Canvas;
 import com.smartgwt.client.widgets.HTMLFlow;
 import com.smartgwt.client.widgets.HeaderControl;
 import com.smartgwt.client.widgets.Label;
+import com.smartgwt.client.widgets.events.ClickEvent;
+import com.smartgwt.client.widgets.events.ClickHandler;
 import com.smartgwt.client.widgets.form.DynamicForm;
 import com.smartgwt.client.widgets.form.fields.ButtonItem;
 import com.smartgwt.client.widgets.layout.HLayout;
@@ -46,6 +50,8 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 	private VLayout panel;
 	
 	private Statistic[] data;
+	
+	private ResponseTime[] rtimes;
 		
 	private PortalLayout portal;
 	
@@ -53,23 +59,50 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 	
 	private VLayout txnRatioPanel;
 	
+	private Portlet txnsBar;
+	
+	private VLayout txnsBarPanel;
+	
+	private Portlet responseTime;
+	
+	private VLayout responseTimePanel;
+	
+	private MainLayoutPresenter presenter;
+	
 	@Inject
 	public MainLayoutViewImpl() {
 		
         Runnable onloadCallback = new Runnable() {
 			public void run() {
-				PieChart pc = createTxnRatioChart(data);
-				pc.setVisible(true);
 				initializeWindow();
+				
+				System.out.println("Finished the initialization....");
+				PieChart pc = createTxnRatioChart(data);
 				txnRatioPanel = new VLayout();
 				txnRatioPanel.setMargin(25);
 				txnRatio.addChild(txnRatioPanel);
-				
 				txnRatioPanel.addChild(pc);
+				
+				System.out.println("Finished the PieChart....");
+				
+				ColumnChart cc = createTxnBarChart(data);
+				txnsBarPanel = new VLayout();
+				txnsBarPanel.setMargin(25);
+				txnsBar.addChild(txnsBarPanel);
+				txnsBarPanel.addChild(cc);
+				
+				System.out.println("Finished the ColumnChart");
+				LineChart lc = createResponseTimeLineChart(rtimes);
+				responseTimePanel = new VLayout();
+				responseTimePanel.setMargin(25);
+				responseTime.addChild(responseTimePanel);
+				responseTimePanel.addChild(lc);
+				
+				System.out.println("Finished the LineChart, Done....");
 			}        	
         };
                 
-        VisualizationUtils.loadVisualizationApi(onloadCallback, PieChart.PACKAGE, LineChart.PACKAGE);
+        VisualizationUtils.loadVisualizationApi(onloadCallback, PieChart.PACKAGE);
 	}
 
 	private void initializeWindow() {
@@ -105,22 +138,35 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 		
         main.addMember(portal);
         
-        txnRatio = createPortlet("Txn Ratio");       
+        txnRatio = createPortlet("Txn Ratio", new ClickHandler() {
+
+			public void onClick(ClickEvent event) {
+				presenter.setStatisticsData();
+				System.out.println("===> finished getting data again");
+				//txnRatioPanel.clear();
+				PieChart thePC = createTxnRatioChart(data);
+				System.out.println("===> Finished refreshing chart");
+			}
+        	
+        });       
         portal.addPortlet(txnRatio, 0, 0);
         
-        // create portlets...  
-        for (int i = 1; i < 4; i++) {  
-            Portlet portlet = createPortlet("AQ Chart");
-        	
-            Label label = new Label();  
-            label.setAlign(Alignment.CENTER);  
-            label.setLayoutAlign(VerticalAlignment.CENTER);  
-            label.setContents("Portlet contents");  
-            portlet.addItem(label);
-            
-            portal.addPortlet(portlet, (i % portalColumn), (i/portalColumn));
-        } 
-		
+        txnsBar = createPortlet("Txn Bar Chart", new ClickHandler(){
+			public void onClick(ClickEvent event) {
+				//txnsBarPanel.clear();
+				
+			}        	
+        });
+        portal.addPortlet(txnsBar, 0, 1);
+        
+        responseTime = createPortlet("Response Time", new ClickHandler() {
+			public void onClick(ClickEvent event) {
+				//responseTimePanel.clear();
+				
+			}        	
+        });
+        portal.addPortlet(responseTime, 1, 0);
+        
 		addFooterLayout();
 		panel.draw();
 	}
@@ -133,8 +179,11 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 		
 		for (int i = 0; i < values.length; i++) {
 			Statistic statistic = values[i];
-			dt.setValue(i, 0, statistic.getName());
-			dt.setValue(i, 1, statistic.getValue());
+			String name = statistic.getName();
+			if ("Successful".equalsIgnoreCase(name) || "Unsuccessful".equalsIgnoreCase(name)) {
+				dt.setValue(i, 0, name);
+				dt.setValue(i, 1, statistic.getValue());
+			}
 		}
 		
 		Options options = Options.create();
@@ -146,13 +195,58 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 		return pc;
 	}
 	
-	private Portlet createPortlet(String title) {
+	private ColumnChart createTxnBarChart(Statistic[] values) {
+		DataTable dt = DataTable.create();
+		dt.addColumn(ColumnType.STRING, "transaction type");
+		dt.addColumn(ColumnType.NUMBER, "Txns");
+		dt.addRows(values.length);
+		
+		for (int i = 0; i < values.length; i++) {
+			Statistic statistic = values[i];
+			String name = statistic.getName();
+			if ("Successful".equalsIgnoreCase(name) || "Unsuccessful".equalsIgnoreCase(name) || "Started".equalsIgnoreCase(name)) {
+				dt.setValue(i, 0, name);
+				dt.setValue(i, 1, statistic.getValue());
+			}
+		}
+		
+		Options options = Options.create();
+		options.setWidth(450);
+		options.setHeight(250);
+		
+		ColumnChart cc = new ColumnChart(dt, options);
+		return cc;
+	}
+	
+	private LineChart createResponseTimeLineChart(ResponseTime[] values) {
+		DataTable dt = DataTable.create();
+		dt.addColumn(ColumnType.DATETIME, "Request Time");
+		dt.addColumn(ColumnType.NUMBER, "Response Time");
+		dt.addRows(values.length);
+		
+		for (int i = 0; i < values.length; i++) {
+			ResponseTime rt = values[i];
+			Date d = new Date();
+			d.setTime(rt.getRequestTime().longValue());
+			dt.setValue(i, 0, d);
+			dt.setValue(i, 1, rt.getResponseTime());
+		}
+		
+		Options options = Options.create();
+		options.setWidth(450);
+		options.setHeight(250);
+		
+		return new LineChart(dt, options);
+	}
+	
+	private Portlet createPortlet(String title, ClickHandler refreshHandler) {
         Portlet portlet = new Portlet();  
         portlet.setTitle(title);  
         portlet.setShowShadow(false);
         portlet.setDragAppearance(DragAppearance.OUTLINE);
         portlet.setHeaderControls(HeaderControls.MINIMIZE_BUTTON, HeaderControls.HEADER_LABEL,
-        		new HeaderControl(HeaderControl.SETTINGS), HeaderControls.CLOSE_BUTTON);
+        		new HeaderControl(HeaderControl.REFRESH, refreshHandler), HeaderControls.CLOSE_BUTTON);
+        
         portlet.setVPolicy(LayoutPolicy.NONE);
         portlet.setOverflow(Overflow.VISIBLE);
         portlet.setAnimateMinimize(true);
@@ -161,6 +255,9 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
         portlet.setWidth(500);
         portlet.setHeight(300);
         portlet.setCanDragResize(false);
+        
+        //TODO: Drag portlet can cause the corresponding image lost.
+        portlet.setCanDrag(false);
         
         return portlet;
 	}
@@ -231,6 +328,14 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 
 	public void setStatistics(Statistic[] value) {
 		this.data = value;
+	}
+
+	public void setResponsetime(ResponseTime[] rts) {
+		this.rtimes = rts;
+	}
+
+	public void setPresenter(MainLayoutPresenter presenter) {
+		this.presenter = presenter;
 	}
 
 }
