@@ -1,0 +1,15 @@
+Savara SAM web module
+======================
+
+Access the web at: http://localhost:8080/sam-web
+
+
+Run the web in hosted-mode
+==========================
+In order to isolate the testing, we've had the AQMonitorServiceMock as a hard-coded mock data,
+you can update it in the $web/src/main/webapp/WEB-INF/web.xml, replace the org.savara.sam.web.server.AQMonitorServiceImpl
+to the org.savara.sam.web.server.AQMonitorServiceMock in your test. 
+
+And then run mvn gwt:run
+
+*Please remember to replace it back once you've deployed with the server module.
