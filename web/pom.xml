@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <artifactId>parent</artifactId>
+    <groupId>org.savara.sam</groupId>
+    <version>1.0.0-SNAPSHOT</version>
+  </parent>
+  <groupId>org.savara.sam</groupId>
+  <artifactId>sam-web</artifactId>
+  <packaging>war</packaging>
+  <version>1.0.0-SNAPSHOT</version>
+  <name>Savara SAM::Web</name>
+
+  <properties>
+    <!-- GWT needs at least java 1.5 -->
+    <maven.compiler.source>1.5</maven.compiler.source>
+    <maven.compiler.target>1.5</maven.compiler.target>
+	<gwt.version>2.3.0</gwt.version>
+    <webappDirectory>${project.build.directory}/${project.build.finalName}</webappDirectory>
+	<smartgwt.version>2.5</smartgwt.version>
+    <restygwt.version>1.1</restygwt.version>
+	<gwt-log.version>3.1.3</gwt-log.version>
+	<gin.version>1.5_past22</gin.version>
+	<gwtp.version>0.6</gwtp.version>
+	<junit.version>4.8.1</junit.version>
+	<guice.version>3.0</guice.version>
+	<gwt-vis.version>1.1.1</gwt-vis.version>
+	
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.google.gwt</groupId>
+      <artifactId>gwt-servlet</artifactId>
+	  <version>${gwt.version}</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.google.gwt</groupId>
+      <artifactId>gwt-user</artifactId>
+	  <version>${gwt.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.smartgwt</groupId>
+      <artifactId>smartgwt</artifactId>
+      <version>${smartgwt.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.inject</groupId>
+      <artifactId>guice</artifactId>
+	  <version>${guice.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.gwt.inject</groupId>
+      <artifactId>gin</artifactId>
+	  <version>${gin.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.gwtplatform</groupId>
+      <artifactId>gwtp-mvp-client</artifactId>
+	  <version>${gwtp.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.inject.extensions</groupId>
+      <artifactId>guice-assistedinject</artifactId>
+	  <version>${guice.version}</version>
+    </dependency>
+    <dependency>
+        <groupId>com.google.code</groupId>
+        <artifactId>gwt-visualization</artifactId>
+        <version>${gwt-vis.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.code.gwt-log</groupId>
+      <artifactId>gwt-log</artifactId>
+	  <version>${gwt-log.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
+    
+    <!-- server dependency -->
+     <dependency>
+        <groupId>org.savara.sam.modules</groupId>
+        <artifactId>org.savara.sam.activity</artifactId>
+        <version>${project.version}</version>
+     </dependency>
+     <dependency>
+        <groupId>org.savara.sam.modules</groupId>
+        <artifactId>org.savara.sam.aq</artifactId>
+        <version>${project.version}</version>
+     </dependency>
+     <dependency>
+        <groupId>org.savara.sam.integration</groupId>
+        <artifactId>active-query-server</artifactId>
+        <version>${project.version}</version>
+     </dependency>
+	<dependency>
+	    <groupId>org.infinispan</groupId>
+	    <artifactId>infinispan-core</artifactId>
+	    <version>5.0.1.FINAL</version>
+	    <scope>provided</scope>
+	</dependency>
+	<dependency>
+	    <groupId>org.jboss.javaee</groupId>
+	    <artifactId>jboss-jms-api</artifactId>
+	    <version>1.1.0.GA</version>
+	    <scope>provided</scope>
+	</dependency>
+    <dependency>
+        <groupId>javax.enterprise</groupId>
+        <artifactId>cdi-api</artifactId>
+        <version>1.0</version>
+        <scope>provided</scope>
+     </dependency>
+    		
+  </dependencies>
+
+  <repositories>
+	<repository>
+		<id>smartclient</id>
+		<name>smartclient.com</name>
+		<url>http://www.smartclient.com/maven2</url>
+	</repository>
+   </repositories>
+
+  <build>
+    <!-- Generate compiled stuff in the folder used for developing mode -->
+    <outputDirectory>${webappDirectory}/WEB-INF/classes</outputDirectory>
+    <finalName>sam-web</finalName>
+    <plugins>
+
+      <!-- GWT Maven Plugin -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>gwt-maven-plugin</artifactId>
+        <version>2.3.0</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>compile</goal>
+              <goal>generateAsync</goal>             
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <runTarget>ApplicationModule.html</runTarget>
+          <hostedWebapp>${webappDirectory}</hostedWebapp>
+        </configuration>
+      </plugin>
+
+      <!-- Copy static web files before executing gwt:run -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-war-plugin</artifactId>
+        <version>2.1.1</version>
+        <executions>
+          <execution>
+            <phase>compile</phase>
+            <goals>
+              <goal>exploded</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <webappDirectory>${webappDirectory}</webappDirectory>
+        </configuration>
+      </plugin>
+
+    </plugins>
+  </build>
+
+</project>
