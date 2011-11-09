@@ -154,8 +154,12 @@ public class JEEActiveQueryManager<S,T> implements MessageListener {
 	}
 	
 	@SuppressWarnings("unchecked")
-	protected T process(S sourceActivity) {
+	protected T processActivity(S sourceActivity, ActiveChangeType changeType) {
 		return((T)sourceActivity);
+	}
+	
+	protected ActiveChangeType processChangeType(T targetActivity, ActiveChangeType changeType) {
+		return(changeType);
 	}
 	
 	protected void sendInitRequest() {
@@ -202,7 +206,9 @@ public class JEEActiveQueryManager<S,T> implements MessageListener {
 			try {
 				@SuppressWarnings("unchecked")
 				java.util.List<S> activities=(java.util.List<S>)((ObjectMessage)message).getObject();
-				java.util.Vector<T> forward=null;
+				java.util.Vector<T> forwardAdditions=null;
+				java.util.Vector<T> forwardUpdates=null;
+				java.util.Vector<T> forwardRemovals=null;
 				ActiveChangeType changeType=ActiveChangeType.valueOf(
 							message.getStringProperty(AQDefinitions.AQ_CHANGETYPE_PROPERTY));
 				
@@ -213,46 +219,82 @@ public class JEEActiveQueryManager<S,T> implements MessageListener {
 				
 				for (S sourceActivity : activities) {
 					
-					T activity=process(sourceActivity);
+					T activity=processActivity(sourceActivity, changeType);
 					
 					if (activity != null) {
-						boolean process=false;
 						
-						switch(changeType) {
+						switch(processChangeType(activity, changeType)) {
 						case Add:
-							process = aq.add(activity);
+							if (aq.add(activity)) {
+								
+								// Propagate to child queries and topics
+								if (LOG.isLoggable(Level.FINEST)) {
+									LOG.finest("AQ "+_activeQueryName+" propagate addition activity = "+activity);
+								}
+								
+								if (forwardAdditions == null) {
+									forwardAdditions = new java.util.Vector<T>();
+								}
+								
+								forwardAdditions.add(activity);
+								
+							} else if (LOG.isLoggable(Level.FINEST)) {
+								LOG.finest("AQ "+_activeQueryName+" ignore addition activity = "+activity);
+							}
 							break;
 						case Update:
-							process = aq.update(activity);
+							if (aq.update(activity)) {
+								
+								// Propagate to child queries and topics
+								if (LOG.isLoggable(Level.FINEST)) {
+									LOG.finest("AQ "+_activeQueryName+" propagate update activity = "+activity);
+								}
+								
+								if (forwardUpdates == null) {
+									forwardUpdates = new java.util.Vector<T>();
+								}
+								
+								forwardUpdates.add(activity);
+								
+							} else if (LOG.isLoggable(Level.FINEST)) {
+								LOG.finest("AQ "+_activeQueryName+" ignore update activity = "+activity);
+							}
 							break;
 						case Remove:
-							process = aq.remove(activity);
+							if (aq.remove(activity)) {
+								
+								// Propagate to child queries and topics
+								if (LOG.isLoggable(Level.FINEST)) {
+									LOG.finest("AQ "+_activeQueryName+" propagate removal activity = "+activity);
+								}
+								
+								if (forwardRemovals == null) {
+									forwardRemovals = new java.util.Vector<T>();
+								}
+								
+								forwardRemovals.add(activity);
+								
+							} else if (LOG.isLoggable(Level.FINEST)) {
+								LOG.finest("AQ "+_activeQueryName+" ignore removal activity = "+activity);
+							}
 							break;
 						}
 						
-						if (process) {
-							
-							// Propagate to child queries and topics
-							if (LOG.isLoggable(Level.FINEST)) {
-								LOG.finest("AQ "+_activeQueryName+" propagate activity = "+activity);
-							}
-							
-							if (forward == null) {
-								forward = new java.util.Vector<T>();
-							}
-							
-							forward.add(activity);
-							
-						} else if (LOG.isLoggable(Level.FINEST)) {
-							LOG.finest("AQ "+_activeQueryName+" ignore activity = "+activity);
-						}
 					} else if (LOG.isLoggable(Level.FINEST)) {
 						LOG.finest("AQ "+_activeQueryName+" didn't transform source activity = "+sourceActivity);
 					}
 				}
 				
-				if (forward != null) {
-					forwardChange(forward, changeType);
+				if (forwardAdditions != null) {
+					forwardChange(forwardAdditions, ActiveChangeType.Add);
+				}
+
+				if (forwardUpdates != null) {
+					forwardChange(forwardUpdates, ActiveChangeType.Update);
+				}
+
+				if (forwardRemovals != null) {
+					forwardChange(forwardRemovals, ActiveChangeType.Remove);
 				}
 
 			} catch(Exception e) {

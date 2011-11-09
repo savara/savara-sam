@@ -32,10 +32,10 @@ import org.savara.protocol.ProtocolCriteria;
 import org.savara.protocol.ProtocolCriteria.Direction;
 import org.savara.protocol.ProtocolId;
 import org.savara.protocol.repository.ProtocolRepository;
-import org.savara.sam.activity.ActivityAnalysis;
 import org.savara.sam.activity.ActivityModel.Activity;
 import org.savara.sam.activity.ActivitySummary;
 import org.savara.sam.activity.ServiceModel;
+import org.savara.sam.aq.ActiveChangeType;
 import org.savara.sam.aq.server.JEEActiveQueryManager;
 import org.scribble.common.resource.ResourceContent;
 import org.scribble.protocol.DefaultProtocolContext;
@@ -43,7 +43,7 @@ import org.scribble.protocol.ProtocolContext;
 import org.scribble.protocol.model.ProtocolModel;
 import org.scribble.protocol.model.Role;
 
-public class ConversationManager extends JEEActiveQueryManager<ActivitySummary,ActivityAnalysis> implements MessageListener {
+public class ConversationManager extends JEEActiveQueryManager<ActivitySummary,ConversationDetails> implements MessageListener {
 	
 	private static final Logger LOG=Logger.getLogger(ConversationManager.class.getName());
 	
@@ -97,8 +97,9 @@ public class ConversationManager extends JEEActiveQueryManager<ActivitySummary,A
 		_monitor.setSessionStore(new CachedSessionStore(_container));
 	}
 
-	protected ActivityAnalysis process(ActivitySummary activity) {
-		ActivityAnalysis ret=null;
+	@Override
+	protected ConversationDetails processActivity(ActivitySummary activity, ActiveChangeType changeType) {
+		ConversationDetails ret=null;
 		
 		// Pull full activity event with message content
 		Activity act=_activities.get(activity.getId());
@@ -130,28 +131,25 @@ public class ConversationManager extends JEEActiveQueryManager<ActivitySummary,A
 			// TODO: Could have a retry mechanism here, if the result is invalid
 
 			if (result.getConversationId() != null) {
-				ret = new ActivityAnalysis();
-				ret.addProperty("conversationId", ConversationId.class.getName(),
-						result.getConversationId());
 				
 				// Add activity summary to conversation details
-				ConversationDetails cd=_conversationDetails.get(result.getConversationId());
+				ret = _conversationDetails.get(result.getConversationId());
 				
-				if (cd == null) {
+				if (ret == null) {
 					if (LOG.isLoggable(Level.FINEST)) {
 						LOG.finest("Creating Conversation Details for "+result.getConversationId());
 					}
-					cd = new ConversationDetails(result.getConversationId());
-					_conversationDetails.put(result.getConversationId(), cd);
+					ret = new ConversationDetails(result.getConversationId());
+					_conversationDetails.put(result.getConversationId(), ret);
 				}
 				
-				cd.addActivity(activity, result);
+				ret.addActivity(activity, result);
 				
 				if (LOG.isLoggable(Level.FINEST)) {
 					LOG.finest("Updating Conversation Details for cid="+
 								result.getConversationId()+" : added activity "+activity);
 				}
-				_conversationDetails.replace(result.getConversationId(), cd);
+				_conversationDetails.replace(result.getConversationId(), ret);
 				
 			} else if (result.isValid()) {
 				LOG.severe("Monitor returned valid result, but with no conversation id");
