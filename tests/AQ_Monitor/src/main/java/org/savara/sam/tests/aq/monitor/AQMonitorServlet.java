@@ -147,13 +147,11 @@ public class AQMonitorServlet extends HttpServlet {
 		}
 		
 		protected void buildReport() {
-			java.util.Iterator<ActivityAnalysis> iter=_purchasingResponseTime.getResults();
 			_responseTimeReport = new StringBuffer();
 			
 			_responseTimeReport.append("<h3>Response Time Report ("+new java.util.Date()+")</h3>");
 			
-			while (iter.hasNext()) {
-				ActivityAnalysis aa=iter.next();
+			for (ActivityAnalysis aa : _purchasingResponseTime.getContents()) {
 				String operation=(String)aa.getProperty("operation").getValue();
 				long responseTime=(Long)aa.getProperty("responseTime").getValue();
 				_responseTimeReport.append("<h5>Operation "+operation+" : response time "+responseTime+"ms</h5>");
@@ -183,13 +181,11 @@ public class AQMonitorServlet extends HttpServlet {
 		}
 		
 		protected void buildReport() {
-			java.util.Iterator<ActivityAnalysis> iter=_slaWarnings.getResults();
 			_slaWarningsReport = new StringBuffer();
 			
 			_slaWarningsReport.append("<h3>SLA Warnings Report ("+new java.util.Date()+")</h3>");
 			
-			while (iter.hasNext()) {
-				ActivityAnalysis aa=iter.next();
+			for (ActivityAnalysis aa : _slaWarnings.getContents()) {
 				String principal=(String)aa.getProperty("principal").getValue();
 				long responseTime=(Long)aa.getProperty("responseTime").getValue();
 				_slaWarningsReport.append("<h5>Principal "+principal+" : response time "+responseTime+"ms</h5>");
@@ -219,14 +215,11 @@ public class AQMonitorServlet extends HttpServlet {
 		}
 		
 		protected void buildReport() {
-			java.util.Iterator<ActivityAnalysis> iter=_purchasingConversation.getResults();
 			_purchasingConversationReport = new StringBuffer();
 			
 			_purchasingConversationReport.append("<h3>Purchasing Conversation Report ("+new java.util.Date()+")</h3>");
 			
-			while (iter.hasNext()) {
-				ActivityAnalysis aa=iter.next();
-
+			for (ActivityAnalysis aa : _purchasingConversation.getContents()) {
 				ConversationId cid=(ConversationId)aa.getProperty("conversationId").getValue();
 				_purchasingConversationReport.append("<h5>Conversation id "+cid+"</h5>");
 			}

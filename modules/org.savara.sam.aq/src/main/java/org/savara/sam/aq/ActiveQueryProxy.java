@@ -201,6 +201,20 @@ public class ActiveQueryProxy<T> implements ActiveQuery<T> {
 		return (Collections.EMPTY_LIST.iterator());
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
+	@SuppressWarnings("unchecked")
+	public java.util.List<T> getContents() {
+		ActiveQuery<T> aq=getSource();
+		
+		if (aq != null) {
+			return (getSource().getContents());
+		}
+		
+		return ((java.util.List<T>)Collections.EMPTY_LIST);
+	}
+
 	protected void notifyRefresh() {
 		if (_listeners.size() > 0) {
 			synchronized(_listeners) {

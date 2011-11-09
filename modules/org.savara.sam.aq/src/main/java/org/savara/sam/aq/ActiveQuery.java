@@ -90,6 +90,19 @@ public interface ActiveQuery<T> {
 	public java.util.Iterator<T> getResults();
 
 	/**
+	 * This method returns a list containing
+	 * the results associated with this active query.
+	 * 
+	 * Note that if this active query is created as a
+	 * locally maintained active query, then a read-only
+	 * list will be returned, to avoid being effected
+	 * by updates being applied to the contents.
+	 * 
+	 * @return The list
+	 */
+	public java.util.List<T> getContents();
+
+	/**
 	 * This method returns the size of the result set associated
 	 * with the active query.
 	 * 

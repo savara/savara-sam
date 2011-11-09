@@ -191,9 +191,7 @@ public class DefaultActiveQuery<T> implements ActiveQuery<T>, java.io.Serializab
 	}
 	
 	/**
-	 * This method returns the iterator for the results.
-	 * 
-	 * @return The iterator
+	 * {@inheritDoc}
 	 */
 	public java.util.Iterator<T> getResults() {
 		if (_copyOnRead) {
@@ -201,6 +199,18 @@ public class DefaultActiveQuery<T> implements ActiveQuery<T>, java.io.Serializab
 			return (copy.iterator());
 		} else {
 			return (_contents.iterator());
+		}
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	public java.util.List<T> getContents() {
+		if (_copyOnRead) {
+			java.util.Vector<T> copy=new java.util.Vector<T>(_contents);
+			return (copy);
+		} else {
+			return (_contents);
 		}
 	}
 	
