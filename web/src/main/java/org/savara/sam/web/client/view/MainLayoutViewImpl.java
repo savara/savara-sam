@@ -10,11 +10,13 @@ import org.savara.sam.web.client.presenter.MainLayoutPresenter.MainLayoutView;
 import org.savara.sam.web.shared.dto.ResponseTime;
 import org.savara.sam.web.shared.dto.Statistic;
 
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
 import com.google.gwt.visualization.client.DataTable;
 import com.google.gwt.visualization.client.VisualizationUtils;
 import com.google.gwt.visualization.client.visualizations.corechart.ColumnChart;
+import com.google.gwt.visualization.client.visualizations.corechart.CoreChart;
 import com.google.gwt.visualization.client.visualizations.corechart.LineChart;
 import com.google.gwt.visualization.client.visualizations.corechart.Options;
 import com.google.gwt.visualization.client.visualizations.corechart.PieChart;
@@ -29,8 +31,13 @@ import com.smartgwt.client.types.VisibilityMode;
 import com.smartgwt.client.widgets.HTMLFlow;
 import com.smartgwt.client.widgets.HeaderControl;
 import com.smartgwt.client.widgets.Label;
+import com.smartgwt.client.widgets.Window;
 import com.smartgwt.client.widgets.events.ClickEvent;
 import com.smartgwt.client.widgets.events.ClickHandler;
+import com.smartgwt.client.widgets.events.CloseClickHandler;
+import com.smartgwt.client.widgets.events.CloseClientEvent;
+import com.smartgwt.client.widgets.events.DragRepositionStopEvent;
+import com.smartgwt.client.widgets.events.DragRepositionStopHandler;
 import com.smartgwt.client.widgets.form.DynamicForm;
 import com.smartgwt.client.widgets.form.fields.ButtonItem;
 import com.smartgwt.client.widgets.layout.HLayout;
@@ -48,10 +55,6 @@ import com.smartgwt.client.widgets.layout.VLayout;
 public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 	
 	private VLayout panel;
-	
-	private Statistic[] data;
-	
-	private ResponseTime[] rtimes;
 		
 	private PortalLayout portal;
 	
@@ -69,39 +72,31 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 	
 	private MainLayoutPresenter presenter;
 	
+	private Timer timer;
+	
+	private Statistic[] stats;
+	
+	private ResponseTime[] respTimes;
+	
 	@Inject
 	public MainLayoutViewImpl() {
-		
+				
         Runnable onloadCallback = new Runnable() {
-			public void run() {
+			public void run() {				
 				initializeWindow();
+				presenter.refreshTxnRatio(true);
+				presenter.refreshTxnBarChart(true);
+				presenter.refreshTxnResponseTime(true);
 				
-				System.out.println("Finished the initialization....");
-				PieChart pc = createTxnRatioChart(data);
-				txnRatioPanel = new VLayout();
-				txnRatioPanel.setMargin(25);
-				txnRatio.addChild(txnRatioPanel);
-				txnRatioPanel.addChild(pc);
-				txnRatioPanel.draw();
+				timer = new Timer(){
+					public void run() {
+						presenter.refreshTxnRatio(true);
+						presenter.refreshTxnBarChart(true);
+						presenter.refreshTxnResponseTime(true);
+					}};
 				
-				System.out.println("Finished the PieChart....");
-				
-				ColumnChart cc = createTxnBarChart(data);
-				txnsBarPanel = new VLayout();
-				txnsBarPanel.setMargin(25);
-				txnsBar.addChild(txnsBarPanel);
-				txnsBarPanel.addChild(cc);
-				txnsBarPanel.draw();
-				
-				System.out.println("Finished the ColumnChart");
-				LineChart lc = createResponseTimeLineChart(rtimes);
-				responseTimePanel = new VLayout();
-				responseTimePanel.setMargin(25);
-				responseTime.addChild(responseTimePanel);
-				responseTimePanel.addChild(lc);
-				responseTimePanel.draw();
-				
-				System.out.println("Finished the LineChart, Done....");
+				//TODO: looks like the refreshing action sometimes block the whole page.
+			    //timer.scheduleRepeating(30 * 1000);
 			}        	
         };
                 
@@ -117,7 +112,7 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 		addHeaderLayout();
 		
 		HLayout body = new HLayout();
-		body.setWidth("100%");
+		body.setWidth100();
 		body.setPadding(3);
 		body.setHeight(700);
 		panel.addMember(body);
@@ -141,118 +136,198 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 		
         main.addMember(portal);
         
-        txnRatio = createPortlet("Txn Ratio", new ClickHandler() {
-
+        final String txnRatioTitle = "Txn Ratio";
+        txnRatio = createPortlet(txnRatioTitle, new ClickHandler() {
 			public void onClick(ClickEvent event) {
-				presenter.setStatisticsData();
-				txnRatioPanel.clear();
-				PieChart thePC = createTxnRatioChart(data);
-				txnRatioPanel.addChild(thePC);
-				txnRatioPanel.draw();
+				presenter.refreshTxnRatio(true);
+			}        	
+        }, new ClickHandler() {
+			public void onClick(ClickEvent event) {
+				showWindowModalWithChart(txnRatioTitle, createTxnRatioChart(stats, false));
+			}        	
+        }, new DragRepositionStopHandler() {
+
+			public void onDragRepositionStop(DragRepositionStopEvent event) {
+				presenter.refreshTxnRatio(true);
 			}
         	
-        });       
+        });
+        
+		txnRatioPanel = new VLayout();
+		txnRatioPanel.setMargin(25);
+		txnRatio.addChild(txnRatioPanel);        
         portal.addPortlet(txnRatio, 0, 0);
+        
         
         txnsBar = createPortlet("Txn Bar Chart", new ClickHandler(){
 			public void onClick(ClickEvent event) {
-				presenter.setStatisticsData();
-				txnsBarPanel.clear();
-				txnsBarPanel.addChild(createTxnBarChart(data));
-				txnsBarPanel.draw();
+				presenter.refreshTxnBarChart(true);
+			}
+          }, new ClickHandler() {
+				public void onClick(ClickEvent event) {
+					showWindowModalWithChart("Txn Bar Chart", createTxnBarChart(stats, false));
+				}         	
+        }, new DragRepositionStopHandler() {
+			public void onDragRepositionStop(DragRepositionStopEvent event) {
+				presenter.refreshTxnBarChart(true);
 			}        	
         });
+        
+        txnsBarPanel = new VLayout();
+		txnsBarPanel.setMargin(25);
+		txnsBar.addChild(txnsBarPanel);
         portal.addPortlet(txnsBar, 0, 1);
         
         responseTime = createPortlet("Response Time", new ClickHandler() {
 			public void onClick(ClickEvent event) {
-				presenter.setResponseTimes();
-				responseTimePanel.clear();
-				responseTimePanel.addChild(createResponseTimeLineChart(rtimes));
-				responseTimePanel.draw();
-			}        	
+				presenter.refreshTxnResponseTime(true);
+			}
+        }, new ClickHandler() {
+			public void onClick(ClickEvent event) {
+				showWindowModalWithChart("Response Time", createResponseTimeLineChart(respTimes, false));
+			} 
+        }, new DragRepositionStopHandler(){
+
+			public void onDragRepositionStop(DragRepositionStopEvent event) {
+				presenter.refreshTxnResponseTime(true);
+			}
+        	
         });
+        responseTimePanel = new VLayout();
+		responseTimePanel.setMargin(25);
+		responseTime.addChild(responseTimePanel);
         portal.addPortlet(responseTime, 1, 0);
         
 		addFooterLayout();
 		panel.draw();
 	}
 	
-	private PieChart createTxnRatioChart(Statistic[] values) {
+	public void refreshTxnRatioChart(Statistic[] value, boolean isSmall) {
+		PieChart pc = createTxnRatioChart(value, isSmall);
+		txnRatioPanel.clear();
+		txnRatioPanel.addChild(pc);
+		txnRatioPanel.draw();
+	}
+	
+	public void refreshTxnBarChart(Statistic[] value, boolean isSmall) {
+		ColumnChart cc = createTxnBarChart(value, isSmall);
+		txnsBarPanel.clear();
+		txnsBarPanel.addChild(cc);
+		txnsBarPanel.draw();
+	}
+	
+	public void refreshResponseTime(ResponseTime[] value, boolean isSmall) {
+		LineChart lc = createResponseTimeLineChart(value, isSmall);
+		responseTimePanel.clear();
+		responseTimePanel.addChild(lc);
+		responseTimePanel.draw();
+	}
+	
+	private void showWindowModalWithChart(String title, CoreChart chart) {
+		final Window window = new Window();
+		window.setWidth(850);
+		window.setHeight(650);
+		window.setTitle(title);
+		window.setShowMinimizeButton(false);
+		window.setIsModal(true);
+		window.setShowModalMask(true);
+		window.centerInPage();
+		
+		window.addCloseClickHandler(new CloseClickHandler(){
+
+			public void onCloseClick(CloseClientEvent event) {
+				window.destroy();
+			}
+			
+		});
+		VLayout chartLayout = new VLayout();
+		chartLayout.setMargin(25);
+		chartLayout.addChild(chart);
+		window.addChild(chartLayout);
+		window.show();
+	}
+	
+	private PieChart createTxnRatioChart(Statistic[] values, boolean isSmall) {
 		DataTable dt = DataTable.create();
 		dt.addColumn(ColumnType.STRING, "transaction type");
 		dt.addColumn(ColumnType.NUMBER, "percentage");
-		dt.addRows(values.length);
-		
-		for (int i = 0; i < values.length; i++) {
-			Statistic statistic = values[i];
-			String name = statistic.getName();
-			if ("Successful".equalsIgnoreCase(name) || "Unsuccessful".equalsIgnoreCase(name)) {
-				dt.setValue(i, 0, name);
-				dt.setValue(i, 1, statistic.getValue());
-			}
+		dt.addRows(values == null ? 0 : values.length);
+		if (values != null) {
+			for (int i = 0; i < values.length; i++) {
+				Statistic statistic = values[i];
+				String name = statistic.getName();
+				if ("Successful".equalsIgnoreCase(name) || "Unsuccessful".equalsIgnoreCase(name)) {
+					dt.setValue(i, 0, name);
+					dt.setValue(i, 1, statistic.getValue());
+				}
+			}		
 		}
-		
-		Options options = Options.create();
-		options.setWidth(450);
-		options.setHeight(250);
-		
-		PieChart pc = new PieChart(dt, options);
+			
+		PieChart pc = new PieChart(dt, isSmall ? smallOptions() : bigOptions());
 		
 		return pc;
 	}
 	
-	private ColumnChart createTxnBarChart(Statistic[] values) {
+	private ColumnChart createTxnBarChart(Statistic[] values, boolean isSmall) {
 		DataTable dt = DataTable.create();
 		dt.addColumn(ColumnType.STRING, "transaction type");
 		dt.addColumn(ColumnType.NUMBER, "Txns");
-		dt.addRows(values.length);
-		
-		for (int i = 0; i < values.length; i++) {
-			Statistic statistic = values[i];
-			String name = statistic.getName();
-			if ("Successful".equalsIgnoreCase(name) || "Unsuccessful".equalsIgnoreCase(name) || "Started".equalsIgnoreCase(name)) {
-				dt.setValue(i, 0, name);
-				dt.setValue(i, 1, statistic.getValue());
+		dt.addRows(values == null ? 0 : values.length);
+		if (values != null) {
+			for (int i = 0; i < values.length; i++) {
+				Statistic statistic = values[i];
+				String name = statistic.getName();
+				if ("Successful".equalsIgnoreCase(name) || "Unsuccessful".equalsIgnoreCase(name) || "Started".equalsIgnoreCase(name)) {
+					dt.setValue(i, 0, name);
+					dt.setValue(i, 1, statistic.getValue());
+				}
 			}
 		}
 		
-		Options options = Options.create();
-		options.setWidth(450);
-		options.setHeight(250);
-		
-		ColumnChart cc = new ColumnChart(dt, options);
+		ColumnChart cc = new ColumnChart(dt, isSmall ? smallOptions() : bigOptions());
 		return cc;
 	}
 	
-	private LineChart createResponseTimeLineChart(ResponseTime[] values) {
-		DataTable dt = DataTable.create();
-		dt.addColumn(ColumnType.DATETIME, "Request Time");
-		dt.addColumn(ColumnType.NUMBER, "Response Time");
-		dt.addRows(values.length);
-		
-		for (int i = 0; i < values.length; i++) {
-			ResponseTime rt = values[i];
-			Date d = new Date();
-			d.setTime(rt.getRequestTime().longValue());
-			dt.setValue(i, 0, d);
-			dt.setValue(i, 1, rt.getResponseTime());
-		}
-		
+	private Options bigOptions() {
+		Options options = Options.create();
+		options.setWidth(800);
+		options.setHeight(600);
+		return options;
+	}
+	
+	private Options smallOptions() {
 		Options options = Options.create();
 		options.setWidth(450);
 		options.setHeight(250);
-		
-		return new LineChart(dt, options);
+		return options;
 	}
 	
-	private Portlet createPortlet(String title, ClickHandler refreshHandler) {
+	private LineChart createResponseTimeLineChart(ResponseTime[] values, boolean isSmall) {
+		DataTable dt = DataTable.create();
+		dt.addColumn(ColumnType.DATETIME, "Request Time");
+		dt.addColumn(ColumnType.NUMBER, "Response Time");
+		dt.addRows(values == null ? 0 : values.length);
+		if (values != null) {
+			for (int i = 0; i < values.length; i++) {
+				ResponseTime rt = values[i];
+				Date d = new Date();
+				d.setTime(rt.getRequestTime().longValue());
+				dt.setValue(i, 0, d);
+				dt.setValue(i, 1, rt.getResponseTime());
+			}
+		}
+		
+		return new LineChart(dt, isSmall ? smallOptions() : bigOptions());
+	}
+	
+	private Portlet createPortlet(String title, ClickHandler refreshHandler, ClickHandler maximizeHandler,
+			DragRepositionStopHandler dsHandler) {
         Portlet portlet = new Portlet();  
         portlet.setTitle(title);  
         portlet.setShowShadow(false);
         portlet.setDragAppearance(DragAppearance.OUTLINE);
         portlet.setHeaderControls(HeaderControls.MINIMIZE_BUTTON, HeaderControls.HEADER_LABEL,
-        		new HeaderControl(HeaderControl.REFRESH, refreshHandler), HeaderControls.CLOSE_BUTTON);
+        		new HeaderControl(HeaderControl.REFRESH, refreshHandler), new HeaderControl(HeaderControl.MAXIMIZE, maximizeHandler), HeaderControls.CLOSE_BUTTON);
         
         portlet.setVPolicy(LayoutPolicy.NONE);
         portlet.setOverflow(Overflow.VISIBLE);
@@ -262,11 +337,10 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
         portlet.setWidth(500);
         portlet.setHeight(300);
         portlet.setCanDragResize(false);
-        
-        //TODO: Drag portlet can cause the corresponding image lost.
-        portlet.setCanDrag(false);
-        
+                
         portlet.setCloseConfirmationMessage("Are you going to close the " + title + "?");
+        
+        portlet.addDragRepositionStopHandler(dsHandler);
         
         return portlet;
 	}
@@ -334,17 +408,16 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 		return panel;
 	}
 
-
-	public void setStatistics(Statistic[] value) {
-		this.data = value;
-	}
-
-	public void setResponsetime(ResponseTime[] rts) {
-		this.rtimes = rts;
-	}
-
 	public void setPresenter(MainLayoutPresenter presenter) {
 		this.presenter = presenter;
+	}
+
+	public void setStats(Statistic[] stats) {
+		this.stats = stats;
+	}
+
+	public void setRespTimes(ResponseTime[] respTimes) {
+		this.respTimes = respTimes;
 	}
 
 }
