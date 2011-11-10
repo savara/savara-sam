@@ -9,6 +9,7 @@
    
    <properties>
        <sam.version>1.0.0-SNAPSHOT</sam.version>
+       <savara.version>2.0.0-SNAPSHOT</savara.version>
    </properties>
 
    <dependencies>
@@ -22,6 +23,12 @@
          <groupId>org.savara.sam.modules</groupId>
          <artifactId>org.savara.sam.collector</artifactId>
          <version>${sam.version}</version>
+         <scope>provided</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.savara.bundles</groupId>
+         <artifactId>org.savara.scenario</artifactId>
+         <version>${savara.version}</version>
          <scope>provided</scope>
       </dependency>
       <dependency>

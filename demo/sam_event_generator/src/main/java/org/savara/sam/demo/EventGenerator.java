@@ -28,6 +28,15 @@ import org.savara.sam.internal.collector.JMSActivityCollectorImpl;
 public class EventGenerator {
 	
 	private static String[] _principals=new String[] { "gary", "jeff", "steve", "viv", "joe", "jane", "john", "lisa" };
+	private static String[] _scenarioNames=new String[] { "SuccessfulPurchase",
+									"InvalidStoreBehaviour", "CustomerUnknown",
+									"InvalidStoreLogic", "InsufficientCredit" };
+	private static int[] _scenarioWeightings=new int[] { 12, 1, 2, 1, 4 };
+	
+	private org.savara.scenario.model.Scenario[] _scenarios=
+					new org.savara.scenario.model.Scenario[_scenarioNames.length];
+	private java.util.Properties _roleToServiceType=new java.util.Properties();
+	private java.util.Properties _clientServerRoles=new java.util.Properties();
 	
 	private ActivityCollector _collector=null;
 	
@@ -40,9 +49,29 @@ public class EventGenerator {
 	public static void main(String[] args) throws Exception {
 		EventGenerator egen=new EventGenerator();
 		
+		egen.init();
+		
 		egen.run();
 		
 		System.out.println("Exiting event generator.");
+	}
+	
+	public void init() throws Exception {
+		
+		// Initialize scenarios
+		for (int i=0; i < _scenarioNames.length; i++) {
+			String path="/scenarios/"+_scenarioNames[i]+".scn";
+			
+			java.io.InputStream is=EventGenerator.class.getResourceAsStream(path);
+			
+			_scenarios[i] = org.savara.scenario.util.ScenarioModelUtil.deserialize(is);
+		}
+		
+		java.io.InputStream is=EventGenerator.class.getResourceAsStream("/scenarios/RoleServiceTypes.properties");
+		_roleToServiceType.load(is);
+		
+		is = EventGenerator.class.getResourceAsStream("/scenarios/ClientServerRoles.properties");
+		_clientServerRoles.load(is);
 	}
 	
 	public void run() {
@@ -79,50 +108,60 @@ public class EventGenerator {
 	}
 	
 	protected int displayOptions() {
-		int ret=0;
 		
 		System.out.println("\r\n-----------------------------\r\n");
 		System.out.println("0) Exit");
-		System.out.println("1) Send successful purchase");
-		System.out.println("2) Send unsuccessful purchase");
-		System.out.println("3) Random successful or unsuccessful purchase");
+		
+		for (int i=0; i < _scenarioNames.length; i++) {
+			System.out.println((i+1)+") Enact scenario '"+_scenarioNames[i]+"'");
+		}
+		
+		System.out.println((_scenarioNames.length+1)+") Random scenario");
 		
 		System.out.println("Enter option:");
 		
-		ret = getInt(0);
+		final int ret = getInt(0);
 		
 		if (ret != 0) {
 			System.out.println("Enter number of iterations (default 1):");
 			int repeat=getInt(1);
 			
 			for (int i=0; i < repeat; i++) {
-				switch(ret) {
-				case 1:
+				
+				if (ret < (_scenarioNames.length+1)) {
+					
 					_executor.execute(new Runnable() {
 						public void run() {						
-							sendSuccessfulPurchase("id"+_random.nextLong(), getPrincipal(), getDelay());
+							runScenario(ret-1, "id"+_random.nextLong(), getPrincipal(), getDelay());
 						}
 					});
-					break;
-				case 2:
-					_executor.execute(new Runnable() {
-						public void run() {						
-							sendUnsuccessfulPurchase("id"+_random.nextLong(), getPrincipal(), getDelay());
-						}
-					});
-					break;
-				case 3:
+				} else {
 					_executor.execute(new Runnable() {
 						public void run() {
-							int val=_random.nextInt();
-							if ((val % 2) == 0) {
-								sendSuccessfulPurchase("id"+_random.nextLong(), getPrincipal(), getDelay());
-							} else {
-								sendUnsuccessfulPurchase("id"+_random.nextLong(), getPrincipal(), getDelay());
+							
+							// Select scenario to run
+							int max=0;
+							
+							for (int weight : _scenarioWeightings) {
+								max += weight;
 							}
+							
+							int weighted=(int)Math.round(Math.random()*max);
+							
+							int scenario=0;
+							int cur=0;
+							
+							for (scenario=0; scenario < _scenarioWeightings.length; scenario++) {
+								cur += _scenarioWeightings[scenario];
+								
+								if (cur >= weighted) {
+									break;
+								}
+							}
+							
+							runScenario(scenario, "id"+_random.nextLong(), getPrincipal(), getDelay());
 						}
 					});
-					break;
 				}
 			}
 		}
@@ -130,9 +169,75 @@ public class EventGenerator {
 		return(ret);
 	}
 	
+	protected void runScenario(int scenarioNum, String id, String principal, long delay) {
+		//System.out.println("Running scenario '"+_scenarioNames[scenarioNum]+"' id="+id);
+
+		org.savara.scenario.model.Scenario scenario=_scenarios[scenarioNum];
+		
+		java.util.List<String> correlations=new java.util.ArrayList<String>();
+		
+		for (org.savara.scenario.model.Event event : scenario.getEvent()) {
+			
+			if (event instanceof org.savara.scenario.model.MessageEvent) {
+				org.savara.scenario.model.MessageEvent me=(org.savara.scenario.model.MessageEvent)event;
+				
+				String roleName=((org.savara.scenario.model.Role)me.getRole()).getName();
+				
+				ComponentId cid=ComponentId.newBuilder().setComponentType(roleName).
+									setInstanceId(roleName+"-"+id).build();
+
+				ServiceInvocation.Builder siBuilder=ServiceInvocation.newBuilder();
+				
+				String correlation=me.getOperationName()+"-"+roleName+"-"+id;
+				boolean request=!correlations.contains(correlation);
+				ServiceInvocation.Direction direction=
+							me instanceof org.savara.scenario.model.ReceiveEvent ?
+									ServiceInvocation.Direction.INBOUND :
+									ServiceInvocation.Direction.OUTBOUND;
+				
+				String serverRole=roleName;
+				
+				if ((request && direction == ServiceInvocation.Direction.OUTBOUND) ||
+						(!request && direction == ServiceInvocation.Direction.INBOUND)) {
+					serverRole = _clientServerRoles.getProperty(roleName+"."+me.getOperationName());
+				}
+				
+				correlations.add(correlation);
+				
+				siBuilder.setServiceType(_roleToServiceType.getProperty(serverRole)).
+							setCorrelation(correlation).
+							setOperation(me.getOperationName()).
+							setInvocationType(request ? ServiceInvocation.InvocationType.REQUEST :
+								ServiceInvocation.InvocationType.RESPONSE).
+							setDirection(direction);
+				
+				if (me.getFaultName() != null && me.getFaultName().trim().length() > 0) {
+					siBuilder.setFault(me.getFaultName());
+				}
+				
+				for (org.savara.scenario.model.Parameter p : me.getParameter()) {
+					Message m=Message.newBuilder().setMessageType(p.getType()).
+							setContent(getMessageContent(id, p.getValue())).build();
+					
+					siBuilder.addMessage(m);
+				}
+
+				Activity activity=Activity.newBuilder().setId(cid).setTimestamp(System.currentTimeMillis()).
+							setServiceInvocation(siBuilder.build()).setPrincipal(principal).build();
+
+				_collector.process(activity);			
+			}
+		}
+		
+	}
+	
 	protected String getMessageContent(String id, String name) {
 		String ret=null;
-		String path="messages/"+name+".xml";
+		String path="messages/"+name;
+		
+		if (!path.endsWith(".xml")) {
+			path += ".xml";
+		}
 		
 		java.io.InputStream is=ClassLoader.getSystemResourceAsStream(path);
 		

@@ -78,6 +78,21 @@ public class ConversationDetails implements java.io.Serializable {
 		}
 	}
 	
+	public String toString() {
+		return("Conversation "+_id+" valid="+_valid+" details="+_details);
+	}
+	
+	public int hashCode() {
+		return(_id.hashCode());
+	}
+	
+	public boolean equals(Object obj) {
+		if (obj instanceof ConversationDetails) {
+			return (((ConversationDetails)obj)._id.equals(_id));
+		}
+		return(false);
+	}
+	
 	/**
 	 * This class provides a container for the activity summary and monitoring results
 	 * information.
@@ -117,6 +132,10 @@ public class ConversationDetails implements java.io.Serializable {
 		 */
 		public MonitorResult getResult() {
 			return(_result);
+		}
+		
+		public String toString() {
+			return("Activity="+_activity+" Result="+_result);
 		}
 	}
 }

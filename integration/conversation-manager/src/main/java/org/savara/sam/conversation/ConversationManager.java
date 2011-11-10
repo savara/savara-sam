@@ -36,6 +36,7 @@ import org.savara.sam.activity.ActivityModel.Activity;
 import org.savara.sam.activity.ActivitySummary;
 import org.savara.sam.activity.ServiceModel;
 import org.savara.sam.aq.ActiveChangeType;
+import org.savara.sam.aq.ActiveQuery;
 import org.savara.sam.aq.server.JEEActiveQueryManager;
 import org.scribble.common.resource.ResourceContent;
 import org.scribble.protocol.DefaultProtocolContext;
@@ -159,6 +160,28 @@ public class ConversationManager extends JEEActiveQueryManager<ActivitySummary,C
 		return(ret);
 	}
 		
+	protected ActiveChangeType processChangeType(ConversationDetails targetActivity, ActiveChangeType changeType) {
+		ActiveChangeType ret=changeType;
+		
+		switch (changeType) {
+		case Add:
+			ActiveQuery<ConversationDetails> aq=getActiveQuery();
+			if (aq != null) {
+				// If activity already in contents, then change to update
+				if (aq.getContents().contains(targetActivity)) {
+					changeType = ActiveChangeType.Update;
+				}
+			}
+			break;
+		case Update:
+			break;
+		case Remove:
+			break;
+		}
+		
+		return(ret);
+	}
+
 	public static class InJarProtocolRepository implements ProtocolRepository {
 		
 		private ProtocolModel _model=null;

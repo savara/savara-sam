@@ -34,6 +34,7 @@ import javax.jms.MessageListener;
 
 import org.savara.sam.activity.ActivityAnalysis;
 import org.savara.sam.activity.ActivitySummary;
+import org.savara.sam.aq.ActiveChangeType;
 import org.savara.sam.aq.server.JEEActiveQueryManager;
 
 @MessageDriven(name = "PurchasingResponseTime", messageListenerInterface = MessageListener.class,
@@ -78,7 +79,8 @@ public class PurchasingResponseTime extends JEEActiveQueryManager<ActivitySummar
 		super.close();
 	}
 
-	protected ActivityAnalysis process(ActivitySummary activity) {
+	@Override
+	protected ActivityAnalysis processActivity(ActivitySummary activity, ActiveChangeType changeType) {
 		ActivityAnalysis ret=null;
 		
 		// Check if service interaction with correlation
