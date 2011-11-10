@@ -34,12 +34,18 @@ public class MainLayoutPresenter extends Presenter<MainLayoutPresenter.MainLayou
 	private AQMonitorServiceAsync service;
 		
 	public interface MainLayoutView extends View {
-		
-		public void setStatistics(Statistic[] value);
-		
-		public void setResponsetime(ResponseTime[] rts);
-		
+				
 		public void setPresenter(MainLayoutPresenter presenter);
+		
+		public void refreshTxnRatioChart(Statistic[] value, boolean isSmall);
+		
+		public void refreshTxnBarChart(Statistic[] value, boolean isSmall);
+		
+		public void refreshResponseTime(ResponseTime[] value, boolean isSmall);
+		
+		public void setStats(Statistic[] stats);
+		
+		public void setRespTimes(ResponseTime[] respTimes);
 		
 	}
 	
@@ -68,25 +74,36 @@ public class MainLayoutPresenter extends Presenter<MainLayoutPresenter.MainLayou
 	public void onBind() {
 		super.onBind();
 		getView().setPresenter(this);
-		setStatisticsData();
-		setResponseTimes();
-
 	}
 	
-	public void setStatisticsData() {
+	
+	public void refreshTxnRatio(final boolean isSmall) {
 		service.getStatistics(new AsyncCallback<Statistic[]>() {
 			public void onFailure(Throwable t) {
 				System.out.println(t);
 			}
 
 			public void onSuccess(Statistic[] value) {
-				getView().setStatistics(value);
-			}
-			
+				getView().setStats(value);
+				getView().refreshTxnRatioChart(value, isSmall);
+			}			
 		});
 	}
 	
-	public void setResponseTimes() {
+	public void refreshTxnBarChart(final boolean isSmall) {
+		service.getStatistics(new AsyncCallback<Statistic[]>() {
+			public void onFailure(Throwable t) {
+				System.out.println(t);
+			}
+
+			public void onSuccess(Statistic[] value) {
+				getView().setStats(value);
+				getView().refreshTxnBarChart(value, isSmall);
+			}			
+		});
+	}
+	
+	public void refreshTxnResponseTime(final boolean isSmall) {
 		service.getResponseTimes(new AsyncCallback<ResponseTime[]>() {
 
 			public void onFailure(Throwable t) {
@@ -94,10 +111,11 @@ public class MainLayoutPresenter extends Presenter<MainLayoutPresenter.MainLayou
 			}
 
 			public void onSuccess(ResponseTime[] value) {
-				getView().setResponsetime(value);
+				getView().setRespTimes(value);
+				getView().refreshResponseTime(value, isSmall);
 			}
 			
-		});		
+		});	
 	}
 	
 }
