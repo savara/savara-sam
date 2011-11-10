@@ -4,7 +4,6 @@
 package org.savara.sam.web.server;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.savara.sam.activity.ActivityAnalysis;
@@ -68,10 +67,9 @@ public class AQMonitorServiceImpl extends RemoteServiceServlet implements AQMoni
 
 
 	public ResponseTime[] getResponseTimes() {
-		Iterator<ActivityAnalysis> iter= _responseTime.getResults();
+		List<ActivityAnalysis> contents= _responseTime.getContents();
 		List<ResponseTime> result = new ArrayList<ResponseTime>();
-		while (iter.hasNext()) {
-			ActivityAnalysis aa = iter.next();
+		for (ActivityAnalysis aa : contents) {
 			ResponseTime rt = new ResponseTime();
 			rt.setRequestTime((Long)aa.getProperty("requestTimestamp").getValue());
 			rt.setResponseTime((Long)aa.getProperty("responseTime").getValue());
