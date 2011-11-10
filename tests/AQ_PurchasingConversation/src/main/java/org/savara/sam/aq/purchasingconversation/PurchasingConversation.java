@@ -65,8 +65,11 @@ public class PurchasingConversation extends ConversationManager implements Messa
 		
 		getResolver().addMessageTypeIDLocator("{http://www.jboss.org/examples/store}BuyRequest", "//@id");
 		getResolver().addMessageTypeIDLocator("{http://www.jboss.org/examples/store}BuyConfirmed", "//@id");
+		getResolver().addMessageTypeIDLocator("{http://www.jboss.org/examples/store}BuyFailed", "//@id");
+		getResolver().addMessageTypeIDLocator("{http://www.jboss.org/examples/store}AccountNotFound", "//@id");
 		getResolver().addMessageTypeIDLocator("{http://www.jboss.org/examples/creditAgency}CreditCheckRequest", "//@id");
 		getResolver().addMessageTypeIDLocator("{http://www.jboss.org/examples/creditAgency}CreditRating", "//@id");
+		getResolver().addMessageTypeIDLocator("{http://www.jboss.org/examples/creditAgency}CustomerUnknown", "//@id");
 		getResolver().addMessageTypeIDLocator("{http://www.jboss.org/examples/logistics}DeliveryRequest", "//@id");
 		getResolver().addMessageTypeIDLocator("{http://www.jboss.org/examples/logistics}DeliveryConfirmed", "//@id");
 	}

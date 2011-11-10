@@ -18,6 +18,7 @@
 package org.savara.sam.activity;
 
 import org.savara.sam.activity.ServiceModel.ServiceInvocation;
+import org.savara.sam.activity.ServiceModel.ServiceInvocation.Direction;
 import org.savara.sam.activity.ServiceModel.ServiceInvocation.InvocationType;
 import org.savara.sam.activity.ActivityModel.Activity;
 
@@ -89,6 +90,7 @@ public class ActivitySummary implements java.io.Serializable {
 		private String _serviceType=null;
 		private String _fault=null;
 		private boolean _request=false;
+		private boolean _inbound=false;
 		private String _correlation=null;
 		
 		public ServiceInvocationSummary(ServiceInvocation si) {
@@ -100,6 +102,7 @@ public class ActivitySummary implements java.io.Serializable {
 			_serviceType = si.getServiceType();
 			_fault = si.getFault();
 			_request = (si.getInvocationType() == InvocationType.REQUEST);
+			_inbound = (si.getDirection() == Direction.INBOUND);
 			_correlation = si.getCorrelation();
 		}
 		
@@ -117,6 +120,10 @@ public class ActivitySummary implements java.io.Serializable {
 		
 		public boolean isRequest() {
 			return (_request);
+		}
+		
+		public boolean isInbound() {
+			return (_inbound);
 		}
 		
 		public String getCorrelation() {

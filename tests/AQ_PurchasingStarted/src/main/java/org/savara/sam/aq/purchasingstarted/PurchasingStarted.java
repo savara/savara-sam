@@ -89,7 +89,8 @@ public class PurchasingStarted extends JEEActiveQueryManager<ActivitySummary,Act
 			if (si != null &&
 					si.getServiceType().equals("{http://www.jboss.org/examples/store}Store") &&
 					si.getOperation().equals("buy") &&
-					si.isRequest()) {
+					si.isRequest() &&
+					si.isInbound()) {
 				return (true);
 			}
 

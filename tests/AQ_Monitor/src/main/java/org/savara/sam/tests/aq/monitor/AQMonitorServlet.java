@@ -26,13 +26,13 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.savara.monitor.ConversationId;
 import org.savara.sam.activity.ActivityAnalysis;
 import org.savara.sam.activity.ActivitySummary;
 import org.savara.sam.aq.ActiveListener;
 import org.savara.sam.aq.ActiveQuery;
 import org.savara.sam.aq.ActiveQueryManager;
 import org.savara.sam.aq.Predicate;
+import org.savara.sam.conversation.ConversationDetails;
 
 @WebServlet("/Main")
 public class AQMonitorServlet extends HttpServlet {
@@ -56,8 +56,8 @@ public class AQMonitorServlet extends HttpServlet {
 	private ActiveQuery<ActivitySummary> _failedTxns;
 	private ActiveListener<ActivitySummary> _txnRatioListener;
 	
-	private ActiveQuery<ActivityAnalysis> _purchasingConversation;
-	private ActiveListener<ActivityAnalysis> _purchasingConversationListener;
+	private ActiveQuery<ConversationDetails> _purchasingConversation;
+	private ActiveListener<ConversationDetails> _purchasingConversationListener;
 	
 	private StringBuffer _responseTimeReport=new StringBuffer();
 	private StringBuffer _txnRatioReport=new StringBuffer();
@@ -223,7 +223,7 @@ public class AQMonitorServlet extends HttpServlet {
 		}		
 	}
 	
-	public class PurchasingConversationNotifier implements ActiveListener<ActivityAnalysis> {
+	public class PurchasingConversationNotifier implements ActiveListener<ConversationDetails> {
 
 		public PurchasingConversationNotifier() {
 			buildReport();
@@ -234,24 +234,23 @@ public class AQMonitorServlet extends HttpServlet {
 			
 			_purchasingConversationReport.append("<h3>Purchasing Conversation Report ("+new java.util.Date()+")</h3>");
 			
-			for (ActivityAnalysis aa : _purchasingConversation.getContents()) {
-				ConversationId cid=(ConversationId)aa.getProperty("conversationId").getValue();
-				_purchasingConversationReport.append("<h5>Conversation id "+cid+"</h5>");
+			for (ConversationDetails cd : _purchasingConversation.getContents()) {
+				_purchasingConversationReport.append("<h5>"+cd+"</h5>");
 			}
 		}
 		
 		@Override
-		public void valueAdded(ActivityAnalysis value) {
+		public void valueAdded(ConversationDetails value) {
 			buildReport();
 		}
 
 		@Override
-		public void valueUpdated(ActivityAnalysis value) {
+		public void valueUpdated(ConversationDetails value) {
 			buildReport();
 		}
 
 		@Override
-		public void valueRemoved(ActivityAnalysis value) {
+		public void valueRemoved(ConversationDetails value) {
 			buildReport();
 		}		
 

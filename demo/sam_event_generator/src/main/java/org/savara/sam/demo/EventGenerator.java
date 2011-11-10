@@ -30,8 +30,11 @@ public class EventGenerator {
 	private static String[] _principals=new String[] { "gary", "jeff", "steve", "viv", "joe", "jane", "john", "lisa" };
 	private static String[] _scenarioNames=new String[] { "SuccessfulPurchase",
 									"InvalidStoreBehaviour", "CustomerUnknown",
-									"InvalidStoreLogic", "InsufficientCredit" };
-	private static int[] _scenarioWeightings=new int[] { 12, 1, 2, 1, 4 };
+									//"InvalidStoreLogic",  - not included for now, as assertions are not supported in the monitor yet
+									"InsufficientCredit" };
+	private static int[] _scenarioWeightings=new int[] { 12, 1, 2, 
+									//1, - associated with InvalidStoreLogic
+									4 };
 	
 	private org.savara.scenario.model.Scenario[] _scenarios=
 					new org.savara.scenario.model.Scenario[_scenarioNames.length];
@@ -132,7 +135,7 @@ public class EventGenerator {
 					
 					_executor.execute(new Runnable() {
 						public void run() {						
-							runScenario(ret-1, "id"+_random.nextLong(), getPrincipal(), getDelay());
+							runScenario(ret-1, "id"+_random.nextLong(), getPrincipal());
 						}
 					});
 				} else {
@@ -159,7 +162,7 @@ public class EventGenerator {
 								}
 							}
 							
-							runScenario(scenario, "id"+_random.nextLong(), getPrincipal(), getDelay());
+							runScenario(scenario, "id"+_random.nextLong(), getPrincipal());
 						}
 					});
 				}
@@ -169,7 +172,7 @@ public class EventGenerator {
 		return(ret);
 	}
 	
-	protected void runScenario(int scenarioNum, String id, String principal, long delay) {
+	protected void runScenario(int scenarioNum, String id, String principal) {
 		//System.out.println("Running scenario '"+_scenarioNames[scenarioNum]+"' id="+id);
 
 		org.savara.scenario.model.Scenario scenario=_scenarios[scenarioNum];
@@ -225,7 +228,21 @@ public class EventGenerator {
 				Activity activity=Activity.newBuilder().setId(cid).setTimestamp(System.currentTimeMillis()).
 							setServiceInvocation(siBuilder.build()).setPrincipal(principal).build();
 
-				_collector.process(activity);			
+				_collector.process(activity);
+				
+			} else if (event instanceof org.savara.scenario.model.TimeElapsedEvent) {
+				org.savara.scenario.model.TimeElapsedEvent tee=
+						(org.savara.scenario.model.TimeElapsedEvent)event;
+				
+				try {
+					long duration=Long.parseLong(tee.getDuration());
+					
+					long actualDelay=getDelay(duration);
+					
+					Thread.sleep(actualDelay);
+				} catch(Exception e) {
+					e.printStackTrace();
+				}
 			}
 		}
 		
@@ -264,167 +281,14 @@ public class EventGenerator {
 		
 		return(ret);
 	}
-	
-	protected void sendSuccessfulPurchase(String id, String principal, long delay) {
-		String buyCorrelation="buy"+id;
-		String checkCreditCorrelation="checkCredit"+id;
-		String deliverCorrelation="deliver"+id;
 
-		// Buy Request
-		ComponentId cid=ComponentId.newBuilder().setComponentType("Store").setInstanceId(id).build();
-
-		Message m=Message.newBuilder().setMessageType("{http://www.jboss.org/examples/store}BuyRequest").
-									setContent(getMessageContent(id, "BuyRequest")).build();
-		
-		ServiceInvocation si=ServiceInvocation.newBuilder().setServiceType("{http://www.jboss.org/examples/store}Store").setCorrelation(buyCorrelation).
-					setOperation("buy").setInvocationType(ServiceInvocation.InvocationType.REQUEST).
-					setDirection(ServiceInvocation.Direction.INBOUND).addMessage(m).
-					build();
-
-		Activity activity=Activity.newBuilder().setId(cid).setTimestamp(System.currentTimeMillis()).
-					setServiceInvocation(si).setPrincipal(principal).build();
-
-		_collector.process(activity);
-		
-		// Check Credit Request
-		cid = ComponentId.newBuilder().setComponentType("Store").setInstanceId(id).build();
-
-		m = Message.newBuilder().setMessageType("{http://www.jboss.org/examples/creditAgency}CreditCheckRequest").
-				setContent(getMessageContent(id, "CreditCheckRequest")).build();
-
-		si = ServiceInvocation.newBuilder().setServiceType("{http://www.jboss.org/examples/creditAgency}CreditAgency").setCorrelation(checkCreditCorrelation).
-				setOperation("checkCredit").setInvocationType(ServiceInvocation.InvocationType.REQUEST).
-				setDirection(ServiceInvocation.Direction.OUTBOUND).addMessage(m).
-				build();
-		
-		activity = Activity.newBuilder().setId(cid).setTimestamp(System.currentTimeMillis()).
-				setServiceInvocation(si).setPrincipal(principal).build();
-
-		_collector.process(activity);
-
-		if (delay > 0) {
-			try {
-				Thread.sleep(delay/2);
-			} catch(Exception e) {
-				e.printStackTrace();
-			}
-		}
-
-		// Check Credit Response
-		cid = ComponentId.newBuilder().setComponentType("Store").setInstanceId(id).build();
-
-		m = Message.newBuilder().setMessageType("{http://www.jboss.org/examples/creditAgency}CreditRating").
-				setContent(getMessageContent(id, "CreditRating1")).build();
-
-		si = ServiceInvocation.newBuilder().setServiceType("{http://www.jboss.org/examples/creditAgency}CreditAgency").setCorrelation(checkCreditCorrelation).
-				setOperation("checkCredit").setInvocationType(ServiceInvocation.InvocationType.RESPONSE).
-				setDirection(ServiceInvocation.Direction.INBOUND).addMessage(m).
-				build();
-		
-		activity = Activity.newBuilder().setId(cid).setTimestamp(System.currentTimeMillis()).
-				setServiceInvocation(si).setPrincipal(principal).build();
-
-		_collector.process(activity);
-
-		// Logistics Deliver Request
-		cid = ComponentId.newBuilder().setComponentType("Store").setInstanceId(id).build();
-
-		m = Message.newBuilder().setMessageType("{http://www.jboss.org/examples/logistics}DeliveryRequest").
-				setContent(getMessageContent(id, "DeliveryRequest")).build();
-
-		si = ServiceInvocation.newBuilder().setServiceType("{http://www.jboss.org/examples/logistics}Logistics").setCorrelation(deliverCorrelation).
-				setOperation("deliver").setInvocationType(ServiceInvocation.InvocationType.REQUEST).
-				setDirection(ServiceInvocation.Direction.OUTBOUND).addMessage(m).
-				build();
-		
-		activity = Activity.newBuilder().setId(cid).setTimestamp(System.currentTimeMillis()).
-				setServiceInvocation(si).setPrincipal(principal).build();
-
-		_collector.process(activity);
-
-		if (delay > 0) {
-			try {
-				Thread.sleep(delay/2);
-			} catch(Exception e) {
-				e.printStackTrace();
-			}
-		}
-
-		// Logistics Deliver Response
-		cid = ComponentId.newBuilder().setComponentType("Store").setInstanceId(id).build();
-
-		m = Message.newBuilder().setMessageType("{http://www.jboss.org/examples/logistics}DeliveryConfirmed").
-				setContent(getMessageContent(id, "DeliveryConfirmed")).build();
-
-		si = ServiceInvocation.newBuilder().setServiceType("{http://www.jboss.org/examples/logistics}Logistics").setCorrelation(deliverCorrelation).
-				setOperation("deliver").setInvocationType(ServiceInvocation.InvocationType.RESPONSE).
-				setDirection(ServiceInvocation.Direction.INBOUND).addMessage(m).
-				build();
-		
-		activity = Activity.newBuilder().setId(cid).setTimestamp(System.currentTimeMillis()).
-				setServiceInvocation(si).setPrincipal(principal).build();
-
-		_collector.process(activity);
-
-		// Buy Response
-		cid = ComponentId.newBuilder().setComponentType("Store").setInstanceId(id).build();
-
-		m = Message.newBuilder().setMessageType("{http://www.jboss.org/examples/store}BuyConfirmed").
-				setContent(getMessageContent(id, "BuyConfirmed")).build();
-
-		si = ServiceInvocation.newBuilder().setServiceType("{http://www.jboss.org/examples/store}Store").setCorrelation(buyCorrelation).
-				setOperation("buy").setInvocationType(ServiceInvocation.InvocationType.RESPONSE).
-				setDirection(ServiceInvocation.Direction.OUTBOUND).addMessage(m).
-				build();
-
-		activity = Activity.newBuilder().setId(cid).setTimestamp(System.currentTimeMillis()).
-				setServiceInvocation(si).setPrincipal(principal).build();
-
-		_collector.process(activity);
-	}
-	
-	protected void sendUnsuccessfulPurchase(String id, String principal, long delay) {
-		String correlation="buy"+id;
-
-		ComponentId cid=ComponentId.newBuilder().setComponentType("Store").setInstanceId(id).build();
-
-		// Request
-		ServiceInvocation si=ServiceInvocation.newBuilder().setServiceType("Store").setCorrelation(correlation).
-					setOperation("buy").setInvocationType(ServiceInvocation.InvocationType.REQUEST).build();
-
-		Activity activity=Activity.newBuilder().setId(cid).setTimestamp(System.currentTimeMillis()).
-					setServiceInvocation(si).setPrincipal(principal).build();
-
-		_collector.process(activity);
-		
-		if (delay > 0) {
-			try {
-				Thread.sleep(delay);
-			} catch(Exception e) {
-				e.printStackTrace();
-			}
-		}
-
-		cid = ComponentId.newBuilder().setComponentType("Store").setInstanceId(id).build();
-
-		// Fault response
-		si = ServiceInvocation.newBuilder().setServiceType("Store").setCorrelation(correlation).
-				setOperation("buy").setInvocationType(ServiceInvocation.InvocationType.RESPONSE).
-				setFault("BuyFailed").build();
-
-		activity = Activity.newBuilder().setId(cid).setTimestamp(System.currentTimeMillis()).
-				setServiceInvocation(si).setPrincipal(principal).build();
-
-		_collector.process(activity);
-	}
-	
 	protected String getPrincipal() {
 		int pos=(int)(Math.random() * _principals.length);
 		return(_principals[pos]);
 	}
 	
-	protected long getDelay() {
-		int val=(int)(Math.random() * 5000);
-		return(5000 + val);
+	protected long getDelay(long duration) {
+		int val=(int)(Math.random() * duration);
+		return(duration + val);
 	}
 }

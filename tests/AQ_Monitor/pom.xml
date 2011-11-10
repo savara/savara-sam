@@ -80,6 +80,12 @@
          <scope>provided</scope>
       </dependency>
       <dependency>
+         <groupId>org.savara.sam.integration</groupId>
+         <artifactId>conversation-manager</artifactId>
+         <version>1.0.0-SNAPSHOT</version>
+         <scope>provided</scope>
+      </dependency>
+      <dependency>
          <groupId>org.savara.bundles</groupId>
          <artifactId>org.savara.monitor</artifactId>
          <version>${savara.version}</version>

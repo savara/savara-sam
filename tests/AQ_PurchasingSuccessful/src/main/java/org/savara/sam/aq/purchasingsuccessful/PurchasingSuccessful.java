@@ -90,6 +90,7 @@ public class PurchasingSuccessful extends JEEActiveQueryManager<ActivitySummary,
 					si.getServiceType().equals("{http://www.jboss.org/examples/store}Store") &&
 					si.getOperation().equals("buy") &&
 					!si.isRequest() &&
+					!si.isInbound() &&
 					(si.getFault() == null || si.getFault().trim().length() == 0)) {
 				return (true);
 			}

@@ -1,3 +1,4 @@
 Dependencies: org.savara export,
   org.savara.sam export,
-  deployment.active-query-server.jar
+  deployment.active-query-server.jar,
+  deployment.conversation-manager.jar

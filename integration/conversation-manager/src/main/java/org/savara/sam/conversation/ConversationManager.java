@@ -90,7 +90,7 @@ public class ConversationManager extends JEEActiveQueryManager<ActivitySummary,C
 	}
 	
 	protected void initMonitor(java.net.URI uri) {
-		ProtocolRepository pr=new InJarProtocolRepository(uri, "Store");
+		ProtocolRepository pr=new InJarProtocolRepository(uri);
 		
 		_monitor = new org.savara.monitor.impl.DefaultMonitor();
 		_monitor.setProtocolRepository(pr);
@@ -115,6 +115,8 @@ public class ConversationManager extends JEEActiveQueryManager<ActivitySummary,C
 					ServiceModel.ServiceInvocation.Direction.INBOUND ?
 							Direction.Inbound : Direction.Outbound);
 		mesg.setOperator(act.getServiceInvocation().getOperation());
+		mesg.setFault(act.getServiceInvocation().getFault());
+		
 		for (org.savara.sam.activity.ServiceModel.Message sm :
 						act.getServiceInvocation().getMessageList()) {
 			mesg.getTypes().add(sm.getMessageType());
@@ -152,8 +154,8 @@ public class ConversationManager extends JEEActiveQueryManager<ActivitySummary,C
 				}
 				_conversationDetails.replace(result.getConversationId(), ret);
 				
-			} else if (result.isValid()) {
-				LOG.severe("Monitor returned valid result, but with no conversation id");
+			} else {
+				LOG.severe("Monitor returned valid="+result.isValid()+" result, but with no conversation id");
 			}
 		}
 		
@@ -201,6 +203,15 @@ public class ConversationManager extends JEEActiveQueryManager<ActivitySummary,C
 			
 			try {
 				_model = parser.parse(context, new ResourceContent(uri), journal);
+
+				// If roles not explicitly defined, then initialise all roles
+				if (roles == null || roles.length == 0) {
+					java.util.List<Role> rlist=_model.getRoles();
+					roles = new String[rlist.size()];
+					for (int i=0; i < rlist.size(); i++) {
+						roles[i] = rlist.get(i).getName();
+					}
+				}
 				
 				// Project to relevant roles
 				for (String role : roles) {
