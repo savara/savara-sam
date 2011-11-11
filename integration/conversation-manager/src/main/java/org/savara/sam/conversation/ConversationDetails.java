@@ -33,7 +33,9 @@ public class ConversationDetails implements java.io.Serializable {
 	private ConversationId _id=null;
 	private boolean _valid=true;
 	private java.util.List<ActivityResultDetails> _details=new java.util.ArrayList<ActivityResultDetails>();
-
+	private long _startTimestamp=0;
+	private long _endTimestamp=0;
+	
 	/**
 	 * This is the constructor for the conversation details.
 	 * 
@@ -71,6 +73,13 @@ public class ConversationDetails implements java.io.Serializable {
 	 * @param result The optional monitoring result
 	 */
 	public void addActivity(ActivitySummary activity, MonitorResult result) {
+		
+		if (_startTimestamp == 0) {
+			_startTimestamp = activity.getTimestamp();
+		}
+		
+		_endTimestamp = activity.getTimestamp();
+		
 		_details.add(new ActivityResultDetails(activity, result));
 		
 		if (result != null && !result.isValid()) {
@@ -78,8 +87,17 @@ public class ConversationDetails implements java.io.Serializable {
 		}
 	}
 	
+	public long getStartTimestamp() {
+		return(_startTimestamp);
+	}
+	
+	public long getEndTimestamp() {
+		return(_endTimestamp);
+	}
+	
 	public String toString() {
-		return("Conversation "+_id+" valid="+_valid+" details="+_details);
+		return("Conversation "+_id+" valid="+_valid+" start="+_startTimestamp+
+				" end="+_endTimestamp+" details="+_details);
 	}
 	
 	public int hashCode() {

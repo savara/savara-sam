@@ -49,6 +49,9 @@ public class PurchasingConversation extends ConversationManager implements Messa
 	@Resource(mappedName = "java:/JmsXA")
 	ConnectionFactory _connectionFactory;
 	
+	@Resource(mappedName = "java:/queue/aq/PurchasingConversation")
+	Destination _sourceQueue;
+	
 	@Resource(mappedName = "java:/topic/aq/Notifications")
 	Destination _notificationTopic;
 
@@ -61,7 +64,7 @@ public class PurchasingConversation extends ConversationManager implements Messa
 	
 	@PostConstruct
 	public void init() {
-		super.init(MODEL, _connectionFactory, _container, _notificationTopic);
+		super.init(MODEL, _connectionFactory, _container, _sourceQueue, _notificationTopic);
 		
 		getResolver().addMessageTypeIDLocator("{http://www.jboss.org/examples/store}BuyRequest", "//@id");
 		getResolver().addMessageTypeIDLocator("{http://www.jboss.org/examples/store}BuyConfirmed", "//@id");

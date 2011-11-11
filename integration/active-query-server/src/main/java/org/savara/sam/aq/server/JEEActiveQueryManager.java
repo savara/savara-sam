@@ -37,7 +37,11 @@ import org.savara.sam.aq.Predicate;
 
 public class JEEActiveQueryManager<S,T> implements MessageListener {
 	
+	private static final String AQ_RETRY_COUNT = "AQRetryCount";
+
 	private static final Logger LOG=Logger.getLogger(JEEActiveQueryManager.class.getName());
+	
+	private static final int MAX_RETRY = 6;
 	
 	private String _activeQueryName=null;
 	private String _parentActiveQueryName=null;
@@ -45,6 +49,7 @@ public class JEEActiveQueryManager<S,T> implements MessageListener {
 	private Connection _connection=null;
 	private Session _session=null;
 	private java.util.List<MessageProducer> _producers=new java.util.Vector<MessageProducer>();
+	private MessageProducer _source=null;
 	private MessageProducer _notifier=null;
 
 	private org.infinispan.manager.CacheContainer _container;
@@ -56,7 +61,7 @@ public class JEEActiveQueryManager<S,T> implements MessageListener {
 	}
 	
 	public void init(ConnectionFactory connectionFactory, org.infinispan.manager.CacheContainer container,
-						Destination notification, Destination... destinations) {
+						Destination source, Destination notification, Destination... destinations) {
 		_connectionFactory = connectionFactory;
 		_container = container;		
 		
@@ -65,6 +70,10 @@ public class JEEActiveQueryManager<S,T> implements MessageListener {
 		try {
 			_connection = _connectionFactory.createConnection();
 			_session = _connection.createSession(true, Session.AUTO_ACKNOWLEDGE);
+			
+			if (source != null) {
+				_source = _session.createProducer(source);
+			}
 			
 			if (notification != null) {
 				_notifier = _session.createProducer(notification);
@@ -154,7 +163,8 @@ public class JEEActiveQueryManager<S,T> implements MessageListener {
 	}
 	
 	@SuppressWarnings("unchecked")
-	protected T processActivity(S sourceActivity, ActiveChangeType changeType) {
+	protected T processActivity(S sourceActivity, ActiveChangeType changeType,
+						int retriesLeft) throws Exception {
 		return((T)sourceActivity);
 	}
 	
@@ -209,6 +219,7 @@ public class JEEActiveQueryManager<S,T> implements MessageListener {
 				java.util.Vector<T> forwardAdditions=null;
 				java.util.Vector<T> forwardUpdates=null;
 				java.util.Vector<T> forwardRemovals=null;
+				java.util.Vector<S> retries=null;
 				ActiveChangeType changeType=ActiveChangeType.valueOf(
 							message.getStringProperty(AQDefinitions.AQ_CHANGETYPE_PROPERTY));
 				
@@ -216,85 +227,121 @@ public class JEEActiveQueryManager<S,T> implements MessageListener {
 				
 				// TODO: If active query not returned, then need to postpone change
 				// Can it be added back on the queue? retry?
+				if (aq == null) {
+					retry((javax.jms.ObjectMessage)message);
+				} else {
+					int retriesLeft=MAX_RETRY-getRetryCount(message);
+					
+					if (LOG.isLoggable(Level.FINEST)) {
+						LOG.finest("AQ<"+getActiveQueryName()+"> message="+
+								message+" retriesLeft="+retriesLeft+" activities="+activities);
+					}
 				
-				for (S sourceActivity : activities) {
-					
-					T activity=processActivity(sourceActivity, changeType);
-					
-					if (activity != null) {
+					for (S sourceActivity : activities) {
+						T activity=null;
 						
-						switch(processChangeType(activity, changeType)) {
-						case Add:
-							if (aq.add(activity)) {
-								
-								// Propagate to child queries and topics
-								if (LOG.isLoggable(Level.FINEST)) {
-									LOG.finest("AQ "+_activeQueryName+" propagate addition activity = "+activity);
-								}
-								
-								if (forwardAdditions == null) {
-									forwardAdditions = new java.util.Vector<T>();
-								}
-								
-								forwardAdditions.add(activity);
-								
-							} else if (LOG.isLoggable(Level.FINEST)) {
-								LOG.finest("AQ "+_activeQueryName+" ignore addition activity = "+activity);
+						try {
+							activity = processActivity(sourceActivity, changeType, retriesLeft);
+						} catch(Exception e) {
+							if (retries == null) {
+								retries = new java.util.Vector<S>();
 							}
-							break;
-						case Update:
-							if (aq.update(activity)) {
-								
-								// Propagate to child queries and topics
-								if (LOG.isLoggable(Level.FINEST)) {
-									LOG.finest("AQ "+_activeQueryName+" propagate update activity = "+activity);
-								}
-								
-								if (forwardUpdates == null) {
-									forwardUpdates = new java.util.Vector<T>();
-								}
-								
-								forwardUpdates.add(activity);
-								
-							} else if (LOG.isLoggable(Level.FINEST)) {
-								LOG.finest("AQ "+_activeQueryName+" ignore update activity = "+activity);
-							}
-							break;
-						case Remove:
-							if (aq.remove(activity)) {
-								
-								// Propagate to child queries and topics
-								if (LOG.isLoggable(Level.FINEST)) {
-									LOG.finest("AQ "+_activeQueryName+" propagate removal activity = "+activity);
-								}
-								
-								if (forwardRemovals == null) {
-									forwardRemovals = new java.util.Vector<T>();
-								}
-								
-								forwardRemovals.add(activity);
-								
-							} else if (LOG.isLoggable(Level.FINEST)) {
-								LOG.finest("AQ "+_activeQueryName+" ignore removal activity = "+activity);
-							}
-							break;
+							retries.add(sourceActivity);
 						}
 						
-					} else if (LOG.isLoggable(Level.FINEST)) {
-						LOG.finest("AQ "+_activeQueryName+" didn't transform source activity = "+sourceActivity);
+						if (activity != null) {
+							
+							switch(processChangeType(activity, changeType)) {
+							case Add:
+								if (aq.add(activity)) {
+									
+									// Propagate to child queries and topics
+									if (LOG.isLoggable(Level.FINEST)) {
+										LOG.finest("AQ "+_activeQueryName+" propagate addition activity = "+activity);
+									}
+									
+									if (forwardAdditions == null) {
+										forwardAdditions = new java.util.Vector<T>();
+									}
+									
+									forwardAdditions.add(activity);
+									
+								} else if (LOG.isLoggable(Level.FINEST)) {
+									LOG.finest("AQ "+_activeQueryName+" ignore addition activity = "+activity);
+								}
+								break;
+							case Update:
+								if (aq.update(activity)) {
+									
+									// Propagate to child queries and topics
+									if (LOG.isLoggable(Level.FINEST)) {
+										LOG.finest("AQ "+_activeQueryName+" propagate update activity = "+activity);
+									}
+									
+									if (forwardUpdates == null) {
+										forwardUpdates = new java.util.Vector<T>();
+									}
+									
+									forwardUpdates.add(activity);
+									
+								} else if (LOG.isLoggable(Level.FINEST)) {
+									LOG.finest("AQ "+_activeQueryName+" ignore update activity = "+activity);
+								}
+								break;
+							case Remove:
+								if (aq.remove(activity)) {
+									
+									// Propagate to child queries and topics
+									if (LOG.isLoggable(Level.FINEST)) {
+										LOG.finest("AQ "+_activeQueryName+" propagate removal activity = "+activity);
+									}
+									
+									if (forwardRemovals == null) {
+										forwardRemovals = new java.util.Vector<T>();
+									}
+									
+									forwardRemovals.add(activity);
+									
+								} else if (LOG.isLoggable(Level.FINEST)) {
+									LOG.finest("AQ "+_activeQueryName+" ignore removal activity = "+activity);
+								}
+								break;
+							}
+							
+						} else if (LOG.isLoggable(Level.FINEST)) {
+							LOG.finest("AQ "+_activeQueryName+" didn't transform source activity = "+sourceActivity);
+						}
 					}
-				}
-				
-				if (forwardAdditions != null) {
-					forwardChange(forwardAdditions, ActiveChangeType.Add);
-				}
+					
+					if (retries != null) {
+						// Send retry request with only those activities that failed
+						if (LOG.isLoggable(Level.FINEST)) {
+							LOG.finest("Sending retry list with: "+retries);
+						}
 
-				if (forwardUpdates != null) {
-					forwardChange(forwardUpdates, ActiveChangeType.Update);
-				}
-
-				if (forwardRemovals != null) {
-					forwardChange(forwardRemovals, ActiveChangeType.Remove);
+						javax.jms.ObjectMessage om=_session.createObjectMessage(retries);
+						java.util.Enumeration<?> iter=message.getPropertyNames();
+						while (iter.hasMoreElements()) {
+							String name=(String)iter.nextElement();
+							if (!name.startsWith("JMSX")) {
+								om.setObjectProperty(name, message.getObjectProperty(name));
+							}
+						}
+						
+						retry(om);
+					}
+					
+					if (forwardAdditions != null) {
+						forwardChange(forwardAdditions, ActiveChangeType.Add);
+					}
+	
+					if (forwardUpdates != null) {
+						forwardChange(forwardUpdates, ActiveChangeType.Update);
+					}
+	
+					if (forwardRemovals != null) {
+						forwardChange(forwardRemovals, ActiveChangeType.Remove);
+					}
 				}
 
 			} catch(Exception e) {
@@ -327,6 +374,46 @@ public class JEEActiveQueryManager<S,T> implements MessageListener {
 				LOG.log(Level.SEVERE, "Failed to handle command '"+message+"'", e);
 			}
 		}
+	}
+	
+	protected int getRetryCount(javax.jms.Message message) throws Exception {
+		int ret=0;
+		
+		if (message.propertyExists(AQ_RETRY_COUNT)) {
+			ret = message.getIntProperty(AQ_RETRY_COUNT);
+		} else {
+			ret = 0;
+		}
+
+		return(ret);
+	}
+	
+	protected boolean retry(javax.jms.ObjectMessage message) throws Exception {
+		boolean ret=false;
+		
+		if (message.propertyExists(AQ_RETRY_COUNT)) {
+			int retryCount=message.getIntProperty(AQ_RETRY_COUNT);
+
+			if (retryCount < MAX_RETRY) {
+				message.setIntProperty(AQ_RETRY_COUNT, retryCount+1);
+				ret = true;
+			} else {
+				LOG.severe("Max retries ("+MAX_RETRY+") reached for message="+
+								message+" contents="+message.getObject());
+			}
+		} else {
+			message.setIntProperty(AQ_RETRY_COUNT, 1);
+			ret = true;
+		}
+		
+		if (ret) {
+			if (LOG.isLoggable(Level.FINEST)) {
+				LOG.finest("Retrying message: "+message);
+			}
+			_source.send(message);
+		}
+		
+		return(ret);
 	}
 	
 	protected void forwardChange(java.io.Serializable value, ActiveChangeType changeType)

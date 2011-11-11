@@ -55,6 +55,9 @@ public class PurchasingResponseTime extends JEEActiveQueryManager<ActivitySummar
 	@Resource(mappedName = "java:/topic/aq/Notifications")
 	Destination _notificationTopic;
 
+	@Resource(mappedName = "java:/queue/aq/PurchasingResponseTime")
+	Destination _sourceQueue;
+
 	@Resource(mappedName="java:jboss/infinispan/sam")
 	private org.infinispan.manager.CacheContainer _container;
 
@@ -69,7 +72,7 @@ public class PurchasingResponseTime extends JEEActiveQueryManager<ActivitySummar
 	
 	@PostConstruct
 	public void init() {
-		super.init(_connectionFactory, _container, _notificationTopic);
+		super.init(_connectionFactory, _container, _sourceQueue, _notificationTopic);
 
 		_siCache = _container.getCache("serviceInvocations");
 	}
@@ -80,7 +83,8 @@ public class PurchasingResponseTime extends JEEActiveQueryManager<ActivitySummar
 	}
 
 	@Override
-	protected ActivityAnalysis processActivity(ActivitySummary activity, ActiveChangeType changeType) {
+	protected ActivityAnalysis processActivity(ActivitySummary activity, ActiveChangeType changeType,
+					int retriesLeft) throws Exception {
 		ActivityAnalysis ret=null;
 		
 		// Check if service interaction with correlation

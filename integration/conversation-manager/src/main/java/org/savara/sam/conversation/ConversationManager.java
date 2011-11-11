@@ -61,8 +61,8 @@ public class ConversationManager extends JEEActiveQueryManager<ActivitySummary,C
 	
 	public void init(String model, ConnectionFactory connectionFactory,
 				org.infinispan.manager.CacheContainer container,
-					Destination notification, Destination... destinations) {
-		super.init(connectionFactory, container, notification, destinations);
+				Destination source, Destination notification, Destination... destinations) {
+		super.init(connectionFactory, container, source, notification, destinations);
 		
 		_container = container;
 		
@@ -99,15 +99,20 @@ public class ConversationManager extends JEEActiveQueryManager<ActivitySummary,C
 	}
 
 	@Override
-	protected ConversationDetails processActivity(ActivitySummary activity, ActiveChangeType changeType) {
+	protected ConversationDetails processActivity(ActivitySummary activity, ActiveChangeType changeType,
+								int retriesLeft) throws Exception {
 		ConversationDetails ret=null;
 		
 		// Pull full activity event with message content
 		Activity act=_activities.get(activity.getId());
 		
 		if (act == null) {
-			LOG.severe("Conversation manager failed to retrieve activity '"+activity.getId()+"'");
-			return (null);
+			if (LOG.isLoggable(Level.FINE)) {
+				LOG.fine("Conversation manager failed to retrieve activity '"+activity.getId()+"' - retrying...");
+			}
+			throw new Exception("Failed to find activity with activity id '"+activity.getId()+"' - retrying");
+		} else if (LOG.isLoggable(Level.FINEST)) {
+			LOG.finest("Conversation manager retrieved activity '"+activity.getId()+"'");
 		}
 		
 		Message mesg=new Message();
@@ -135,7 +140,19 @@ public class ConversationManager extends JEEActiveQueryManager<ActivitySummary,C
 
 			if (result.getConversationId() != null) {
 				
+				// If retries remaining, and result is invalid, then retry
+				if (retriesLeft > 0 && !result.isValid()) {
+					if (LOG.isLoggable(Level.FINEST)) {
+						LOG.finest("Conversation '"+result.getConversationId()+
+							"' failed to validate: "+activity+" - so retrying...");
+					}
+					throw new Exception("Conversation '"+result.getConversationId()+
+							"' failed to validate: "+activity);
+				}
+				
 				// Add activity summary to conversation details
+				_conversationDetails.getAdvancedCache().lock(result.getConversationId());
+				
 				ret = _conversationDetails.get(result.getConversationId());
 				
 				if (ret == null) {

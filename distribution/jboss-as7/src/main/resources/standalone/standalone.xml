@@ -190,13 +190,34 @@
                 </local-cache>
             </cache-container>
             <cache-container name="sam" default-cache="queries">
+<!--
+		<transport stack="tcp"/>
+		<replicated-cache name="activities" mode="ASYNC" batching="true">
+		    <locking isolation="REPEATABLE_READ"/>
+		    <file-store/>
+		</replicated-cache>
+		<replicated-cache name="queries" mode="ASYNC" batching="true">
+		    <locking isolation="REPEATABLE_READ"/>
+		    <file-store/>
+		</replicated-cache>
+		<replicated-cache name="serviceInvocations" mode="ASYNC" batching="true">
+		    <locking isolation="REPEATABLE_READ"/>
+		    <file-store/>
+		</replicated-cache>
+		<replicated-cache name="conversationSessions" mode="ASYNC" batching="true">
+		    <locking isolation="REPEATABLE_READ"/>
+		    <file-store/>
+		</replicated-cache>
+		<replicated-cache name="conversationDetails" mode="ASYNC" batching="true">
+		    <locking isolation="REPEATABLE_READ"/>
+		    <file-store/>
+		</replicated-cache>
+-->
                 <local-cache name="activities">
                     <eviction strategy="LRU" max-entries="10000"/>
-                    <expiration max-idle="100000"/>
                 </local-cache>
                 <local-cache name="queries">
                     <eviction strategy="LRU" max-entries="10000"/>
-                    <expiration max-idle="100000"/>
                 </local-cache>
                 <local-cache name="serviceInvocations">
                     <eviction strategy="LRU" max-entries="10000"/>
@@ -204,11 +225,9 @@
                 </local-cache>
                 <local-cache name="conversationSessions">
                     <eviction strategy="LRU" max-entries="10000"/>
-                    <expiration max-idle="100000"/>
                 </local-cache>
                 <local-cache name="conversationDetails">
                     <eviction strategy="LRU" max-entries="10000"/>
-                    <expiration max-idle="100000"/>
                 </local-cache>
             </cache-container>
         </subsystem>

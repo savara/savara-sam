@@ -50,6 +50,9 @@ public class Purchasing extends JEEActiveQueryManager<ActivitySummary,ActivitySu
 	@Resource(mappedName = "java:/JmsXA")
 	ConnectionFactory _connectionFactory;
 	
+	@Resource(mappedName = "java:/queue/aq/Purchasing")
+	Destination _sourceQueue;
+	
 	@Resource(mappedName = "java:/queue/aq/PurchasingStarted")
 	Destination _purchasingStarted;
 	
@@ -77,7 +80,8 @@ public class Purchasing extends JEEActiveQueryManager<ActivitySummary,ActivitySu
 	
 	@PostConstruct
 	public void init() {
-		super.init(_connectionFactory, _container, _notificationTopic, _purchasingStarted, _purchasingSuccessful,
+		super.init(_connectionFactory, _container, _sourceQueue, _notificationTopic,
+				_purchasingStarted, _purchasingSuccessful,
 				_purchasingUnsuccessful, _purchasingResponseTime, _purchasingConversation);
 	}
 

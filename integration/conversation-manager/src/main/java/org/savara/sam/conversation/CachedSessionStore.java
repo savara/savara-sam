@@ -39,20 +39,34 @@ public class CachedSessionStore implements SessionStore {
 	
 	public Serializable create(ProtocolId pid, ConversationId cid,
 							Serializable value) {
-		java.io.Serializable ret=_cache.put(new ProtocolConversationKey(pid, cid), value);
-		
 		if (LOG.isLoggable(Level.FINEST)) {
-			LOG.finest("Create session for pid="+pid+" cid="+cid+" value="+value);			
+			LOG.finest("Create session for pid="+pid+" cid="+cid+" value="+value);	
+		}
+
+		java.io.Serializable ret=_cache.put(new ProtocolConversationKey(pid, cid), value);
+				
+		if (ret != null && value != ret) {
+			LOG.warning("Created session '"+value+"' is not same as returned '"+ret+"'");
 		}
 		
+		if (LOG.isLoggable(Level.FINEST)) {
+			LOG.finest("Created session for pid="+pid+" cid="+cid+" value="+value+" ret="+ret);	
+		}
+
 		return (ret);
 	}
 
 	public Serializable find(ProtocolId pid, ConversationId cid) {
-		java.io.Serializable ret=_cache.get(new ProtocolConversationKey(pid, cid));
+		ProtocolConversationKey key=new ProtocolConversationKey(pid, cid);
 		
 		if (LOG.isLoggable(Level.FINEST)) {
-			LOG.finest("Find session for pid="+pid+" cid="+cid+" ret="+ret);			
+			LOG.finest("Finding session for pid="+pid+" cid="+cid);			
+		}
+		
+		java.io.Serializable ret=_cache.get(key);
+		
+		if (LOG.isLoggable(Level.FINEST)) {
+			LOG.finest("Found session for pid="+pid+" cid="+cid+" ret="+ret);			
 		}
 		
 		return (ret);
@@ -63,7 +77,11 @@ public class CachedSessionStore implements SessionStore {
 			LOG.finest("Remove session for pid="+pid+" cid="+cid);			
 		}
 
-		_cache.remove(new ProtocolConversationKey(pid, cid));
+		Serializable session=_cache.remove(new ProtocolConversationKey(pid, cid));
+		
+		if (LOG.isLoggable(Level.FINEST)) {
+			LOG.finest("Removed session for pid="+pid+" cid="+cid+" session="+session);			
+		}
 	}
 
 	public void setConfiguration(Configuration config) {
@@ -71,11 +89,21 @@ public class CachedSessionStore implements SessionStore {
 
 	public void update(ProtocolId pid, ConversationId cid,
 					Serializable value) {
-		if (LOG.isLoggable(Level.FINEST)) {
-			LOG.finest("Update session for pid="+pid+" cid="+cid+" value="+value);			
-		}
+		ProtocolConversationKey key=new ProtocolConversationKey(pid, cid);
 		
-		_cache.replace(new ProtocolConversationKey(pid, cid), value);
+		if (_cache.containsKey(key)) {
+			if (LOG.isLoggable(Level.FINEST)) {
+				LOG.finest("Store initial version of session for pid="+pid+" cid="+cid+" value="+value);			
+			}
+			
+			_cache.replace(key, value);
+		} else {
+			if (LOG.isLoggable(Level.FINEST)) {
+				LOG.finest("Update session for pid="+pid+" cid="+cid+" value="+value);			
+			}
+			
+			_cache.replace(key, value);
+		}
 	}
 	
 	public void close() {

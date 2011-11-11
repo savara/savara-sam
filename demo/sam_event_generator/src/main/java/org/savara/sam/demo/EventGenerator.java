@@ -162,7 +162,11 @@ public class EventGenerator {
 								}
 							}
 							
-							runScenario(scenario, "id"+_random.nextLong(), getPrincipal());
+							String id="id"+_random.nextLong();
+							
+							System.out.println("Running scenario '"+_scenarioNames[scenario]+"' id="+id);
+
+							runScenario(scenario, id, getPrincipal());
 						}
 					});
 				}
@@ -173,8 +177,6 @@ public class EventGenerator {
 	}
 	
 	protected void runScenario(int scenarioNum, String id, String principal) {
-		//System.out.println("Running scenario '"+_scenarioNames[scenarioNum]+"' id="+id);
-
 		org.savara.scenario.model.Scenario scenario=_scenarios[scenarioNum];
 		
 		java.util.List<String> correlations=new java.util.ArrayList<String>();
