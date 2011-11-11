@@ -7,19 +7,24 @@ import java.util.Date;
 
 import org.savara.sam.web.client.presenter.MainLayoutPresenter;
 import org.savara.sam.web.client.presenter.MainLayoutPresenter.MainLayoutView;
+import org.savara.sam.web.shared.dto.Conversation;
 import org.savara.sam.web.shared.dto.ResponseTime;
 import org.savara.sam.web.shared.dto.Statistic;
 
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
+import com.google.gwt.visualization.client.ChartArea;
 import com.google.gwt.visualization.client.DataTable;
+import com.google.gwt.visualization.client.LegendPosition;
 import com.google.gwt.visualization.client.VisualizationUtils;
 import com.google.gwt.visualization.client.visualizations.corechart.ColumnChart;
 import com.google.gwt.visualization.client.visualizations.corechart.CoreChart;
 import com.google.gwt.visualization.client.visualizations.corechart.LineChart;
 import com.google.gwt.visualization.client.visualizations.corechart.Options;
 import com.google.gwt.visualization.client.visualizations.corechart.PieChart;
+import com.google.gwt.visualization.client.visualizations.corechart.PieChart.PieOptions;
+import com.google.gwt.visualization.client.visualizations.corechart.ScatterChart;
 import com.google.inject.Inject;
 import com.gwtplatform.mvp.client.ViewImpl;
 import com.smartgwt.client.types.Alignment;
@@ -55,20 +60,16 @@ import com.smartgwt.client.widgets.layout.VLayout;
 public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 	
 	private VLayout panel;
-		
-	private PortalLayout portal;
-	
-	private Portlet txnRatio;
-	
+				
 	private VLayout txnRatioPanel;
-	
-	private Portlet txnsBar;
-	
+		
 	private VLayout txnsBarPanel;
-	
-	private Portlet responseTime;
-	
+		
 	private VLayout responseTimePanel;
+	
+	private VLayout conversationPanel;
+	
+	private VLayout rtOperationsPanel;
 	
 	private MainLayoutPresenter presenter;
 	
@@ -77,6 +78,8 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 	private Statistic[] stats;
 	
 	private ResponseTime[] respTimes;
+	
+	private Conversation[] cdetails;
 	
 	@Inject
 	public MainLayoutViewImpl() {
@@ -87,6 +90,8 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 				presenter.refreshTxnRatio(true);
 				presenter.refreshTxnBarChart(true);
 				presenter.refreshTxnResponseTime(true);
+				presenter.refreshTxnResponseTimeWithOperations(true);
+				presenter.refreshConversationChart(true);
 				
 				timer = new Timer(){
 					public void run() {
@@ -123,8 +128,8 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 		main.setMargin(10);
 		body.addMember(main);
 		
-		final int portalColumn = 2;
-		portal = new PortalLayout(portalColumn);
+		final int portalColumn = 3;
+		PortalLayout portal = new PortalLayout(portalColumn);
 		portal.setWidth100();
 		portal.setHeight100();
 		portal.setCanAcceptDrop(true);
@@ -137,7 +142,7 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
         main.addMember(portal);
         
         final String txnRatioTitle = "Txn Ratio";
-        txnRatio = createPortlet(txnRatioTitle, new ClickHandler() {
+        Portlet txnRatio = createPortlet(txnRatioTitle, new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				presenter.refreshTxnRatio(true);
 			}        	
@@ -159,7 +164,7 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
         portal.addPortlet(txnRatio, 0, 0);
         
         
-        txnsBar = createPortlet("Txn Bar Chart", new ClickHandler(){
+        Portlet txnsBar = createPortlet("Txn Bar Chart", new ClickHandler(){
 			public void onClick(ClickEvent event) {
 				presenter.refreshTxnBarChart(true);
 			}
@@ -176,9 +181,9 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
         txnsBarPanel = new VLayout();
 		txnsBarPanel.setMargin(25);
 		txnsBar.addChild(txnsBarPanel);
-        portal.addPortlet(txnsBar, 0, 1);
+        portal.addPortlet(txnsBar, 1, 0);
         
-        responseTime = createPortlet("Response Time", new ClickHandler() {
+        Portlet responseTime = createPortlet("Response Time", new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				presenter.refreshTxnResponseTime(true);
 			}
@@ -196,7 +201,47 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
         responseTimePanel = new VLayout();
 		responseTimePanel.setMargin(25);
 		responseTime.addChild(responseTimePanel);
-        portal.addPortlet(responseTime, 1, 0);
+        portal.addPortlet(responseTime, 2, 0);
+        
+        Portlet conversationPortlet = createPortlet("Conversation Chart", new ClickHandler(){
+			public void onClick(ClickEvent event) {
+				presenter.refreshConversationChart(true);
+			}
+        	
+        }, new ClickHandler() {
+			public void onClick(ClickEvent event) {
+				showWindowModalWithChart("Conversation Chart", createConversationChart(cdetails, false));
+			}        	
+        }, new DragRepositionStopHandler(){
+			public void onDragRepositionStop(DragRepositionStopEvent event) {
+				presenter.refreshConversationChart(true);
+			}
+        	
+        });
+        conversationPanel = new VLayout();
+        conversationPanel.setMargin(25);
+        conversationPortlet.addChild(conversationPanel);
+        portal.addPortlet(conversationPortlet,0, 1);
+        
+
+        Portlet rtOperationsPortlet = createPortlet("Buy Operation Response Time Chart", new ClickHandler(){
+			public void onClick(ClickEvent event) {
+				presenter.refreshTxnResponseTimeWithOperations(true);
+			}        	
+        }, new ClickHandler() {
+			public void onClick(ClickEvent event) {
+				showWindowModalWithChart("Buy Operation Response Time Chart", createRTChartWithOperations(respTimes, false));
+			}        	
+        }, new DragRepositionStopHandler(){
+			public void onDragRepositionStop(DragRepositionStopEvent event) {
+				presenter.refreshTxnResponseTimeWithOperations(true);
+			}        	
+        });
+        
+        rtOperationsPanel = new VLayout();
+        rtOperationsPanel.setMargin(25);
+        rtOperationsPortlet.addChild(rtOperationsPanel);
+        portal.addPortlet(rtOperationsPortlet, 1, 1);
         
 		addFooterLayout();
 		panel.draw();
@@ -221,6 +266,20 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 		responseTimePanel.clear();
 		responseTimePanel.addChild(lc);
 		responseTimePanel.draw();
+	}
+	
+	public void refreshRTWithOperation(ResponseTime[] value, boolean isSmall) {
+		LineChart lc = createRTChartWithOperations(value, isSmall);
+		rtOperationsPanel.clear();
+		rtOperationsPanel.addChild(lc);
+		rtOperationsPanel.draw();
+	}
+	
+	public void refreshConversationChart(Conversation[] value, boolean isSmall) {
+		LineChart chart = createConversationChart(value, isSmall);
+		conversationPanel.clear();
+		conversationPanel.addChild(chart);
+		conversationPanel.draw();
 	}
 	
 	private void showWindowModalWithChart(String title, CoreChart chart) {
@@ -262,8 +321,13 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 				}
 			}		
 		}
-			
-		PieChart pc = new PieChart(dt, isSmall ? smallOptions() : bigOptions());
+		
+		Options options = isSmall ? smallOptions() : bigOptions();
+		PieOptions po = (PieOptions)options;
+		po.setTitle("Transactions Ratio Pie Chart");
+		po.set3D(true);
+		
+		PieChart pc = new PieChart(dt, po);
 		
 		return pc;
 	}
@@ -292,13 +356,19 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 		Options options = Options.create();
 		options.setWidth(800);
 		options.setHeight(600);
+		ChartArea area = ChartArea.create();
+		area.setWidth(700);
+		area.setHeight(500);
+		options.setChartArea(area);
+		options.setLegend(LegendPosition.BOTTOM);
 		return options;
 	}
 	
 	private Options smallOptions() {
 		Options options = Options.create();
-		options.setWidth(450);
+		options.setWidth(300);
 		options.setHeight(250);
+		options.setLegend(LegendPosition.BOTTOM);
 		return options;
 	}
 	
@@ -320,6 +390,70 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 		return new LineChart(dt, isSmall ? smallOptions() : bigOptions());
 	}
 	
+	private LineChart createConversationChart(Conversation[] values, boolean isSmall) {
+		DataTable dt = DataTable.create();
+		dt.addColumn(ColumnType.STRING, "Conversation Id");
+		dt.addColumn(ColumnType.NUMBER, "Conversation Status");
+		dt.addRows(values == null ? 0 : values.length);
+		if (values != null) {
+			for (int i = 0; i < values.length; i++) {
+				Conversation cd = values[i];
+				dt.setValue(i, 0, cd.getConversationId());
+				dt.setValue(i, 1, cd.getStatus() ? 1 : 0);
+			}
+		}
+		
+		return new LineChart(dt, isSmall ? smallOptions() : bigOptions());
+	}
+	
+	private LineChart createRTChartWithOperations(ResponseTime[] values, boolean isSmall) {
+		DataTable dt = DataTable.create();
+		dt.addColumn(ColumnType.DATETIME, "Request Time");
+		dt.addColumn(ColumnType.NUMBER, "Response Time");
+		
+		int size = 0;		
+		for (int i = 0; i < values.length; i++) {
+			ResponseTime rt = values[i];
+			if ("buy".equalsIgnoreCase(rt.getOperation())) {
+				size ++;
+			}
+		}
+		
+		dt.addRows(size);
+		
+		int position = 0;
+		if (values != null) {
+			for (int i = 0; i < values.length; i++) {
+				ResponseTime rt = values[i];
+				if ("buy".equalsIgnoreCase(rt.getOperation())){
+					Date d = new Date();
+					d.setTime(rt.getRequestTime().longValue());
+					dt.setValue(position, 0, d);
+					dt.setValue(position, 1, rt.getResponseTime());
+					position ++;
+				} 
+			}
+		
+		}	
+		
+		return new LineChart(dt, isSmall ? smallOptions() : bigOptions());
+	}
+	
+	private ScatterChart createResponseTimeScatterChart(ResponseTime[] values, boolean isSmall) {
+		DataTable dt = DataTable.create();
+		dt.addColumn(ColumnType.STRING, "Operation");
+		dt.addColumn(ColumnType.NUMBER, "Response Time");
+		dt.addRows(values == null ? 0 : values.length);
+		if (values != null) {
+			for (int i = 0; i < values.length; i++) {
+				ResponseTime rt = values[i];
+				dt.setValue(i, 0, rt.getOperation());
+				dt.setValue(i, 1, rt.getResponseTime());
+			}
+		}
+		return new ScatterChart(dt, isSmall ? smallOptions() : bigOptions());
+	}
+	
 	private Portlet createPortlet(String title, ClickHandler refreshHandler, ClickHandler maximizeHandler,
 			DragRepositionStopHandler dsHandler) {
         Portlet portlet = new Portlet();  
@@ -334,7 +468,7 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
         portlet.setAnimateMinimize(true);
         
         
-        portlet.setWidth(500);
+        portlet.setWidth(350);
         portlet.setHeight(300);
         portlet.setCanDragResize(false);
                 
@@ -418,6 +552,16 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 
 	public void setRespTimes(ResponseTime[] respTimes) {
 		this.respTimes = respTimes;
+	}
+
+	public void refreshRespTimeScatterChart(ResponseTime[] value,
+			boolean isSmall) {
+		//TODO: to be experimented.
+		
+	}
+
+	public void setConversationDetails(Conversation[] cdetails) {
+		this.cdetails = cdetails;
 	}
 
 }

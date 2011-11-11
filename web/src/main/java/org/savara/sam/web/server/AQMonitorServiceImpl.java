@@ -11,7 +11,9 @@ import org.savara.sam.activity.ActivitySummary;
 import org.savara.sam.aq.ActiveQuery;
 import org.savara.sam.aq.ActiveQueryManager;
 import org.savara.sam.aq.server.ActiveQueryServer;
+import org.savara.sam.conversation.ConversationDetails;
 import org.savara.sam.web.shared.AQMonitorService;
+import org.savara.sam.web.shared.dto.Conversation;
 import org.savara.sam.web.shared.dto.ResponseTime;
 import org.savara.sam.web.shared.dto.Statistic;
 
@@ -33,6 +35,8 @@ public class AQMonitorServiceImpl extends RemoteServiceServlet implements AQMoni
 	private ActiveQuery<ActivitySummary> _failedTxns;
 	
 	private ActiveQuery<ActivityAnalysis> _responseTime;
+	
+	private ActiveQuery<ConversationDetails> _purchasingConversation;
 		
 	public AQMonitorServiceImpl() {
 		_activeQueryManager = ActiveQueryServer.getInstance();
@@ -41,6 +45,8 @@ public class AQMonitorServiceImpl extends RemoteServiceServlet implements AQMoni
 		_failedTxns = _activeQueryManager.getActiveQuery("PurchasingUnsuccessful");
 		
 		_responseTime = _activeQueryManager.getActiveQuery("PurchasingResponseTime");
+		
+		_purchasingConversation = _activeQueryManager.getActiveQuery("PurchasingConversation");
 	}
 	
 	public Statistic[] getStatistics() {
@@ -73,10 +79,24 @@ public class AQMonitorServiceImpl extends RemoteServiceServlet implements AQMoni
 			ResponseTime rt = new ResponseTime();
 			rt.setRequestTime((Long)aa.getProperty("requestTimestamp").getValue());
 			rt.setResponseTime((Long)aa.getProperty("responseTime").getValue());
+			rt.setOperation(aa.getProperty("operation").getValue().toString());
 			result.add(rt);
 		}
 		ResponseTime[] rts = result.toArray(new ResponseTime[0]);
 		return rts;
+	}
+
+	public Conversation[] getConversationDetails() {
+		List<ConversationDetails> details  = _purchasingConversation.getContents();
+		List<Conversation> result = new ArrayList<Conversation>();
+		for (ConversationDetails detail : details) {
+			Conversation cd = new Conversation();
+			cd.setConversationId(detail.getId().getId());
+			cd.setStatus(detail.isValid());
+			result.add(cd);
+		}
+		Conversation[] cds = result.toArray(new Conversation[0]);
+		return cds;
 	}
 	
 

@@ -90,16 +90,25 @@
         <groupId>org.savara.sam.modules</groupId>
         <artifactId>org.savara.sam.activity</artifactId>
         <version>${project.version}</version>
+        <scope>provided</scope>
      </dependency>
      <dependency>
         <groupId>org.savara.sam.modules</groupId>
         <artifactId>org.savara.sam.aq</artifactId>
         <version>${project.version}</version>
+        <scope>provided</scope>
      </dependency>
      <dependency>
         <groupId>org.savara.sam.integration</groupId>
         <artifactId>active-query-server</artifactId>
         <version>${project.version}</version>
+        <scope>provided</scope>
+     </dependency>
+     <dependency>
+     	<groupId>org.savara.sam.integration</groupId>
+		<artifactId>conversation-manager</artifactId> 
+		<version>${project.version}</version>
+		<scope>provided</scope>
      </dependency>
 	<dependency>
 	    <groupId>org.infinispan</groupId>
@@ -170,6 +179,9 @@
         </executions>
         <configuration>
           <webappDirectory>${webappDirectory}</webappDirectory>
+          <archive>
+             <manifestFile>META-INF/MANIFEST.MF</manifestFile>
+          </archive>
         </configuration>
       </plugin>
 

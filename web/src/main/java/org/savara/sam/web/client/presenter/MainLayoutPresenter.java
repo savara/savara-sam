@@ -7,6 +7,7 @@ import org.savara.sam.web.client.BootstrapContext;
 import org.savara.sam.web.client.NameTokens;
 import org.savara.sam.web.shared.AQMonitorService;
 import org.savara.sam.web.shared.AQMonitorServiceAsync;
+import org.savara.sam.web.shared.dto.Conversation;
 import org.savara.sam.web.shared.dto.ResponseTime;
 import org.savara.sam.web.shared.dto.Statistic;
 
@@ -43,9 +44,17 @@ public class MainLayoutPresenter extends Presenter<MainLayoutPresenter.MainLayou
 		
 		public void refreshResponseTime(ResponseTime[] value, boolean isSmall);
 		
+		public void refreshRTWithOperation(ResponseTime[] value, boolean isSmall);
+		
+		public void refreshRespTimeScatterChart(ResponseTime[] value, boolean isSmall);
+		
+		public void refreshConversationChart(Conversation[] value, boolean isSmall);
+		
 		public void setStats(Statistic[] stats);
 		
 		public void setRespTimes(ResponseTime[] respTimes);
+		
+		public void setConversationDetails(Conversation[] details);
 		
 	}
 	
@@ -113,6 +122,51 @@ public class MainLayoutPresenter extends Presenter<MainLayoutPresenter.MainLayou
 			public void onSuccess(ResponseTime[] value) {
 				getView().setRespTimes(value);
 				getView().refreshResponseTime(value, isSmall);
+			}
+			
+		});	
+	}
+	
+	public void refreshTxnResponseTimeWithOperations(final boolean isSmall) {
+		service.getResponseTimes(new AsyncCallback<ResponseTime[]>() {
+
+			public void onFailure(Throwable t) {
+				System.out.println(t);
+			}
+
+			public void onSuccess(ResponseTime[] value) {
+				getView().setRespTimes(value);
+				getView().refreshRTWithOperation(value, isSmall);
+			}
+			
+		});	
+	}
+	
+	public void refreshTxnResponseTimeScatterChart(final boolean isSmall) {
+		service.getResponseTimes(new AsyncCallback<ResponseTime[]>() {
+
+			public void onFailure(Throwable t) {
+				System.out.println(t);
+			}
+
+			public void onSuccess(ResponseTime[] value) {
+				getView().setRespTimes(value);
+				getView().refreshRespTimeScatterChart(value, isSmall);
+			}
+			
+		});	
+	}
+	
+	public void refreshConversationChart(final boolean isSmall) {
+		service.getConversationDetails(new AsyncCallback<Conversation[]>() {
+
+			public void onFailure(Throwable t) {
+				System.out.println(t);
+			}
+
+			public void onSuccess(Conversation[] value) {
+				getView().setConversationDetails(value);
+				getView().refreshConversationChart(value, isSmall);
 			}
 			
 		});	

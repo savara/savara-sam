@@ -3,6 +3,7 @@
  */
 package org.savara.sam.web.shared;
 
+import org.savara.sam.web.shared.dto.Conversation;
 import org.savara.sam.web.shared.dto.ResponseTime;
 import org.savara.sam.web.shared.dto.Statistic;
 
@@ -19,5 +20,7 @@ public interface AQMonitorService extends RemoteService{
 	public Statistic[] getStatistics();
 	
 	public ResponseTime[] getResponseTimes();
+	
+	public Conversation[] getConversationDetails();
 	
 }
