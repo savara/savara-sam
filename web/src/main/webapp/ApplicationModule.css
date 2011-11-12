@@ -3,3 +3,6 @@
 body{
     margin:0;
 }
+
+.validConversationTable{background:green;font-size:25px;color:green}
+.invalidConversationTable{background:red}

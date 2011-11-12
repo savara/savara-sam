@@ -3,13 +3,17 @@
  */
 package org.savara.sam.web.client.view;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.savara.sam.web.client.presenter.MainLayoutPresenter;
 import org.savara.sam.web.client.presenter.MainLayoutPresenter.MainLayoutView;
+import org.savara.sam.web.client.util.ColorUtil;
 import org.savara.sam.web.shared.dto.Conversation;
 import org.savara.sam.web.shared.dto.ResponseTime;
 import org.savara.sam.web.shared.dto.Statistic;
+import org.scribble.protocol.parser.antlr.ScribbleProtocolParser.labelName_return;
 
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Widget;
@@ -18,6 +22,8 @@ import com.google.gwt.visualization.client.ChartArea;
 import com.google.gwt.visualization.client.DataTable;
 import com.google.gwt.visualization.client.LegendPosition;
 import com.google.gwt.visualization.client.VisualizationUtils;
+import com.google.gwt.visualization.client.formatters.BarFormat.Color;
+import com.google.gwt.visualization.client.visualizations.Table;
 import com.google.gwt.visualization.client.visualizations.corechart.ColumnChart;
 import com.google.gwt.visualization.client.visualizations.corechart.CoreChart;
 import com.google.gwt.visualization.client.visualizations.corechart.LineChart;
@@ -36,6 +42,7 @@ import com.smartgwt.client.types.VisibilityMode;
 import com.smartgwt.client.widgets.HTMLFlow;
 import com.smartgwt.client.widgets.HeaderControl;
 import com.smartgwt.client.widgets.Label;
+import com.smartgwt.client.widgets.WidgetCanvas;
 import com.smartgwt.client.widgets.Window;
 import com.smartgwt.client.widgets.events.ClickEvent;
 import com.smartgwt.client.widgets.events.ClickHandler;
@@ -68,7 +75,7 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 	private VLayout responseTimePanel;
 	
 	private VLayout conversationPanel;
-	
+		
 	private VLayout rtOperationsPanel;
 	
 	private MainLayoutPresenter presenter;
@@ -105,7 +112,7 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 			}        	
         };
                 
-        VisualizationUtils.loadVisualizationApi(onloadCallback, PieChart.PACKAGE);
+        VisualizationUtils.loadVisualizationApi(onloadCallback, PieChart.PACKAGE, Table.PACKAGE);
 	}
 
 	private void initializeWindow() {
@@ -136,6 +143,7 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 		portal.setShowColumnMenus(false);
 		portal.setBorder("0px");
 		portal.setColumnBorder("0px");
+		
 			
 		setPortalMenus(main);
 		
@@ -210,7 +218,10 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
         	
         }, new ClickHandler() {
 			public void onClick(ClickEvent event) {
-				showWindowModalWithChart("Conversation Chart", createConversationChart(cdetails, false));
+				Label validConversation = new Label("<b>Valid Conversations</b>");
+				validConversation.setSize("600", "10");
+				showWindowModalWithChart("Conversation Chart", validConversation, createConversationTableChart(cdetails, false, true),
+						createConversationTableChart(cdetails, false, false));
 			}        	
         }, new DragRepositionStopHandler(){
 			public void onDragRepositionStop(DragRepositionStopEvent event) {
@@ -221,6 +232,7 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
         conversationPanel = new VLayout();
         conversationPanel.setMargin(25);
         conversationPortlet.addChild(conversationPanel);
+        
         portal.addPortlet(conversationPortlet,0, 1);
         
 
@@ -276,13 +288,15 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 	}
 	
 	public void refreshConversationChart(Conversation[] value, boolean isSmall) {
-		LineChart chart = createConversationChart(value, isSmall);
+		Table validTable = createConversationTableChart(value, isSmall, true);
+		Table invalidTable = createConversationTableChart(value, isSmall, false);
 		conversationPanel.clear();
-		conversationPanel.addChild(chart);
+		conversationPanel.addMember(validTable);
+		conversationPanel.addMember(invalidTable);
 		conversationPanel.draw();
 	}
 	
-	private void showWindowModalWithChart(String title, CoreChart chart) {
+	private void showWindowModalWithChart(String title, Widget... charts) {
 		final Window window = new Window();
 		window.setWidth(850);
 		window.setHeight(650);
@@ -301,7 +315,9 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 		});
 		VLayout chartLayout = new VLayout();
 		chartLayout.setMargin(25);
-		chartLayout.addChild(chart);
+		for (Widget chart : charts) {
+			chartLayout.addMember(chart);
+		}
 		window.addChild(chartLayout);
 		window.show();
 	}
@@ -387,23 +403,60 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 			}
 		}
 		
-		return new LineChart(dt, isSmall ? smallOptions() : bigOptions());
+		Options options = isSmall ? smallOptions() : bigOptions();
+		options.set("backgroundColor", ColorUtil.getResponseTimeBGColor(respTimes, 9000));
+		
+		return new LineChart(dt, options);
 	}
 	
-	private LineChart createConversationChart(Conversation[] values, boolean isSmall) {
+	private Table createConversationTableChart(Conversation[] values, boolean isSmall, boolean isValid) {
 		DataTable dt = DataTable.create();
-		dt.addColumn(ColumnType.STRING, "Conversation Id");
-		dt.addColumn(ColumnType.NUMBER, "Conversation Status");
-		dt.addRows(values == null ? 0 : values.length);
-		if (values != null) {
-			for (int i = 0; i < values.length; i++) {
-				Conversation cd = values[i];
-				dt.setValue(i, 0, cd.getConversationId());
-				dt.setValue(i, 1, cd.getStatus() ? 1 : 0);
+		dt.addColumn(ColumnType.STRING, "Id");
+		dt.addColumn(ColumnType.BOOLEAN, "Status");
+		dt.addColumn(ColumnType.DATETIME, "Updated Date");
+		
+		List<Conversation> data = new ArrayList<Conversation>();
+		
+		for (int i = 0; i < values.length; i++) {
+			Conversation cd = values[i];
+			if (isValid == cd.getStatus()) {
+				data.add(cd);
 			}
 		}
 		
-		return new LineChart(dt, isSmall ? smallOptions() : bigOptions());
+		dt.addRows(data.size());
+		Date d = new Date();
+		int i = 0;
+		for (Conversation cd : data) {
+			dt.setValue(i, 0, cd.getConversationId());
+			dt.setValue(i, 1, cd.getStatus());
+			d.setTime(cd.getUpdatedDate());
+			dt.setValue(i, 2, d);
+			
+			i++;
+		}
+		
+		Table.Options toption = Table.Options.create();
+		toption.setShowRowNumber(true);
+		if (isSmall) {
+			toption.setWidth("300");
+			toption.setHeight("120");
+			toption.setPageSize(5);
+		} else {
+			toption.setWidth("800");
+			toption.setHeight("300");
+			toption.setPageSize(20);
+		}
+		
+		
+		if (isValid) {
+			toption.set("cssClassNames", "{tableRow:'validConversationTable'}");
+		} else {
+			toption.set("cssClassNames", "{tableRow:'invalidConversationTable'}");
+		}
+		
+		
+		return new Table(dt, toption);
 	}
 	
 	private LineChart createRTChartWithOperations(ResponseTime[] values, boolean isSmall) {

@@ -4,6 +4,7 @@
 package org.savara.sam.web.shared.dto;
 
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * @author Jeff Yu
@@ -16,6 +17,8 @@ public class Conversation implements Serializable {
 	private String conversationId;
 	
 	private Boolean status;
+	
+	private Long updatedDate;
 
 	public String getConversationId() {
 		return conversationId;
@@ -32,5 +35,16 @@ public class Conversation implements Serializable {
 	public void setStatus(Boolean status) {
 		this.status = status;
 	}
+
+	public Long getUpdatedDate() {
+		return updatedDate;
+	}
+
+	public void setUpdatedDate(Long updatedDate) {
+		this.updatedDate = updatedDate;
+	}
+	
+	
+	
 	
 }
