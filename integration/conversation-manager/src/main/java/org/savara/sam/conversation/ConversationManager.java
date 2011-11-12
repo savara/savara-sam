@@ -128,10 +128,14 @@ public class ConversationManager extends JEEActiveQueryManager<ActivitySummary,C
 			mesg.getValues().add(sm.getContent());
 		}
 		
+		if (LOG.isLoggable(Level.FINEST)) {
+			LOG.finest("Monitor activity="+activity+" message="+mesg);
+		}
+		
 		MonitorResult result=_monitor.process(null, null, mesg);
 		
 		if (LOG.isLoggable(Level.FINEST)) {
-			LOG.finest("Monitored activity="+activity+" result="+result);
+			LOG.finest("Monitored activity="+activity+" message="+mesg+" result="+result);
 		}
 		
 		if (result != null) {
@@ -143,16 +147,19 @@ public class ConversationManager extends JEEActiveQueryManager<ActivitySummary,C
 				// If retries remaining, and result is invalid, then retry
 				if (retriesLeft > 0 && !result.isValid()) {
 					if (LOG.isLoggable(Level.FINEST)) {
-						LOG.finest("Conversation '"+result.getConversationId()+
-							"' failed to validate: "+activity+" - so retrying...");
+						LOG.finest("Conversation result="+result+
+							" message="+mesg+" failed to validate: "+activity+" - so retrying...");
 					}
 					throw new Exception("Conversation '"+result.getConversationId()+
 							"' failed to validate: "+activity);
+				} else if (!result.isValid()) {
+					if (LOG.isLoggable(Level.FINEST)) {
+						LOG.finest("Conversation result="+result+
+							"' message="+mesg+" failed");
+					}
 				}
 				
 				// Add activity summary to conversation details
-				_conversationDetails.getAdvancedCache().lock(result.getConversationId());
-				
 				ret = _conversationDetails.get(result.getConversationId());
 				
 				if (ret == null) {
