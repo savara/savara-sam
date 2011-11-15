@@ -26,10 +26,12 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.savara.monitor.ConversationId;
 import org.savara.sam.activity.ActivityAnalysis;
 import org.savara.sam.aq.ActiveListener;
 import org.savara.sam.aq.ActiveQuery;
 import org.savara.sam.aq.ActiveQueryManager;
+import org.savara.sam.aq.ActiveQuerySpec;
 import org.savara.sam.aq.Predicate;
 import org.savara.sam.conversation.ConversationDetails;
 
@@ -55,8 +57,9 @@ public class AQMonitorServlet extends HttpServlet {
 	private ActiveQuery<String> _failedTxns;
 	private ActiveListener<String> _txnRatioListener;
 	
-	private ActiveQuery<ConversationDetails> _purchasingConversation;
-	private ActiveListener<ConversationDetails> _purchasingConversationListener;
+	private ActiveQuery<ConversationId> _purchasingConversation;
+	private ActiveQuerySpec _purchasingConversationSpec;
+	private ActiveListener<ConversationId> _purchasingConversationListener;
 	
 	private StringBuffer _responseTimeReport=new StringBuffer();
 	private StringBuffer _txnRatioReport=new StringBuffer();
@@ -236,34 +239,39 @@ public class AQMonitorServlet extends HttpServlet {
 		}		
 	}
 	
-	public class PurchasingConversationNotifier implements ActiveListener<ConversationDetails> {
+	public class PurchasingConversationNotifier implements ActiveListener<ConversationId> {
 
 		public PurchasingConversationNotifier() {
 			buildReport();
 		}
 		
 		protected void buildReport() {
+			if (_purchasingConversationSpec == null) {
+				_purchasingConversationSpec = _activeQueryManager.getActiveQuerySpec("PurchasingConversation");
+			}
+			
 			_purchasingConversationReport = new StringBuffer();
 			
 			_purchasingConversationReport.append("<h3>Purchasing Conversation Report ("+new java.util.Date()+")</h3>");
 			
-			for (ConversationDetails cd : _purchasingConversation.getContents()) {
+			for (ConversationId cid : _purchasingConversation.getContents()) {
+				ConversationDetails cd=(ConversationDetails)_purchasingConversationSpec.resolve(cid);
 				_purchasingConversationReport.append("<h5>"+cd+"</h5>");
 			}
 		}
 		
 		@Override
-		public void valueAdded(ConversationDetails value) {
+		public void valueAdded(ConversationId value) {
 			buildReport();
 		}
 
 		@Override
-		public void valueUpdated(ConversationDetails value) {
+		public void valueUpdated(ConversationId value) {
 			buildReport();
 		}
 
 		@Override
-		public void valueRemoved(ConversationDetails value) {
+		public void valueRemoved(ConversationId value) {
 			buildReport();
 		}		
 

@@ -489,7 +489,10 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 		
 		}	
 		
-		return new LineChart(dt, isSmall ? smallOptions() : bigOptions());
+		Options options = isSmall ? smallOptions() : bigOptions();
+		options.set("backgroundColor", ColorUtil.getResponseTimeBGColor(respTimes, 9000));
+		
+		return new LineChart(dt, options);
 	}
 	
 	private ScatterChart createResponseTimeScatterChart(ResponseTime[] values, boolean isSmall) {

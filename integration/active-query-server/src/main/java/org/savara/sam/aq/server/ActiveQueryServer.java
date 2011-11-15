@@ -157,7 +157,17 @@ public class ActiveQueryServer implements ActiveQueryManager {
 	 * {@inheritDoc}
 	 */
 	public ActiveQuerySpec getActiveQuerySpec(String name) {
-		return(_systemActiveQueries.get(name));
+		if (LOG.isLoggable(Level.FINEST)) {
+			LOG.finest("Geting active query spec '"+name+"'");
+		}
+
+		ActiveQuerySpec ret=_systemActiveQueries.get(name);
+		
+		if (LOG.isLoggable(Level.FINEST)) {
+			LOG.finest("Get active query spec '"+name+"' = "+ret);
+		}
+		
+		return(ret);
 	}
 	
 	public void register(ActiveQuerySpec spec) {

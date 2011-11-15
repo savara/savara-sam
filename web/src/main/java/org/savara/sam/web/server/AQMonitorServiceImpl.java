@@ -6,9 +6,11 @@ package org.savara.sam.web.server;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.savara.monitor.ConversationId;
 import org.savara.sam.activity.ActivityAnalysis;
 import org.savara.sam.aq.ActiveQuery;
 import org.savara.sam.aq.ActiveQueryManager;
+import org.savara.sam.aq.ActiveQuerySpec;
 import org.savara.sam.aq.server.ActiveQueryServer;
 import org.savara.sam.conversation.ConversationDetails;
 import org.savara.sam.web.shared.AQMonitorService;
@@ -35,7 +37,8 @@ public class AQMonitorServiceImpl extends RemoteServiceServlet implements AQMoni
 	
 	private ActiveQuery<ActivityAnalysis> _responseTime;
 	
-	private ActiveQuery<ConversationDetails> _purchasingConversation;
+	private ActiveQuery<ConversationId> _purchasingConversation;
+	private ActiveQuerySpec _purchasingConversationSpec;
 		
 	public AQMonitorServiceImpl() {
 		_activeQueryManager = ActiveQueryServer.getInstance();
@@ -86,15 +89,25 @@ public class AQMonitorServiceImpl extends RemoteServiceServlet implements AQMoni
 	}
 
 	public Conversation[] getConversationDetails() {
-		List<ConversationDetails> details  = _purchasingConversation.getContents();
-		List<Conversation> result = new ArrayList<Conversation>();
-		for (ConversationDetails detail : details) {
-			Conversation cd = new Conversation();
-			cd.setConversationId(detail.getId().getId());
-			cd.setStatus(detail.isValid());
-			result.add(cd);
+		if (_purchasingConversationSpec == null) {
+			_purchasingConversationSpec = _activeQueryManager.getActiveQuerySpec("PurchasingConversation");
 		}
-		Conversation[] cds = result.toArray(new Conversation[0]);
+		
+		List<ConversationId> cids  = _purchasingConversation.getContents();
+		List<Conversation> result = new ArrayList<Conversation>();
+		for (ConversationId cid : cids) {
+			ConversationDetails detail=(ConversationDetails)_purchasingConversationSpec.resolve(cid);
+			
+			if (detail != null) {
+				Conversation cd = new Conversation();
+				cd.setConversationId(detail.getId().getId());
+				cd.setStatus(detail.isValid());
+				result.add(cd);
+			} else {
+				System.err.println("FAILED TO GET CONVERSATION DETAILS FOR CID="+cid);
+			}
+		}
+		Conversation[] cds = result.toArray(new Conversation[result.size()]);
 		return cds;
 	}
 	

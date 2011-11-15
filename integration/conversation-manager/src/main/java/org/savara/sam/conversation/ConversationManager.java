@@ -44,7 +44,7 @@ import org.scribble.protocol.ProtocolContext;
 import org.scribble.protocol.model.ProtocolModel;
 import org.scribble.protocol.model.Role;
 
-public class ConversationManager extends JEEActiveQueryManager<String,ConversationDetails> implements MessageListener {
+public class ConversationManager extends JEEActiveQueryManager<String,ConversationId> implements MessageListener {
 	
 	private static final Logger LOG=Logger.getLogger(ConversationManager.class.getName());
 	
@@ -56,7 +56,7 @@ public class ConversationManager extends JEEActiveQueryManager<String,Conversati
 	private XPathConversationResolver _resolver=new XPathConversationResolver();
 	
 	public ConversationManager(String conversationName) {
-		super(new ActiveQuerySpec(conversationName, ConversationDetails.class,
+		super(new ConversationActiveQuerySpec(conversationName, ConversationDetails.class,
 							ConversationId.class), null);
 	}
 	
@@ -69,8 +69,6 @@ public class ConversationManager extends JEEActiveQueryManager<String,Conversati
 		
 		java.net.URL url=Thread.currentThread().getContextClassLoader().getResource("/"+model);
 		
-		//java.net.URL url=getClass().getResource("/"+MODEL);
-
 		if (LOG.isLoggable(Level.FINE)) {
 			LOG.fine("Loading model '"+model+"' from URL: "+url);		
 		}
@@ -84,6 +82,8 @@ public class ConversationManager extends JEEActiveQueryManager<String,Conversati
 		
 		_activities = _container.getCache("activities");
 		_conversationDetails = _container.getCache("conversationDetails");
+		
+		((ConversationActiveQuerySpec)getActiveQuerySpec()).setCache(_conversationDetails);
 	}
 	
 	protected XPathConversationResolver getResolver() {
@@ -100,9 +100,9 @@ public class ConversationManager extends JEEActiveQueryManager<String,Conversati
 	}
 
 	@Override
-	protected ConversationDetails processActivity(String id, ActiveChangeType changeType,
+	protected ConversationId processActivity(String id, ActiveChangeType changeType,
 								int retriesLeft) throws Exception {
-		ConversationDetails ret=null;
+		ConversationId ret=null;
 		
 		Activity act=_activities.get(id);
 		
@@ -160,23 +160,25 @@ public class ConversationManager extends JEEActiveQueryManager<String,Conversati
 				}
 				
 				// Add activity summary to conversation details
-				ret = _conversationDetails.get(result.getConversationId());
+				ConversationDetails details=_conversationDetails.get(result.getConversationId());
 				
-				if (ret == null) {
+				if (details == null) {
 					if (LOG.isLoggable(Level.FINEST)) {
 						LOG.finest("Creating Conversation Details for "+result.getConversationId());
 					}
-					ret = new ConversationDetails(result.getConversationId());
-					_conversationDetails.put(result.getConversationId(), ret);
+					details = new ConversationDetails(result.getConversationId());
+					_conversationDetails.put(result.getConversationId(), details);
 				}
 				
-				ret.addActivity(id, act, result);
+				details.addActivity(id, act, result);
 				
 				if (LOG.isLoggable(Level.FINEST)) {
 					LOG.finest("Updating Conversation Details for cid="+
 								result.getConversationId()+" : added activity "+act);
 				}
-				_conversationDetails.replace(result.getConversationId(), ret);
+				_conversationDetails.replace(result.getConversationId(), details);
+				
+				ret = result.getConversationId();
 				
 			} else {
 				LOG.severe("Monitor returned valid="+result.isValid()+" result, but with no conversation id");
@@ -186,12 +188,13 @@ public class ConversationManager extends JEEActiveQueryManager<String,Conversati
 		return(ret);
 	}
 		
-	protected ActiveChangeType processChangeType(ConversationDetails targetActivity, ActiveChangeType changeType) {
+	@Override
+	protected ActiveChangeType processChangeType(ConversationId targetActivity, ActiveChangeType changeType) {
 		ActiveChangeType ret=changeType;
 		
 		switch (changeType) {
 		case Add:
-			ActiveQuery<ConversationDetails> aq=getActiveQuery();
+			ActiveQuery<ConversationId> aq=getActiveQuery();
 			if (aq != null) {
 				// If activity already in contents, then change to update
 				if (aq.getContents().contains(targetActivity)) {
@@ -266,6 +269,30 @@ public class ConversationManager extends JEEActiveQueryManager<String,Conversati
 			}
 			
 			return (ret);
+		}
+	}
+	
+	public static class ConversationActiveQuerySpec extends ActiveQuerySpec {
+		
+		private org.infinispan.Cache<ConversationId, ConversationDetails> _cache;
+		
+		public ConversationActiveQuerySpec(String name, Class<?> type, Class<?> internalType) {
+			super(name, type, internalType);
+		}
+		
+		protected void setCache(org.infinispan.Cache<ConversationId, ConversationDetails> cache) {
+			_cache = cache;
+		}
+		
+		@Override
+		public Object resolve(Object source) {
+			Object ret=null;
+			
+			if (source instanceof ConversationId) {
+				ret = _cache.get(source);
+			}
+			
+			return(ret);
 		}
 	}
 }

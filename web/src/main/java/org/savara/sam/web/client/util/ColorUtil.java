@@ -27,11 +27,11 @@ public final class ColorUtil {
 
 		int result = 0;
 		
-		if (ratio > 60) result = 1;
-		if (ratio > 70) result = 2;
-		if (ratio > 75) result = 3;
-		if (ratio > 85) result = 4;
-		if (ratio > 90) result = 5;
+		if (ratio > 2) result = 1;
+		if (ratio > 3) result = 2;
+		if (ratio > 5) result = 3;
+		if (ratio > 10) result = 4;
+		if (ratio > 20) result = 5;
 		
 		return WARN_COLORS[result];
 	}
