@@ -1,8 +1,8 @@
 /** Add css rules here for your application. */
 
-body{
-    margin:0;
-}
+body{ margin:0;background:#CFD0D4;}
+
+.headerLabel{background:url(images/savara-banner.png) no-repeat;border:1px solid black;}
 
 .validConversationTable{background:green;font-size:25px;color:green}
 .invalidConversationTable{background:red}

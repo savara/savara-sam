@@ -13,7 +13,6 @@ import org.savara.sam.web.client.util.ColorUtil;
 import org.savara.sam.web.shared.dto.Conversation;
 import org.savara.sam.web.shared.dto.ResponseTime;
 import org.savara.sam.web.shared.dto.Statistic;
-import org.scribble.protocol.parser.antlr.ScribbleProtocolParser.labelName_return;
 
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Widget;
@@ -22,10 +21,8 @@ import com.google.gwt.visualization.client.ChartArea;
 import com.google.gwt.visualization.client.DataTable;
 import com.google.gwt.visualization.client.LegendPosition;
 import com.google.gwt.visualization.client.VisualizationUtils;
-import com.google.gwt.visualization.client.formatters.BarFormat.Color;
 import com.google.gwt.visualization.client.visualizations.Table;
 import com.google.gwt.visualization.client.visualizations.corechart.ColumnChart;
-import com.google.gwt.visualization.client.visualizations.corechart.CoreChart;
 import com.google.gwt.visualization.client.visualizations.corechart.LineChart;
 import com.google.gwt.visualization.client.visualizations.corechart.Options;
 import com.google.gwt.visualization.client.visualizations.corechart.PieChart;
@@ -37,12 +34,13 @@ import com.smartgwt.client.types.Alignment;
 import com.smartgwt.client.types.DragAppearance;
 import com.smartgwt.client.types.HeaderControls;
 import com.smartgwt.client.types.LayoutPolicy;
+import com.smartgwt.client.types.MultipleAppearance;
 import com.smartgwt.client.types.Overflow;
+import com.smartgwt.client.types.VerticalAlignment;
 import com.smartgwt.client.types.VisibilityMode;
 import com.smartgwt.client.widgets.HTMLFlow;
 import com.smartgwt.client.widgets.HeaderControl;
 import com.smartgwt.client.widgets.Label;
-import com.smartgwt.client.widgets.WidgetCanvas;
 import com.smartgwt.client.widgets.Window;
 import com.smartgwt.client.widgets.events.ClickEvent;
 import com.smartgwt.client.widgets.events.ClickHandler;
@@ -52,6 +50,9 @@ import com.smartgwt.client.widgets.events.DragRepositionStopEvent;
 import com.smartgwt.client.widgets.events.DragRepositionStopHandler;
 import com.smartgwt.client.widgets.form.DynamicForm;
 import com.smartgwt.client.widgets.form.fields.ButtonItem;
+import com.smartgwt.client.widgets.form.fields.DateItem;
+import com.smartgwt.client.widgets.form.fields.SelectItem;
+import com.smartgwt.client.widgets.form.fields.TextItem;
 import com.smartgwt.client.widgets.layout.HLayout;
 import com.smartgwt.client.widgets.layout.PortalLayout;
 import com.smartgwt.client.widgets.layout.Portlet;
@@ -119,7 +120,7 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 		panel = new VLayout();
 		panel.setWidth("100%");
 		panel.setAlign(Alignment.CENTER);
-		panel.setPadding(5);
+		panel.setPadding(0);
 		
 		addHeaderLayout();
 		
@@ -137,6 +138,7 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 		
 		final int portalColumn = 3;
 		PortalLayout portal = new PortalLayout(portalColumn);
+		portal.setMargin(0);
 		portal.setWidth100();
 		portal.setHeight100();
 		portal.setCanAcceptDrop(true);
@@ -300,8 +302,12 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 		final Window window = new Window();
 		window.setWidth(850);
 		window.setHeight(650);
+		
+		//TODO: need to add the refresh click handler
+		HeaderControl refreshBtn = new HeaderControl(HeaderControl.REFRESH);
+		window.setHeaderControls(HeaderControls.HEADER_LABEL, refreshBtn, HeaderControls.CLOSE_BUTTON);
+		
 		window.setTitle(title);
-		window.setShowMinimizeButton(false);
 		window.setIsModal(true);
 		window.setShowModalMask(true);
 		window.centerInPage();
@@ -382,8 +388,8 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 	
 	private Options smallOptions() {
 		Options options = Options.create();
-		options.setWidth(300);
-		options.setHeight(250);
+		options.setWidth(250);
+		options.setHeight(200);
 		options.setLegend(LegendPosition.BOTTOM);
 		return options;
 	}
@@ -524,8 +530,8 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
         portlet.setAnimateMinimize(true);
         
         
-        portlet.setWidth(350);
-        portlet.setHeight(300);
+        portlet.setWidth(300);
+        portlet.setHeight(250);
         portlet.setCanDragResize(false);
                 
         portlet.setCloseConfirmationMessage("Are you going to close the " + title + "?");
@@ -544,11 +550,87 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
         ButtonItem addColumn = new ButtonItem("addAQ", "Add AQ Chart");  
         addColumn.setAutoFit(true);  
         addColumn.setStartRow(false);  
-        addColumn.setEndRow(false);  
+        addColumn.setEndRow(false);
+        
+        addColumn.addClickHandler(new com.smartgwt.client.widgets.form.fields.events.ClickHandler(){
+
+			public void onClick(
+					com.smartgwt.client.widgets.form.fields.events.ClickEvent event) {
+				final Window window = new Window();
+				window.setWidth(350);
+				window.setHeight(300);
+				window.setTitle("Add an AQ chart");
+				window.setShowMinimizeButton(false);
+				window.setIsModal(true);
+				window.setShowModalMask(true);
+				window.centerInPage();
+				
+				window.addCloseClickHandler(new CloseClickHandler(){
+					public void onCloseClick(CloseClientEvent event) {
+						window.destroy();
+					}					
+				});
+				
+				final DynamicForm form = new DynamicForm();
+				form.setMargin(10);
+				form.setPadding(5);
+				form.setWidth100();
+				form.setHeight100();
+				form.setLayoutAlign(VerticalAlignment.BOTTOM);
+				
+				final TextItem title = new TextItem();
+				title.setTitle("Chart title");
+				
+				final SelectItem aqSelect = new SelectItem();
+				aqSelect.setTitle("AQ Select");
+				aqSelect.setMultiple(true);
+				aqSelect.setMultipleAppearance(MultipleAppearance.PICKLIST);
+				aqSelect.setValueMap("Successful AQ", "Unsuccessful AQ", "Started Txn AQ", "Response Time AQ");
+				
+				final SelectItem chartType = new SelectItem();
+				chartType.setTitle("Chart Type");
+				chartType.setValueMap("Pie Chart", "Line Chart", "Table Chart");
+				
+				final SelectItem yAxis = new SelectItem();
+				yAxis.setTitle("Y Axis mapped property");
+				yAxis.setValueMap("Response Time");
+				
+				final ButtonItem submitBtn = new ButtonItem();
+				submitBtn.setTitle("Create");
+				submitBtn.setEndRow(false);
+				submitBtn.setAlign(Alignment.CENTER);
+				
+				final ButtonItem cancelBtn = new ButtonItem();
+				cancelBtn.setTitle("Cancel");
+				cancelBtn.setStartRow(false);
+				cancelBtn.addClickHandler(new com.smartgwt.client.widgets.form.fields.events.ClickHandler(){
+
+					public void onClick(
+							com.smartgwt.client.widgets.form.fields.events.ClickEvent event) {
+						window.destroy();						
+					}
+					
+				});
+				
+				form.setFields(title, aqSelect, chartType, yAxis, submitBtn, cancelBtn);
+				
+				window.addItem(form);
+				
+				window.show();
+			}
+
+        	
+        });
         
         form.setItems(addColumn);
         
-        main.addMember(form);
+        HLayout menus = new HLayout();
+        menus.setWidth100();
+        menus.setBackgroundColor("#B3BEE3");
+        
+        menus.addMember(form);
+        
+        main.addMember(menus);
 	}
 
 
@@ -556,8 +638,8 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 		final SectionStack  linkStack = new SectionStack();
 		linkStack.setVisibilityMode(VisibilityMode.MULTIPLE);
 		linkStack.setCanResizeSections(false);
-		linkStack.setWidth(200);
-		linkStack.setHeight(400);
+		linkStack.setWidth(180);
+		linkStack.setHeight(200);
 		
 		SectionStackSection dashboard = new SectionStackSection("Dashboard");
 		dashboard.setCanCollapse(true);
@@ -575,10 +657,10 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 
 	private void addHeaderLayout() {
 		Label headerLabel = new Label();
-		headerLabel.setContents("Savara SAM :: Header ");
-		headerLabel.setSize("100%", "85");
-		headerLabel.setAlign(Alignment.CENTER);
-		headerLabel.setBorder("1px solid #808080");		
+		headerLabel.setMargin(0);
+		headerLabel.setSize("100%", "100");
+		headerLabel.setAlign(Alignment.LEFT);
+		headerLabel.setStyleName("headerLabel");
 		panel.addMember(headerLabel);
 	}
 

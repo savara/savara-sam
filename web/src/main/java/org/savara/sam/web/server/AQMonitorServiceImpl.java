@@ -102,10 +102,12 @@ public class AQMonitorServiceImpl extends RemoteServiceServlet implements AQMoni
 				Conversation cd = new Conversation();
 				cd.setConversationId(detail.getId().getId());
 				cd.setStatus(detail.isValid());
+				cd.setUpdatedDate(detail.getEndTimestamp());
 				result.add(cd);
 			} else {
 				System.err.println("FAILED TO GET CONVERSATION DETAILS FOR CID="+cid);
 			}
+
 		}
 		Conversation[] cds = result.toArray(new Conversation[result.size()]);
 		return cds;
