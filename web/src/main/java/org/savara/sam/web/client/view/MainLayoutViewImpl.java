@@ -38,6 +38,7 @@ import com.smartgwt.client.types.MultipleAppearance;
 import com.smartgwt.client.types.Overflow;
 import com.smartgwt.client.types.VerticalAlignment;
 import com.smartgwt.client.types.VisibilityMode;
+import com.smartgwt.client.widgets.Canvas;
 import com.smartgwt.client.widgets.HTMLFlow;
 import com.smartgwt.client.widgets.HeaderControl;
 import com.smartgwt.client.widgets.Label;
@@ -118,9 +119,11 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 
 	private void initializeWindow() {
 		panel = new VLayout();
-		panel.setWidth("100%");
-		panel.setAlign(Alignment.CENTER);
+		panel.setWidth("1180");
 		panel.setPadding(0);
+		panel.setBorder("1px solid black");
+		panel.setAlign(Alignment.CENTER);
+		panel.setAlign(VerticalAlignment.TOP);
 		
 		addHeaderLayout();
 		
@@ -233,8 +236,7 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
         });
         conversationPanel = new VLayout();
         conversationPanel.setMargin(25);
-        conversationPortlet.addChild(conversationPanel);
-        
+        conversationPortlet.addChild(conversationPanel);        
         portal.addPortlet(conversationPortlet,0, 1);
         
 
@@ -292,6 +294,11 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 	public void refreshConversationChart(Conversation[] value, boolean isSmall) {
 		Table validTable = createConversationTableChart(value, isSmall, true);
 		Table invalidTable = createConversationTableChart(value, isSmall, false);
+		
+		Canvas[] canvas = conversationPanel.getMembers();
+		for (int i = 0; i< canvas.length; i++) {
+			conversationPanel.removeMember(canvas[i]);
+		}
 		conversationPanel.clear();
 		conversationPanel.addMember(validTable);
 		conversationPanel.addMember(invalidTable);
@@ -419,7 +426,6 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 		DataTable dt = DataTable.create();
 		dt.addColumn(ColumnType.STRING, "Id");
 		dt.addColumn(ColumnType.BOOLEAN, "Status");
-		dt.addColumn(ColumnType.DATETIME, "Updated Date");
 		
 		List<Conversation> data = new ArrayList<Conversation>();
 		
@@ -431,23 +437,19 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 		}
 		
 		dt.addRows(data.size());
-		Date d = new Date();
 		int i = 0;
 		for (Conversation cd : data) {
 			dt.setValue(i, 0, cd.getConversationId());
 			dt.setValue(i, 1, cd.getStatus());
-			d.setTime(cd.getUpdatedDate());
-			dt.setValue(i, 2, d);
-			
 			i++;
 		}
 		
 		Table.Options toption = Table.Options.create();
 		toption.setShowRowNumber(true);
 		if (isSmall) {
-			toption.setWidth("300");
-			toption.setHeight("120");
-			toption.setPageSize(5);
+			toption.setWidth("250");
+			toption.setHeight("100");
+			toption.setPageSize(3);
 		} else {
 			toption.setWidth("800");
 			toption.setHeight("300");
