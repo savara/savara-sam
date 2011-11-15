@@ -116,7 +116,7 @@ public class ActiveQueryProxyTest {
 			fail("Should be one element in aq2 results");
 		}
 		
-		if (aq2.getResults().next() != obj2) {
+		if (aq2.getContents().get(0) != obj2) {
 			fail("AQ2 result incorrect");
 		}
 	}

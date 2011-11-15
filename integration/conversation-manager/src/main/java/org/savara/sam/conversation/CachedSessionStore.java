@@ -91,20 +91,11 @@ public class CachedSessionStore implements SessionStore {
 					Serializable value) {
 		ProtocolConversationKey key=new ProtocolConversationKey(pid, cid);
 		
-		/*
-		if (!_cache.containsKey(key)) {
-			if (LOG.isLoggable(Level.FINEST)) {
-				LOG.finest("Store initial version of session for pid="+pid+" cid="+cid+" value="+value);			
-			}
+		if (LOG.isLoggable(Level.FINEST)) {
+			LOG.finest("Update session for pid="+pid+" cid="+cid+" value="+value);			
+		}
 			
-			_cache.put(key, value);
-		} else {*/
-			if (LOG.isLoggable(Level.FINEST)) {
-				LOG.finest("Update session for pid="+pid+" cid="+cid+" value="+value);			
-			}
-			
-			//_cache.replace(key, value);
-		//}
+		_cache.replace(key, value);
 	}
 	
 	public void close() {

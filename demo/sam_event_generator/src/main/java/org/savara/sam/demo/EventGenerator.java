@@ -119,7 +119,8 @@ public class EventGenerator {
 			System.out.println((i+1)+") Enact scenario '"+_scenarioNames[i]+"'");
 		}
 		
-		System.out.println((_scenarioNames.length+1)+") Random scenario");
+		System.out.println((_scenarioNames.length+1)+") Performance test");
+		System.out.println((_scenarioNames.length+2)+") Random scenario");
 		
 		System.out.println("Enter option:");
 		
@@ -135,9 +136,17 @@ public class EventGenerator {
 					
 					_executor.execute(new Runnable() {
 						public void run() {						
-							runScenario(ret-1, "id"+_random.nextLong(), getPrincipal());
+							runScenario(ret-1, "id"+_random.nextLong(), getPrincipal(), false);
 						}
 					});
+				} else if (ret == (_scenarioNames.length+1)) {
+					
+					_executor.execute(new Runnable() {
+						public void run() {						
+							runScenario(1, "id"+_random.nextLong(), getPrincipal(), true);
+						}
+					});
+
 				} else {
 					_executor.execute(new Runnable() {
 						public void run() {
@@ -166,7 +175,7 @@ public class EventGenerator {
 							
 							System.out.println("Running scenario '"+_scenarioNames[scenario]+"' id="+id);
 
-							runScenario(scenario, id, getPrincipal());
+							runScenario(scenario, id, getPrincipal(), false);
 						}
 					});
 				}
@@ -176,7 +185,7 @@ public class EventGenerator {
 		return(ret);
 	}
 	
-	protected void runScenario(int scenarioNum, String id, String principal) {
+	protected void runScenario(int scenarioNum, String id, String principal, boolean ignoreDelay) {
 		org.savara.scenario.model.Scenario scenario=_scenarios[scenarioNum];
 		
 		java.util.List<String> correlations=new java.util.ArrayList<String>();
@@ -232,7 +241,7 @@ public class EventGenerator {
 
 				_collector.process(activity);
 				
-			} else if (event instanceof org.savara.scenario.model.TimeElapsedEvent) {
+			} else if (!ignoreDelay && event instanceof org.savara.scenario.model.TimeElapsedEvent) {
 				org.savara.scenario.model.TimeElapsedEvent tee=
 						(org.savara.scenario.model.TimeElapsedEvent)event;
 				

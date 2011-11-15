@@ -214,20 +214,20 @@
 		</replicated-cache>
 -->
                 <local-cache name="activities">
-                    <eviction strategy="LRU" max-entries="10000"/>
+                    <eviction strategy="NONE" max-entries="10000"/>
                 </local-cache>
                 <local-cache name="queries">
-                    <eviction strategy="LRU" max-entries="10000"/>
+                    <eviction strategy="NONE" max-entries="10000"/>
                 </local-cache>
                 <local-cache name="serviceInvocations">
-                    <eviction strategy="LRU" max-entries="10000"/>
+                    <eviction strategy="NONE" max-entries="10000"/>
                     <expiration max-idle="100000"/>
                 </local-cache>
                 <local-cache name="conversationSessions">
                     <eviction strategy="NONE" max-entries="10000"/>
                 </local-cache>
                 <local-cache name="conversationDetails">
-                    <eviction strategy="LRU" max-entries="10000"/>
+                    <eviction strategy="NONE" max-entries="10000"/>
                 </local-cache>
             </cache-container>
         </subsystem>

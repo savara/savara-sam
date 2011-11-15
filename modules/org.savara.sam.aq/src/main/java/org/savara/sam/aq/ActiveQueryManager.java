@@ -43,4 +43,21 @@ public interface ActiveQueryManager {
 	 */
 	public <T> ActiveQuery<T> createActiveQuery(ActiveQuery<T> parent, Predicate<T> predicate);
 	
+	/**
+	 * This method returns the list of system maintained active query
+	 * specifications.
+	 * 
+	 * @return The list of active query specifications
+	 */
+	public java.util.Collection<ActiveQuerySpec> getActiveQueries();
+
+	/**
+	 * This method returns the Active Query Spec for the named
+	 * query.
+	 * 
+	 * @param name The active query name
+	 * @return The spec, or null if not found
+	 */
+	public ActiveQuerySpec getActiveQuerySpec(String name);
+	
 }

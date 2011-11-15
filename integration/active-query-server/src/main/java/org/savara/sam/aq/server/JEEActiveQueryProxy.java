@@ -49,7 +49,8 @@ public class JEEActiveQueryProxy<T> extends ActiveQueryProxy<T> {
 		_cache = cache;	
 		
 		if (LOG.isLoggable(Level.FINEST)) {
-			LOG.finest("Create JEE ActiveQueryProxy "+this+" for AQ "+activeQueryName);
+			LOG.finest("Create JEE ActiveQueryProxy "+this+" for AQ "+activeQueryName+
+							" with classloader: "+_classLoader);
 		}
 		
 		// Start thread to receive notifications and dispatch them
@@ -177,19 +178,25 @@ public class JEEActiveQueryProxy<T> extends ActiveQueryProxy<T> {
 			
 			Object value=getObject(_value);
 			
-			if (value instanceof java.util.List<?>) {
-				for (Object val : (java.util.List<?>)value) {
-					if (_changeType == ActiveChangeType.Add) {
-						proxy.notifyAddition(val);
-					} else if (_changeType == ActiveChangeType.Remove) {
-						proxy.notifyRemoval(val);
-					}
-				}
+			if (value == null) {
+				LOG.severe("Active Query '"+JEEActiveQueryProxy.this.getName()+
+							" trying to send 'null' notification");
 			} else {
-				if (_changeType == ActiveChangeType.Add) {
-					proxy.notifyAddition(value);
-				} else if (_changeType == ActiveChangeType.Remove) {
-					proxy.notifyRemoval(value);
+			
+				if (value instanceof java.util.List<?>) {
+					for (Object val : (java.util.List<?>)value) {
+						if (_changeType == ActiveChangeType.Add) {
+							proxy.notifyAddition(val);
+						} else if (_changeType == ActiveChangeType.Remove) {
+							proxy.notifyRemoval(val);
+						}
+					}
+				} else {
+					if (_changeType == ActiveChangeType.Add) {
+						proxy.notifyAddition(value);
+					} else if (_changeType == ActiveChangeType.Remove) {
+						proxy.notifyRemoval(value);
+					}
 				}
 			}
 		}

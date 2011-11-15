@@ -26,11 +26,11 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
-import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.jms.MessageListener;
 
-import org.savara.sam.activity.ActivitySummary;
+import org.savara.sam.activity.ActivityModel.Activity;
+import org.savara.sam.aq.ActiveQuerySpec;
 import org.savara.sam.aq.server.JEEActiveQueryManager;
 
 @MessageDriven(name = "Root", messageListenerInterface = MessageListener.class,
@@ -41,13 +41,10 @@ import org.savara.sam.aq.server.JEEActiveQueryManager;
                      })
 @TransactionManagement(value= TransactionManagementType.CONTAINER)
 @TransactionAttribute(value= TransactionAttributeType.REQUIRED)
-public class Root extends JEEActiveQueryManager<ActivitySummary,ActivitySummary> implements MessageListener {
+public class Root extends JEEActiveQueryManager<String,String> implements MessageListener {
 	
 	private static final String ACTIVE_QUERY_NAME = "Root";
 
-	@Resource(mappedName = "java:/JmsXA")
-	ConnectionFactory _connectionFactory;
-	
 	@Resource(mappedName = "java:/queue/aq/Root")
 	Destination _sourceQueue;
 	
@@ -61,12 +58,12 @@ public class Root extends JEEActiveQueryManager<ActivitySummary,ActivitySummary>
 	private org.infinispan.manager.CacheContainer _container;
 	
 	public Root() {
-		super(ACTIVE_QUERY_NAME, null);
+		super(new ActiveQuerySpec(ACTIVE_QUERY_NAME, Activity.class, String.class), null);
 	}
 	
 	@PostConstruct
 	public void init() {
-		super.init(_connectionFactory, _container, _sourceQueue, _notificationTopic, _purchasing);
+		super.init(null, _container, _sourceQueue, _notificationTopic, _purchasing);
 	}
 
 	@PreDestroy

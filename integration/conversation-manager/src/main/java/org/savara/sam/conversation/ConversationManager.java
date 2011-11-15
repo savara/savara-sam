@@ -33,10 +33,10 @@ import org.savara.protocol.ProtocolCriteria.Direction;
 import org.savara.protocol.ProtocolId;
 import org.savara.protocol.repository.ProtocolRepository;
 import org.savara.sam.activity.ActivityModel.Activity;
-import org.savara.sam.activity.ActivitySummary;
 import org.savara.sam.activity.ServiceModel;
 import org.savara.sam.aq.ActiveChangeType;
 import org.savara.sam.aq.ActiveQuery;
+import org.savara.sam.aq.ActiveQuerySpec;
 import org.savara.sam.aq.server.JEEActiveQueryManager;
 import org.scribble.common.resource.ResourceContent;
 import org.scribble.protocol.DefaultProtocolContext;
@@ -44,7 +44,7 @@ import org.scribble.protocol.ProtocolContext;
 import org.scribble.protocol.model.ProtocolModel;
 import org.scribble.protocol.model.Role;
 
-public class ConversationManager extends JEEActiveQueryManager<ActivitySummary,ConversationDetails> implements MessageListener {
+public class ConversationManager extends JEEActiveQueryManager<String,ConversationDetails> implements MessageListener {
 	
 	private static final Logger LOG=Logger.getLogger(ConversationManager.class.getName());
 	
@@ -56,7 +56,8 @@ public class ConversationManager extends JEEActiveQueryManager<ActivitySummary,C
 	private XPathConversationResolver _resolver=new XPathConversationResolver();
 	
 	public ConversationManager(String conversationName) {
-		super(conversationName, null);
+		super(new ActiveQuerySpec(conversationName, ConversationDetails.class,
+							ConversationId.class), null);
 	}
 	
 	public void init(String model, ConnectionFactory connectionFactory,
@@ -99,20 +100,19 @@ public class ConversationManager extends JEEActiveQueryManager<ActivitySummary,C
 	}
 
 	@Override
-	protected ConversationDetails processActivity(ActivitySummary activity, ActiveChangeType changeType,
+	protected ConversationDetails processActivity(String id, ActiveChangeType changeType,
 								int retriesLeft) throws Exception {
 		ConversationDetails ret=null;
 		
-		// Pull full activity event with message content
-		Activity act=_activities.get(activity.getId());
+		Activity act=_activities.get(id);
 		
 		if (act == null) {
-			if (LOG.isLoggable(Level.FINE)) {
-				LOG.fine("Conversation manager failed to retrieve activity '"+activity.getId()+"' - retrying...");
+			if (LOG.isLoggable(Level.FINEST)) {
+				LOG.finest("Conversation manager failed to retrieve activity '"+id+"' - retrying...");
 			}
-			throw new Exception("Failed to find activity with activity id '"+activity.getId()+"' - retrying");
+			throw new Exception("Failed to find activity with activity id '"+id+"' - retrying");
 		} else if (LOG.isLoggable(Level.FINEST)) {
-			LOG.finest("Conversation manager retrieved activity '"+activity.getId()+"'");
+			LOG.finest("Conversation manager retrieved activity '"+id+"'");
 		}
 		
 		Message mesg=new Message();
@@ -129,13 +129,13 @@ public class ConversationManager extends JEEActiveQueryManager<ActivitySummary,C
 		}
 		
 		if (LOG.isLoggable(Level.FINEST)) {
-			LOG.finest("Monitor activity="+activity+" message="+mesg);
+			LOG.finest("Monitor activity="+act+" message="+mesg);
 		}
 		
 		MonitorResult result=_monitor.process(null, null, mesg);
 		
 		if (LOG.isLoggable(Level.FINEST)) {
-			LOG.finest("Monitored activity="+activity+" message="+mesg+" result="+result);
+			LOG.finest("Monitored activity="+act+" message="+mesg+" result="+result);
 		}
 		
 		if (result != null) {
@@ -148,10 +148,10 @@ public class ConversationManager extends JEEActiveQueryManager<ActivitySummary,C
 				if (retriesLeft > 0 && !result.isValid()) {
 					if (LOG.isLoggable(Level.FINEST)) {
 						LOG.finest("Conversation result="+result+
-							" message="+mesg+" failed to validate: "+activity+" - so retrying...");
+							" message="+mesg+" failed to validate: "+act+" - so retrying...");
 					}
 					throw new Exception("Conversation '"+result.getConversationId()+
-							"' failed to validate: "+activity);
+							"' failed to validate: "+act);
 				} else if (!result.isValid()) {
 					if (LOG.isLoggable(Level.FINEST)) {
 						LOG.finest("Conversation result="+result+
@@ -170,11 +170,11 @@ public class ConversationManager extends JEEActiveQueryManager<ActivitySummary,C
 					_conversationDetails.put(result.getConversationId(), ret);
 				}
 				
-				ret.addActivity(activity, result);
+				ret.addActivity(id, act, result);
 				
 				if (LOG.isLoggable(Level.FINEST)) {
 					LOG.finest("Updating Conversation Details for cid="+
-								result.getConversationId()+" : added activity "+activity);
+								result.getConversationId()+" : added activity "+act);
 				}
 				_conversationDetails.replace(result.getConversationId(), ret);
 				

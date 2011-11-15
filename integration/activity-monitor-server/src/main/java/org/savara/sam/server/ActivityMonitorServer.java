@@ -39,7 +39,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.savara.sam.activity.ActivityModel;
 import org.savara.sam.activity.ActivityModel.Activity;
-import org.savara.sam.activity.ActivitySummary;
 import org.savara.sam.aq.ActiveChangeType;
 import org.savara.sam.aq.server.AQDefinitions;
 
@@ -65,12 +64,14 @@ public class ActivityMonitorServer implements MessageListener {
 	private org.infinispan.manager.CacheContainer _container;
 	private org.infinispan.Cache<String, org.savara.sam.activity.ActivityModel.Activity> _cache;
 	 
-	Connection _connection=null;
-	Session _session=null;
-	MessageProducer _producer=null;
-	java.util.Random _random=new java.util.Random();
-	private int _messageCount=0;
-
+	private static Connection _connection=null;
+	private static Session _session=null;
+	private static MessageProducer _producer=null;
+	private static java.util.Random _random=new java.util.Random();
+	private static int _messageCount=0;
+	
+	private static int _amsCount=0;
+	
 	public ActivityMonitorServer() {
 	}
 	
@@ -78,15 +79,19 @@ public class ActivityMonitorServer implements MessageListener {
 	public void init() {
 		LOG.info("Initialize Activity Monitor Server");
 		
-		try {
-			_connection = _connectionFactory.createConnection();
-			_session = _connection.createSession(true, Session.AUTO_ACKNOWLEDGE);
-			
-			_producer = _session.createProducer(_root);
-		} catch(Exception e) {
-			LOG.log(Level.SEVERE, "Failed to initialize JMS", e);
-		}
+		_amsCount++;
 		
+		if (_connection == null) {
+			try {
+				_connection = _connectionFactory.createConnection();
+				_session = _connection.createSession(true, Session.AUTO_ACKNOWLEDGE);
+				
+				_producer = _session.createProducer(_root);
+			} catch(Exception e) {
+				LOG.log(Level.SEVERE, "Failed to initialize JMS", e);
+			}
+		}
+			
 		_cache = _container.getCache("activities");
 	}
 	
@@ -94,19 +99,23 @@ public class ActivityMonitorServer implements MessageListener {
 	public void close() {
 		LOG.info("Closing Activity Monitor Server");
 		
-		try {
-			_session.close();
-			_connection.close();
-		} catch(Exception e) {
-			LOG.log(Level.SEVERE, "Failed to close JMS", e);
+		_amsCount--;
+		
+		if (_amsCount <= 0) {
+			try {
+				_session.close();
+				_connection.close();
+			} catch(Exception e) {
+				LOG.log(Level.SEVERE, "Failed to close JMS", e);
+			}
+			
+			_connection = null;
 		}
 	}
 
 	public void onMessage(Message message) {
 		
 		if (message instanceof BytesMessage) {
-			// Decode messages
-			
 			boolean finished=false;
 			
 			if (LOG.isLoggable(Level.FINE)) {
@@ -115,7 +124,8 @@ public class ActivityMonitorServer implements MessageListener {
 			
 			// TODO: Need to provide utility mechanism for building messages
 			// for sending to an active query (or analyser)
-			java.util.Vector<ActivitySummary> list=new java.util.Vector<ActivitySummary>();
+			//java.util.Vector<ActivitySummary> list=new java.util.Vector<ActivitySummary>();
+			java.util.Vector<String> list=new java.util.Vector<String>();
 			
 			do {
 				try {
@@ -134,10 +144,16 @@ public class ActivityMonitorServer implements MessageListener {
 						// Store message in the cache
 						_cache.put(id, act);
 						
-						// Create the activity summary
-						list.add(new ActivitySummary(id, act));
+						if (LOG.isLoggable(Level.FINEST)) {
+							LOG.finest("Stored activity '"+id+"' in cache");
+						}
 						
-						_messageCount++;
+						// Create the activity summary
+						list.add(id); //new ActivitySummary(id, act));
+						
+						synchronized(_random) {
+							_messageCount++;
+						}
 						
 					} else {
 						finished = true;

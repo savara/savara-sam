@@ -26,7 +26,6 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
-import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.jms.MessageListener;
 
@@ -46,8 +45,8 @@ public class PurchasingConversation extends ConversationManager implements Messa
 	
 	private static final String MODEL="PurchaseGoods.cdm";
 
-	@Resource(mappedName = "java:/JmsXA")
-	ConnectionFactory _connectionFactory;
+	//@Resource(mappedName = "java:/JmsXA")
+	//ConnectionFactory _connectionFactory;
 	
 	@Resource(mappedName = "java:/queue/aq/PurchasingConversation")
 	Destination _sourceQueue;
@@ -64,7 +63,7 @@ public class PurchasingConversation extends ConversationManager implements Messa
 	
 	@PostConstruct
 	public void init() {
-		super.init(MODEL, _connectionFactory, _container, _sourceQueue, _notificationTopic);
+		super.init(MODEL, null, _container, _sourceQueue, _notificationTopic);
 		
 		getResolver().addMessageTypeIDLocator("{http://www.jboss.org/examples/store}BuyRequest", "//@id");
 		getResolver().addMessageTypeIDLocator("{http://www.jboss.org/examples/store}BuyConfirmed", "//@id");

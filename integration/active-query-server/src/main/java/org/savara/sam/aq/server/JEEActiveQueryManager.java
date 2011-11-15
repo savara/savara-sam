@@ -17,14 +17,13 @@
  */
 package org.savara.sam.aq.server;
 
-import javax.jms.Connection;
+//import javax.inject.Inject;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
 import javax.jms.ObjectMessage;
-import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import java.util.logging.Level;
@@ -32,6 +31,7 @@ import java.util.logging.Logger;
 
 import org.savara.sam.aq.ActiveChangeType;
 import org.savara.sam.aq.ActiveQuery;
+import org.savara.sam.aq.ActiveQuerySpec;
 import org.savara.sam.aq.DefaultActiveQuery;
 import org.savara.sam.aq.Predicate;
 
@@ -43,11 +43,9 @@ public class JEEActiveQueryManager<S,T> implements MessageListener {
 	
 	private static final int MAX_RETRY = 6;
 	
-	private String _activeQueryName=null;
+	private ActiveQuerySpec _activeQuerySpec=null;
 	private String _parentActiveQueryName=null;
-	private ConnectionFactory _connectionFactory=null;
-	private Connection _connection=null;
-	private Session _session=null;
+
 	private java.util.List<MessageProducer> _producers=new java.util.Vector<MessageProducer>();
 	private MessageProducer _source=null;
 	private MessageProducer _notifier=null;
@@ -55,67 +53,86 @@ public class JEEActiveQueryManager<S,T> implements MessageListener {
 	private org.infinispan.manager.CacheContainer _container;
 	private org.infinispan.Cache<String, DefaultActiveQuery<T>> _cache;
 	
-	public JEEActiveQueryManager(String name, String parentName) {
-		_activeQueryName = name;
+	//@Inject
+	private ActiveQueryServer _activeQueryServer=null;
+	
+	public JEEActiveQueryManager(ActiveQuerySpec spec, String parentName) {
+		_activeQuerySpec = spec;
 		_parentActiveQueryName = parentName;
 	}
 	
 	public void init(ConnectionFactory connectionFactory, org.infinispan.manager.CacheContainer container,
 						Destination source, Destination notification, Destination... destinations) {
-		_connectionFactory = connectionFactory;
+		//_connectionFactory = connectionFactory;
 		_container = container;		
 		
 		_cache = _container.getCache("queries");
 		
 		try {
-			_connection = _connectionFactory.createConnection();
-			_session = _connection.createSession(true, Session.AUTO_ACKNOWLEDGE);
+			//_connection = _connectionFactory.createConnection();
+			//_session = ActiveQueryServer.getConnection().createSession(true, Session.AUTO_ACKNOWLEDGE);
 			
 			if (source != null) {
-				_source = _session.createProducer(source);
+				_source = ActiveQueryServer.getSession().createProducer(source);
 			}
 			
 			if (notification != null) {
-				_notifier = _session.createProducer(notification);
+				_notifier = ActiveQueryServer.getSession().createProducer(notification);
 			}
 			
 			for (Destination d : destinations) {
-				_producers.add(_session.createProducer(d));
+				_producers.add(ActiveQueryServer.getSession().createProducer(d));
 			}
 		} catch(Exception e) {
 			LOG.log(Level.SEVERE, "Failed to setup JMS connection/session", e);
 		}
+		
+		// Register AQ spec
+		ActiveQueryServer aqs=_activeQueryServer;
+		
+		if (aqs == null) {
+			// TODO: Needs to be injected!
+			aqs = ActiveQueryServer.getInstance();
+		}
+		
+		aqs.register(getActiveQuerySpec());
 	}
-
+	
 	public void close() {
+		/*
 		try {
 			_session.close();
-			_connection.close();
+			//_connection.close();
 		} catch(Exception e) {
 			LOG.log(Level.SEVERE, "Failed to close JMS connection/session", e);
 		}
+		*/
 	}
 	
 	protected void initRootAQ(ActiveQuery<T> root) {
 	}
 	
+	protected ActiveQuerySpec getActiveQuerySpec() {
+		return(_activeQuerySpec);
+	}
+	
 	protected String getActiveQueryName() {
-		return(_activeQueryName);
+		return(getActiveQuerySpec().getName());
 	}
 
 	protected ActiveQuery<T> getActiveQuery() {
-		DefaultActiveQuery<T> ret=_cache.get(_activeQueryName);
+		DefaultActiveQuery<T> ret=_cache.get(getActiveQueryName());
 		
 		if (ret == null) {
 			boolean refresh=false;
 			
 			if (LOG.isLoggable(Level.FINE)) {
-				LOG.fine("Active Query '"+_activeQueryName+"' not available in cache");
+				LOG.fine("Active Query '"+getActiveQueryName()+"' not available in cache");
 			}
 
 			// Get parent AQ
 			if (_parentActiveQueryName == null) {
-				ret = new DefaultActiveQuery<T>(_activeQueryName, getPredicate());
+				ret = new DefaultActiveQuery<T>(getActiveQueryName(), getPredicate());
 				initRootAQ(ret);
 				
 				refresh = true;
@@ -125,24 +142,24 @@ public class JEEActiveQueryManager<S,T> implements MessageListener {
 				
 				if (LOG.isLoggable(Level.FINE)) {
 					LOG.fine("Parent Active Query '"+_parentActiveQueryName+"' of AQ '"
-								+_activeQueryName+"' not available in cache");
+								+getActiveQueryName()+"' not available in cache");
 				}
 
 				if (parent == null) {
 					// Need to go through init procedure
 					sendInitRequest();
 				} else {
-					ret = new DefaultActiveQuery<T>(_activeQueryName, getPredicate(), parent);
+					ret = parent.createChild(getActiveQueryName(), getPredicate());
 					
 					refresh = true;
 				}
 			}
 			
 			if (ret != null) {
-				_cache.put(_activeQueryName, ret);
+				_cache.put(getActiveQueryName(), ret);
 				
 				if (LOG.isLoggable(Level.FINE)) {
-					LOG.fine("Creating Active Query: "+_activeQueryName+" = "+ret);
+					LOG.fine("Creating Active Query: "+getActiveQueryName()+" = "+ret);
 				}
 				
 				if (refresh) {
@@ -151,7 +168,7 @@ public class JEEActiveQueryManager<S,T> implements MessageListener {
 			}
 		} else {
 			if (LOG.isLoggable(Level.FINE)) {
-				LOG.fine("Using existing Active Query: "+_activeQueryName+" = "+ret);
+				LOG.fine("Using existing Active Query: "+getActiveQueryName()+" = "+ret);
 			}
 		}
 		
@@ -174,20 +191,20 @@ public class JEEActiveQueryManager<S,T> implements MessageListener {
 	
 	protected void sendInitRequest() {
 		if (LOG.isLoggable(Level.FINE)) {
-			LOG.fine("Active Query '"+_activeQueryName
+			LOG.fine("Active Query '"+getActiveQueryName()
 					+"' sending 'init' to parent AQ '"+_parentActiveQueryName+"'");
 		}
 
 		try {
-			Message m=_session.createTextMessage(AQDefinitions.INIT_COMMAND);
-			Destination dest=_session.createQueue(_parentActiveQueryName);
-			MessageProducer mp=_session.createProducer(dest);
+			Message m=ActiveQueryServer.getSession().createTextMessage(AQDefinitions.INIT_COMMAND);
+			Destination dest=ActiveQueryServer.getSession().createQueue(_parentActiveQueryName);
+			MessageProducer mp=ActiveQueryServer.getSession().createProducer(dest);
 			
 			mp.send(m);
 			
 			mp.close();
 		} catch(Exception e) {
-			LOG.log(Level.SEVERE, "AQ '"+_activeQueryName+
+			LOG.log(Level.SEVERE, "AQ '"+getActiveQueryName()+
 					"' failed to send init request to parent AQ '"+
 					_parentActiveQueryName+"'", e);
 		}
@@ -195,17 +212,17 @@ public class JEEActiveQueryManager<S,T> implements MessageListener {
 	
 	protected void sendRefresh() {
 		if (LOG.isLoggable(Level.FINE)) {
-			LOG.fine("Active Query '"+_activeQueryName+"' sending refresh to child AQs");
+			LOG.fine("Active Query '"+getActiveQueryName()+"' sending refresh to child AQs");
 		}
 
 		try {
-			Message m=_session.createTextMessage(AQDefinitions.REFRESH_COMMAND);
+			Message m=ActiveQueryServer.getSession().createTextMessage(AQDefinitions.REFRESH_COMMAND);
 			
 			for (MessageProducer mp : _producers) {
 				mp.send(m);
 			}
 		} catch(Exception e) {
-			LOG.log(Level.SEVERE, "AQ '"+_activeQueryName+
+			LOG.log(Level.SEVERE, "AQ '"+getActiveQueryName()+
 					"' failed to send refresh to child AQs", e);
 		}
 	}
@@ -228,7 +245,17 @@ public class JEEActiveQueryManager<S,T> implements MessageListener {
 				// TODO: If active query not returned, then need to postpone change
 				// Can it be added back on the queue? retry?
 				if (aq == null) {
-					retry((javax.jms.ObjectMessage)message);
+					javax.jms.ObjectMessage om=ActiveQueryServer.getSession().createObjectMessage(
+										((ObjectMessage)message).getObject());
+					java.util.Enumeration<?> iter=message.getPropertyNames();
+					while (iter.hasMoreElements()) {
+						String name=(String)iter.nextElement();
+						if (!name.startsWith("JMSX")) {
+							om.setObjectProperty(name, message.getObjectProperty(name));
+						}
+					}
+					
+					retry(om);
 				} else {
 					int retriesLeft=MAX_RETRY-getRetryCount(message);
 					
@@ -242,74 +269,74 @@ public class JEEActiveQueryManager<S,T> implements MessageListener {
 						
 						try {
 							activity = processActivity(sourceActivity, changeType, retriesLeft);
+
+							if (activity != null) {
+								
+								switch(processChangeType(activity, changeType)) {
+								case Add:
+									if (aq.add(activity)) {
+										
+										// Propagate to child queries and topics
+										if (LOG.isLoggable(Level.FINEST)) {
+											LOG.finest("AQ "+getActiveQueryName()+" propagate addition activity = "+activity);
+										}
+										
+										if (forwardAdditions == null) {
+											forwardAdditions = new java.util.Vector<T>();
+										}
+										
+										forwardAdditions.add(activity);
+										
+									} else if (LOG.isLoggable(Level.FINEST)) {
+										LOG.finest("AQ "+getActiveQueryName()+" ignore addition activity = "+activity);
+									}
+									break;
+								case Update:
+									if (aq.update(activity)) {
+										
+										// Propagate to child queries and topics
+										if (LOG.isLoggable(Level.FINEST)) {
+											LOG.finest("AQ "+getActiveQueryName()+" propagate update activity = "+activity);
+										}
+										
+										if (forwardUpdates == null) {
+											forwardUpdates = new java.util.Vector<T>();
+										}
+										
+										forwardUpdates.add(activity);
+										
+									} else if (LOG.isLoggable(Level.FINEST)) {
+										LOG.finest("AQ "+getActiveQueryName()+" ignore update activity = "+activity);
+									}
+									break;
+								case Remove:
+									if (aq.remove(activity)) {
+										
+										// Propagate to child queries and topics
+										if (LOG.isLoggable(Level.FINEST)) {
+											LOG.finest("AQ "+getActiveQueryName()+" propagate removal activity = "+activity);
+										}
+										
+										if (forwardRemovals == null) {
+											forwardRemovals = new java.util.Vector<T>();
+										}
+										
+										forwardRemovals.add(activity);
+										
+									} else if (LOG.isLoggable(Level.FINEST)) {
+										LOG.finest("AQ "+getActiveQueryName()+" ignore removal activity = "+activity);
+									}
+									break;
+								}
+								
+							} else if (LOG.isLoggable(Level.FINEST)) {
+								LOG.finest("AQ "+getActiveQueryName()+" didn't transform source activity = "+sourceActivity);
+							}
 						} catch(Exception e) {
 							if (retries == null) {
 								retries = new java.util.Vector<S>();
 							}
 							retries.add(sourceActivity);
-						}
-						
-						if (activity != null) {
-							
-							switch(processChangeType(activity, changeType)) {
-							case Add:
-								if (aq.add(activity)) {
-									
-									// Propagate to child queries and topics
-									if (LOG.isLoggable(Level.FINEST)) {
-										LOG.finest("AQ "+_activeQueryName+" propagate addition activity = "+activity);
-									}
-									
-									if (forwardAdditions == null) {
-										forwardAdditions = new java.util.Vector<T>();
-									}
-									
-									forwardAdditions.add(activity);
-									
-								} else if (LOG.isLoggable(Level.FINEST)) {
-									LOG.finest("AQ "+_activeQueryName+" ignore addition activity = "+activity);
-								}
-								break;
-							case Update:
-								if (aq.update(activity)) {
-									
-									// Propagate to child queries and topics
-									if (LOG.isLoggable(Level.FINEST)) {
-										LOG.finest("AQ "+_activeQueryName+" propagate update activity = "+activity);
-									}
-									
-									if (forwardUpdates == null) {
-										forwardUpdates = new java.util.Vector<T>();
-									}
-									
-									forwardUpdates.add(activity);
-									
-								} else if (LOG.isLoggable(Level.FINEST)) {
-									LOG.finest("AQ "+_activeQueryName+" ignore update activity = "+activity);
-								}
-								break;
-							case Remove:
-								if (aq.remove(activity)) {
-									
-									// Propagate to child queries and topics
-									if (LOG.isLoggable(Level.FINEST)) {
-										LOG.finest("AQ "+_activeQueryName+" propagate removal activity = "+activity);
-									}
-									
-									if (forwardRemovals == null) {
-										forwardRemovals = new java.util.Vector<T>();
-									}
-									
-									forwardRemovals.add(activity);
-									
-								} else if (LOG.isLoggable(Level.FINEST)) {
-									LOG.finest("AQ "+_activeQueryName+" ignore removal activity = "+activity);
-								}
-								break;
-							}
-							
-						} else if (LOG.isLoggable(Level.FINEST)) {
-							LOG.finest("AQ "+_activeQueryName+" didn't transform source activity = "+sourceActivity);
 						}
 					}
 					
@@ -319,7 +346,7 @@ public class JEEActiveQueryManager<S,T> implements MessageListener {
 							LOG.finest("Sending retry list with: "+retries);
 						}
 
-						javax.jms.ObjectMessage om=_session.createObjectMessage(retries);
+						javax.jms.ObjectMessage om=ActiveQueryServer.getSession().createObjectMessage(retries);
 						java.util.Enumeration<?> iter=message.getPropertyNames();
 						while (iter.hasMoreElements()) {
 							String name=(String)iter.nextElement();
@@ -352,7 +379,7 @@ public class JEEActiveQueryManager<S,T> implements MessageListener {
 				String command=((TextMessage)message).getText();
 				
 				if (LOG.isLoggable(Level.FINE)) {
-					LOG.fine("AQ '"+_activeQueryName+"' received '"+command+"' command");
+					LOG.fine("AQ '"+getActiveQueryName()+"' received '"+command+"' command");
 				}
 
 				// Process command
@@ -363,7 +390,7 @@ public class JEEActiveQueryManager<S,T> implements MessageListener {
 				} else if (command.equals(AQDefinitions.REFRESH_COMMAND)) {
 					if (getActiveQuery() == null) {
 						if (LOG.isLoggable(Level.FINE)) {
-							LOG.fine("Refresh of '"+_activeQueryName+
+							LOG.fine("Refresh of '"+getActiveQueryName()+
 									"' returned an empty active query, so have re-initiated the parent");
 						}
 					} else {
@@ -420,10 +447,10 @@ public class JEEActiveQueryManager<S,T> implements MessageListener {
 								throws Exception {
 		
 		// Forward to child AQs
-		Message m=_session.createObjectMessage(value);
+		Message m=ActiveQueryServer.getSession().createObjectMessage(value);
 		m.setStringProperty(AQDefinitions.AQ_CHANGETYPE_PROPERTY, changeType.name());
 		
-		m.setStringProperty(AQDefinitions.ACTIVE_QUERY_NAME, _activeQueryName);
+		m.setStringProperty(AQDefinitions.ACTIVE_QUERY_NAME, getActiveQueryName());
 		
 		for (MessageProducer mp : getMessageProducers()) {
 			mp.send(m);
@@ -437,7 +464,7 @@ public class JEEActiveQueryManager<S,T> implements MessageListener {
 			
 			byte[] b=baos.toByteArray();
 			
-			javax.jms.BytesMessage bm=_session.createBytesMessage();
+			javax.jms.BytesMessage bm=ActiveQueryServer.getSession().createBytesMessage();
 			bm.writeBytes(b);
 			
 			baos.close();
@@ -445,7 +472,7 @@ public class JEEActiveQueryManager<S,T> implements MessageListener {
 			
 			bm.setStringProperty(AQDefinitions.AQ_CHANGETYPE_PROPERTY, changeType.name());
 			
-			bm.setStringProperty(AQDefinitions.ACTIVE_QUERY_NAME, _activeQueryName);
+			bm.setStringProperty(AQDefinitions.ACTIVE_QUERY_NAME, getActiveQueryName());
 		
 			_notifier.send(bm);
 		}
@@ -455,7 +482,9 @@ public class JEEActiveQueryManager<S,T> implements MessageListener {
 		return(_producers);
 	}
 	
+	/*
 	protected javax.jms.Session getJMSSession() {
 		return(_session);
 	}
+	*/
 }

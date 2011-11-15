@@ -31,7 +31,7 @@ public class ActiveQueryProxy<T> implements ActiveQuery<T> {
 	private static final Logger LOG=Logger.getLogger(ActiveQueryProxy.class.getName());
 	
 	private String _name=null;
-	private ActiveQuery<T> _activeQuery=null;
+	private ActiveQuery<?> _activeQuery=null;
 	private java.util.Set<ActiveListener<T>> _listeners=new java.util.HashSet<ActiveListener<T>>();
 	private ChangeHandler _changeHandler=new ChangeHandler();
 
@@ -41,12 +41,12 @@ public class ActiveQueryProxy<T> implements ActiveQuery<T> {
 	 * @param name The query name
 	 * @param aq The active query
 	 */
-	public ActiveQueryProxy(String name, ActiveQuery<T> aq) {
+	public ActiveQueryProxy(String name, ActiveQuery<?> aq) {
 		_name = name;
 		_activeQuery = aq;
 	}
 	
-	protected ActiveQuery<T> getSource() {
+	protected ActiveQuery<?> getSource() {
 		return (_activeQuery);
 	}
 	
@@ -66,11 +66,25 @@ public class ActiveQueryProxy<T> implements ActiveQuery<T> {
 	 * @return The predicate
 	 */
 	public Predicate<T> getPredicate() {
-		ActiveQuery<T> aq=getSource();
+		ActiveQuery<?> aq=getSource();
 		if (aq == null) {
 			return (null);
 		}
-		return (getSource().getPredicate());
+		return (transformPredicate(getSource().getPredicate()));
+	}
+	
+	@SuppressWarnings("unchecked")
+	protected Predicate<T> transformPredicate(Predicate<?> pred) {
+		return((Predicate<T>)pred);
+	}
+	
+	protected Object transformFromExternal(T value) {
+		return(value);
+	}
+	
+	@SuppressWarnings("unchecked")
+	protected T transformToExternal(Object value) {
+		return((T)value);
 	}
 	
 	/**
@@ -126,10 +140,11 @@ public class ActiveQueryProxy<T> implements ActiveQuery<T> {
 	public boolean add(T value) {
 		boolean ret=false;
 		
-		ActiveQuery<T> aq=getSource();
+		@SuppressWarnings("unchecked")
+		ActiveQuery<Object> aq=(ActiveQuery<Object>)getSource();
 		
 		if (aq != null) {
-			ret = aq.add(value);
+			ret = aq.add(transformFromExternal(value));
 			if (ret) {
 				notifyAddition(value);
 			}
@@ -159,10 +174,11 @@ public class ActiveQueryProxy<T> implements ActiveQuery<T> {
 	public boolean update(T value) {
 		boolean ret=false;
 		
-		ActiveQuery<T> aq=getSource();
+		@SuppressWarnings("unchecked")
+		ActiveQuery<Object> aq=(ActiveQuery<Object>)getSource();
 		
 		if (aq != null) {
-			ret = aq.update(value);
+			ret = aq.update(transformFromExternal(value));
 			if (ret) {
 				notifyUpdate(value);
 			}
@@ -194,7 +210,8 @@ public class ActiveQueryProxy<T> implements ActiveQuery<T> {
 	 * @return Whether the value was added
 	 */
 	public boolean remove(T value) {
-		boolean ret=getSource().remove(value);
+		@SuppressWarnings("unchecked")
+		boolean ret=((ActiveQuery<Object>)getSource()).remove(transformFromExternal(value));
 			
 		if (ret) {
 			notifyRemoval(value);						
@@ -219,30 +236,18 @@ public class ActiveQueryProxy<T> implements ActiveQuery<T> {
 	}
 	
 	/**
-	 * This method returns the iterator for the results.
-	 * 
-	 * @return The iterator
-	 */
-	@SuppressWarnings("unchecked")
-	public java.util.Iterator<T> getResults() {
-		ActiveQuery<T> aq=getSource();
-		
-		if (aq != null) {
-			return (getSource().getResults());
-		}
-		
-		return (Collections.EMPTY_LIST.iterator());
-	}
-	
-	/**
 	 * {@inheritDoc}
 	 */
 	@SuppressWarnings("unchecked")
 	public java.util.List<T> getContents() {
-		ActiveQuery<T> aq=getSource();
+		ActiveQuery<Object> aq=(ActiveQuery<Object>)getSource();
 		
 		if (aq != null) {
-			return (getSource().getContents());
+			java.util.List<T> ret=new java.util.Vector<T>();
+			for (Object source : getSource().getContents()) {
+				ret.add(transformToExternal(source));
+			}
+			return (ret);
 		}
 		
 		return ((java.util.List<T>)Collections.EMPTY_LIST);
@@ -265,7 +270,8 @@ public class ActiveQueryProxy<T> implements ActiveQuery<T> {
 	 * @return The size
 	 */
 	public int size() {
-		ActiveQuery<T> aq=getSource();
+		@SuppressWarnings("unchecked")
+		ActiveQuery<Object> aq=(ActiveQuery<Object>)getSource();
 		
 		if (aq != null) {
 			return (getSource().size());

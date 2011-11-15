@@ -19,7 +19,7 @@ package org.savara.sam.conversation;
 
 import org.savara.monitor.ConversationId;
 import org.savara.monitor.MonitorResult;
-import org.savara.sam.activity.ActivitySummary;
+import org.savara.sam.activity.ActivityModel.Activity;
 
 /**
  * This class represents the activity information associated with a
@@ -69,10 +69,11 @@ public class ConversationDetails implements java.io.Serializable {
 	 * This method adds an activity summary to the details associated with a conversation
 	 * id.
 	 * 
+	 * @oaram id The activity id
 	 * @param activity The activity
 	 * @param result The optional monitoring result
 	 */
-	public void addActivity(ActivitySummary activity, MonitorResult result) {
+	public void addActivity(String id, Activity activity, MonitorResult result) {
 		
 		if (_startTimestamp == 0) {
 			_startTimestamp = activity.getTimestamp();
@@ -80,7 +81,7 @@ public class ConversationDetails implements java.io.Serializable {
 		
 		_endTimestamp = activity.getTimestamp();
 		
-		_details.add(new ActivityResultDetails(activity, result));
+		_details.add(new ActivityResultDetails(id, result));
 		
 		if (result != null && !result.isValid()) {
 			_valid = false;
@@ -120,7 +121,7 @@ public class ConversationDetails implements java.io.Serializable {
 		
 		private static final long serialVersionUID = -8998387654349909939L;
 
-		private ActivitySummary _activity=null;
+		private String _activityId=null;
 		private MonitorResult _result=null;
 		
 		/**
@@ -129,8 +130,8 @@ public class ConversationDetails implements java.io.Serializable {
 		 * @param activity The activity
 		 * @param result The monitor result
 		 */
-		public ActivityResultDetails(ActivitySummary activity, MonitorResult result) {
-			_activity = activity;
+		public ActivityResultDetails(String id, MonitorResult result) {
+			_activityId = id;
 			_result = result;
 		}
 		
@@ -139,8 +140,8 @@ public class ConversationDetails implements java.io.Serializable {
 		 * 
 		 * @return The activity
 		 */
-		public ActivitySummary getActivity() {
-			return(_activity);
+		public String getActivityId() {
+			return(_activityId);
 		}
 		
 		/**
@@ -153,7 +154,7 @@ public class ConversationDetails implements java.io.Serializable {
 		}
 		
 		public String toString() {
-			return("Activity="+_activity+" Result="+_result);
+			return("Activity="+_activityId+" Result="+_result);
 		}
 	}
 }

@@ -121,7 +121,7 @@ public class JMSActivityCollectorImpl implements ActivityCollector {
 				 if (LOG.isLoggable(Level.FINEST)) {
 					 LOG.finest("Sent "+_messageCounter+" activity events");
 				 }
-				 
+
 				 _currentMessage = null;
 				 _messageCounter = 0;
 				 

@@ -43,31 +43,8 @@ public class DefaultActiveQuery<T> implements ActiveQuery<T>, java.io.Serializab
 	 * @param predicate The predicate
 	 */
 	public DefaultActiveQuery(String name, Predicate<T> predicate) {
-		this(name, predicate, null);
-	}
-	
-	/**
-	 * The constructor for the active query, initialized from the parent active
-	 * query.
-	 * 
-	 * @param name The name of the active query
-	 * @param predicate The predicate
-	 * @param parent The parent active query
-	 */
-	public DefaultActiveQuery(String name, Predicate<T> predicate, ActiveQuery<T> parent) {
 		_name = name;
 		_predicate = predicate;
-		
-		// Process the parent contents against the supplied predicate
-		if (parent != null) {
-			java.util.Iterator<T> iter=parent.getResults();
-			while (iter.hasNext()) {
-				T val=iter.next();
-				if (predicate == null || predicate.evaluate(val)) {
-					_contents.add(val);
-				}
-			}
-		}
 	}
 	
 	/**
@@ -89,6 +66,28 @@ public class DefaultActiveQuery<T> implements ActiveQuery<T>, java.io.Serializab
 	 */
 	public String getName() {
 		return (_name);
+	}
+	
+	/**
+	 * This method returns a child active query initialized from this
+	 * active query as its parent.
+	 * 
+	 * @param name The active query name
+	 * @param predicate The predicate
+	 * @return The child active query
+	 */
+	public DefaultActiveQuery<T> createChild(String name, Predicate<T> predicate) {
+		DefaultActiveQuery<T> ret=new DefaultActiveQuery<T>(name, predicate);
+		
+		synchronized(_contents) {
+			java.util.Iterator<T> iter=_contents.iterator();
+			while (iter.hasNext()) {
+				T val=iter.next();
+				ret.add(val);
+			}
+		}
+		
+		return(ret);
 	}
 	
 	/**
@@ -137,9 +136,11 @@ public class DefaultActiveQuery<T> implements ActiveQuery<T>, java.io.Serializab
 		if (evaluate(value)) {
 			ret = true;
 			
-			// Check if already added, in case duplicate notifications
-			if (!_contents.contains(value)) {
-				_contents.add(value);
+			synchronized(_contents) {
+				// Check if already added, in case duplicate notifications
+				if (!_contents.contains(value)) {
+					_contents.add(value);
+				}
 			}
 		}
 		
@@ -155,12 +156,14 @@ public class DefaultActiveQuery<T> implements ActiveQuery<T>, java.io.Serializab
 		if (evaluate(value)) {
 			ret = true;
 			
-			int index=_contents.indexOf(value);
-			
-			if (index == -1) {
-				_contents.add(value);
-			} else {
-				_contents.set(index, value);
+			synchronized(_contents) {
+				int index=_contents.indexOf(value);
+				
+				if (index == -1) {
+					_contents.add(value);
+				} else {
+					_contents.set(index, value);
+				}
 			}
 		}
 		
@@ -176,7 +179,9 @@ public class DefaultActiveQuery<T> implements ActiveQuery<T>, java.io.Serializab
 		if (evaluate(value)) {
 			ret = true;
 			
-			_contents.remove(value);
+			synchronized(_contents) {
+				_contents.remove(value);
+			}
 		}
 		
 		return (ret);
@@ -201,18 +206,6 @@ public class DefaultActiveQuery<T> implements ActiveQuery<T>, java.io.Serializab
 		}
 		
 		return(ret);
-	}
-	
-	/**
-	 * {@inheritDoc}
-	 */
-	public java.util.Iterator<T> getResults() {
-		if (_copyOnRead) {
-			java.util.Vector<T> copy=new java.util.Vector<T>(_contents);
-			return (copy.iterator());
-		} else {
-			return (_contents.iterator());
-		}
 	}
 	
 	/**

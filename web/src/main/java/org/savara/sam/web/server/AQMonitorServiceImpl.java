@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.savara.sam.activity.ActivityAnalysis;
-import org.savara.sam.activity.ActivitySummary;
 import org.savara.sam.aq.ActiveQuery;
 import org.savara.sam.aq.ActiveQueryManager;
 import org.savara.sam.aq.server.ActiveQueryServer;
@@ -30,9 +29,9 @@ public class AQMonitorServiceImpl extends RemoteServiceServlet implements AQMoni
 	
 	private ActiveQueryManager _activeQueryManager;
 	
-	private ActiveQuery<ActivitySummary> _startedTxns;
-	private ActiveQuery<ActivitySummary> _completedTxns;
-	private ActiveQuery<ActivitySummary> _failedTxns;
+	private ActiveQuery<String> _startedTxns;
+	private ActiveQuery<String> _completedTxns;
+	private ActiveQuery<String> _failedTxns;
 	
 	private ActiveQuery<ActivityAnalysis> _responseTime;
 	

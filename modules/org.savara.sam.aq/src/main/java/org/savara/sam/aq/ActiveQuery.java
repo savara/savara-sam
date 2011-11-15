@@ -78,7 +78,7 @@ public interface ActiveQuery<T> {
 	 * if it should be updated within the active query.
 	 * 
 	 * @param value The value
-	 * @return Whether the value was added
+	 * @return Whether the value was updated
 	 */
 	public boolean update(T value);
 	
@@ -87,16 +87,9 @@ public interface ActiveQuery<T> {
 	 * if it should be removed from the active query.
 	 * 
 	 * @param value The value
-	 * @return Whether the value was added
+	 * @return Whether the value was removed
 	 */
 	public boolean remove(T value);
-
-	/**
-	 * This method returns the iterator for the results.
-	 * 
-	 * @return The iterator
-	 */
-	public java.util.Iterator<T> getResults();
 
 	/**
 	 * This method returns a list containing

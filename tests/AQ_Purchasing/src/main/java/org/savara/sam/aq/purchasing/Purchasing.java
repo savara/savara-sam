@@ -26,13 +26,15 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
-import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.jms.MessageListener;
 
-import org.savara.sam.activity.ActivitySummary;
+import org.savara.sam.activity.ActivityModel.Activity;
+import org.savara.sam.aq.ActiveQuerySpec;
 import org.savara.sam.aq.Predicate;
+import org.savara.sam.aq.server.ActiveQueryServer;
 import org.savara.sam.aq.server.JEEActiveQueryManager;
+import org.savara.sam.aq.server.JEECacheActiveQuerySpec;
 
 @MessageDriven(name = "Purchasing", messageListenerInterface = MessageListener.class,
                activationConfig =
@@ -42,13 +44,14 @@ import org.savara.sam.aq.server.JEEActiveQueryManager;
                      })
 @TransactionManagement(value= TransactionManagementType.CONTAINER)
 @TransactionAttribute(value= TransactionAttributeType.REQUIRED)
-public class Purchasing extends JEEActiveQueryManager<ActivitySummary,ActivitySummary> implements MessageListener {
+public class Purchasing extends JEEActiveQueryManager<String,String> implements MessageListener {
 	
+	private static final String CACHE_NAME = "activities";
 	private static final String ACTIVE_QUERY_NAME = "Purchasing";
 	private static final String PARENT_ACTIVE_QUERY_NAME = "Root";
 
-	@Resource(mappedName = "java:/JmsXA")
-	ConnectionFactory _connectionFactory;
+	//@Resource(mappedName = "java:/JmsXA")
+	//ConnectionFactory _connectionFactory;
 	
 	@Resource(mappedName = "java:/queue/aq/Purchasing")
 	Destination _sourceQueue;
@@ -75,14 +78,17 @@ public class Purchasing extends JEEActiveQueryManager<ActivitySummary,ActivitySu
 	private org.infinispan.manager.CacheContainer _container;
 	
 	public Purchasing() {
-		super(ACTIVE_QUERY_NAME, PARENT_ACTIVE_QUERY_NAME);
+		super(new JEECacheActiveQuerySpec(ACTIVE_QUERY_NAME, Activity.class, String.class),
+						PARENT_ACTIVE_QUERY_NAME);
 	}
 	
 	@PostConstruct
 	public void init() {
-		super.init(_connectionFactory, _container, _sourceQueue, _notificationTopic,
+		super.init(null, _container, _sourceQueue, _notificationTopic,
 				_purchasingStarted, _purchasingSuccessful,
 				_purchasingUnsuccessful, _purchasingResponseTime, _purchasingConversation);
+		
+		((JEECacheActiveQuerySpec)getActiveQuerySpec()).setCache(_container.getCache(CACHE_NAME));
 	}
 
 	@PreDestroy
@@ -91,13 +97,15 @@ public class Purchasing extends JEEActiveQueryManager<ActivitySummary,ActivitySu
 	}
 	
 	@Override
-	protected Predicate<ActivitySummary> getPredicate() {
+	protected Predicate<String> getPredicate() {
 		return(new PurchasingPredicate());
 	}
 	
-	public static class PurchasingPredicate implements Predicate<ActivitySummary>, java.io.Serializable {
+	public static class PurchasingPredicate implements Predicate<String>, java.io.Serializable {
 		
 		private static final long serialVersionUID = -2369012295880166599L;
+		
+		private static ActiveQuerySpec _aqSpec=null;
 		
 		private static final java.util.List<String> SERVICE_TYPES=new java.util.Vector<String>();
 		
@@ -110,10 +118,25 @@ public class Purchasing extends JEEActiveQueryManager<ActivitySummary,ActivitySu
 		public PurchasingPredicate() {
 		}
 
-		public boolean evaluate(ActivitySummary value) {
+		public boolean evaluate(String value) {
 			
-			if (value.getServiceInvocation() != null &&
-					SERVICE_TYPES.contains(value.getServiceInvocation().getServiceType())) {
+			if (_aqSpec == null) {
+				_aqSpec = ActiveQueryServer.getInstance().getActiveQuerySpec(ACTIVE_QUERY_NAME);
+				
+				if (_aqSpec == null) {
+					throw new RuntimeException("Failed to get ActiveQuerySpec for:"+ACTIVE_QUERY_NAME);
+				}
+			}
+			
+			Activity activity=(Activity)_aqSpec.resolve(value);
+			
+			if (activity == null) {
+				throw new RuntimeException("Failed to find acivity '"+value+
+								"' for query '"+ACTIVE_QUERY_NAME+"'");
+			}
+
+			if (activity.getServiceInvocation() != null &&
+					SERVICE_TYPES.contains(activity.getServiceInvocation().getServiceType())) {
 				return (true);
 			}
 

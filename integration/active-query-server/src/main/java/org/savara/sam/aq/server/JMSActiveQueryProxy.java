@@ -70,11 +70,11 @@ public class JMSActiveQueryProxy<T> extends ActiveQueryProxy<T> {
 	protected void init() {
 		try {
 			_connection = _connectionFactory.createConnection();
-			_session = _connection.createSession(true, Session.AUTO_ACKNOWLEDGE);
+			//_session = _connection.createSession(true, Session.AUTO_ACKNOWLEDGE);
 			
-			Destination dest=_session.createTopic(getName());
+			Destination dest=ActiveQueryServer.getSession().createTopic(getName());
 			
-			_consumer = _session.createConsumer(dest);
+			_consumer = ActiveQueryServer.getSession().createConsumer(dest);
 			
 			_consumer.setMessageListener(new MessageListener() {
 

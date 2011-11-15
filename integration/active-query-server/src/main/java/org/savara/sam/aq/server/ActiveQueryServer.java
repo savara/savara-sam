@@ -30,6 +30,7 @@ import java.util.logging.Logger;
 import org.savara.sam.aq.ActiveQuery;
 import org.savara.sam.aq.ActiveQueryManager;
 import org.savara.sam.aq.ActiveQueryProxy;
+import org.savara.sam.aq.ActiveQuerySpec;
 import org.savara.sam.aq.DefaultActiveQuery;
 import org.savara.sam.aq.Predicate;
 
@@ -40,12 +41,16 @@ public class ActiveQueryServer implements ActiveQueryManager {
 	@Resource(mappedName="java:jboss/infinispan/sam")
 	private org.infinispan.manager.CacheContainer _container;
 	
-	@Resource(mappedName = "java:/JmsXA")
-	private ConnectionFactory _connectionFactory;
+	//@Resource(mappedName = "java:/JmsXA")
+	//private ConnectionFactory _connectionFactory;
 	
-	private Connection _connection=null;
-	private Session _session=null;
+	private static Connection _connection=null;	
+	private static Session _session=null;
+	
 	private org.infinispan.Cache<String, ActiveQuery<?>> _cache;
+	
+	private java.util.Map<String,ActiveQuerySpec> _systemActiveQueries=
+					new java.util.HashMap<String,ActiveQuerySpec>();
 	
 	private static ActiveQueryServer _instance=null;
 	 
@@ -54,9 +59,23 @@ public class ActiveQueryServer implements ActiveQueryManager {
 	}
 	
 	protected ActiveQueryServer(ConnectionFactory cf, org.infinispan.manager.CacheContainer cc) {
-		_connectionFactory = cf;
+		//_connectionFactory = cf;
 		_container = cc;
 		init();
+	}
+	
+	public static synchronized Session getSession() {
+		if (_connection == null) {
+			try {
+				InitialContext context=new InitialContext();
+				ConnectionFactory cf=(ConnectionFactory)context.lookup("java:/JmsXA");
+				_connection = cf.createConnection();
+				_session = _connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+			} catch(Exception e) {
+				LOG.log(Level.SEVERE, "Failed to setup Active Query Server", e);
+			}
+		}
+		return(_session);
 	}
 	
 	public static synchronized ActiveQueryServer getInstance() {
@@ -80,7 +99,7 @@ public class ActiveQueryServer implements ActiveQueryManager {
 	 * {@inheritDoc}
 	 */
 	public <T> ActiveQuery<T> getActiveQuery(String name) {
-		return (new JEEActiveQueryProxy<T>(name, _session, _cache));
+		return (new JEEActiveQueryProxy<T>(name, getSession(), _cache));
 	}
 
 	/**
@@ -99,12 +118,14 @@ public class ActiveQueryServer implements ActiveQueryManager {
 	public void init() {
 		LOG.info("Initialize Active Query Server");
 		
+		/*
 		try {
-			_connection = _connectionFactory.createConnection();
-			_session = _connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+			//_connection = _connectionFactory.createConnection();
+			_session = getConnection().createSession(false, Session.AUTO_ACKNOWLEDGE);
 		} catch(Exception e) {
 			LOG.log(Level.SEVERE, "Failed to setup JMS connection/session", e);
 		}
+		*/
 
 		_cache = _container.getCache("queries");
 	}
@@ -113,12 +134,36 @@ public class ActiveQueryServer implements ActiveQueryManager {
 	public void close() {
 		LOG.info("Closing Active Query Server");
 
+		/*
 		try {						
 			_session.close();
-			_connection.close();
+			//_connection.close();
 			
 		} catch(Exception e) {
 			LOG.log(Level.SEVERE, "Failed to close JMS connection/session", e);
 		}
+		*/
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	public java.util.Collection<ActiveQuerySpec> getActiveQueries() {
+		return(_systemActiveQueries.values());
+	}
+	
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public ActiveQuerySpec getActiveQuerySpec(String name) {
+		return(_systemActiveQueries.get(name));
+	}
+	
+	public void register(ActiveQuerySpec spec) {
+		if (LOG.isLoggable(Level.FINE)) {
+			LOG.fine("Register Active Query Specification: "+spec.getName());
+		}
+		_systemActiveQueries.put(spec.getName(), spec);
 	}
 }

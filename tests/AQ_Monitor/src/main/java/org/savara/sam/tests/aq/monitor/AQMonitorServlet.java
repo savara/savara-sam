@@ -27,7 +27,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.savara.sam.activity.ActivityAnalysis;
-import org.savara.sam.activity.ActivitySummary;
 import org.savara.sam.aq.ActiveListener;
 import org.savara.sam.aq.ActiveQuery;
 import org.savara.sam.aq.ActiveQueryManager;
@@ -51,10 +50,10 @@ public class AQMonitorServlet extends HttpServlet {
 	private ActiveQuery<ActivityAnalysis> _slaWarnings;
 	private ActiveListener<ActivityAnalysis> _slaWarningsListener;
 	
-	private ActiveQuery<ActivitySummary> _startedTxns;
-	private ActiveQuery<ActivitySummary> _completedTxns;
-	private ActiveQuery<ActivitySummary> _failedTxns;
-	private ActiveListener<ActivitySummary> _txnRatioListener;
+	private ActiveQuery<String> _startedTxns;
+	private ActiveQuery<String> _completedTxns;
+	private ActiveQuery<String> _failedTxns;
+	private ActiveListener<String> _txnRatioListener;
 	
 	private ActiveQuery<ConversationDetails> _purchasingConversation;
 	private ActiveListener<ConversationDetails> _purchasingConversationListener;
@@ -68,7 +67,7 @@ public class AQMonitorServlet extends HttpServlet {
 		// Alternative means of retrieving the active query manager, if injection cannot be used
 		_activeQueryManager = org.savara.sam.aq.server.ActiveQueryServer.getInstance();
 
-		_startedTxns = _activeQueryManager.getActiveQuery("PurchasingStarted");
+		_startedTxns = _activeQueryManager.getActiveQuery("PurchasingStarted");		
 		_completedTxns = _activeQueryManager.getActiveQuery("PurchasingSuccessful");
 		_failedTxns = _activeQueryManager.getActiveQuery("PurchasingUnsuccessful");
 		_txnRatioListener = new TxnRatioNotifier();
@@ -93,7 +92,6 @@ public class AQMonitorServlet extends HttpServlet {
 		_purchasingConversation = _activeQueryManager.getActiveQuery("PurchasingConversation");
 		_purchasingConversationListener = new PurchasingConversationNotifier();
 		_purchasingConversation.addActiveListener(_purchasingConversationListener);
-		
 	}
 
 	@Override
@@ -109,33 +107,48 @@ public class AQMonitorServlet extends HttpServlet {
       writer.close();
    }
 
-	public class TxnRatioNotifier implements ActiveListener<ActivitySummary> {
+	public class TxnRatioNotifier implements ActiveListener<String> {
 
+		private static final int MAX_STARTED_TXNS=1000;
+		
+		private long _startTime=0;
+		private long _endTime=0;
+		
 		public TxnRatioNotifier() {
 			buildReport();
 		}
 		
 		protected void buildReport() {
+			if (_startTime == 0) {
+				_startTime = System.currentTimeMillis();
+			} else if (_endTime == 0 && _startedTxns.size() >= MAX_STARTED_TXNS) {
+				_endTime = System.currentTimeMillis();
+			}
+			
 			_txnRatioReport = new StringBuffer();
 			
 			_txnRatioReport.append("<h3>Transaction Ratio Report ("+new java.util.Date()+")</h3>");
 			
 			_txnRatioReport.append("<h5>Started "+_startedTxns.size()+" : Successful "+
-						_completedTxns.size()+" : Unsuccessful "+_failedTxns.size()+"</h5>");
+					_completedTxns.size()+" : Unsuccessful "+_failedTxns.size()+"</h5>");
+			
+			if (_endTime != 0) {
+				_txnRatioReport.append("<h5>FIRST "+MAX_STARTED_TXNS+" TXNS TOOK "+(_endTime-_startTime)+"ms</h5>");
+			}
 		}
 		
 		@Override
-		public void valueAdded(ActivitySummary value) {
+		public void valueAdded(String value) {
 			buildReport();
 		}
 
 		@Override
-		public void valueUpdated(ActivitySummary value) {
+		public void valueUpdated(String value) {
 			buildReport();
 		}
 
 		@Override
-		public void valueRemoved(ActivitySummary value) {
+		public void valueRemoved(String value) {
 			buildReport();
 		}		
 
