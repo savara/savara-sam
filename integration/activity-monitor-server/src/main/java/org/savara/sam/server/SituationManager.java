@@ -15,7 +15,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.savara.sam.aq.purchasingconversation;
+package org.savara.sam.server;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -29,48 +29,38 @@ import javax.ejb.TransactionManagementType;
 import javax.jms.Destination;
 import javax.jms.MessageListener;
 
-import org.savara.sam.conversation.ConversationManager;
+import org.savara.sam.activity.ActivityModel.Activity;
+import org.savara.sam.aq.ActiveQuerySpec;
+import org.savara.sam.aq.server.JEEActiveQueryManager;
 
-@MessageDriven(name = "PurchasingConversation", messageListenerInterface = MessageListener.class,
+@MessageDriven(name = "Situations", messageListenerInterface = MessageListener.class,
                activationConfig =
                      {
                         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
-                        @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/aq/PurchasingConversation")
+                        @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/aq/Situations")
                      })
 @TransactionManagement(value= TransactionManagementType.CONTAINER)
 @TransactionAttribute(value= TransactionAttributeType.REQUIRED)
-public class PurchasingConversation extends ConversationManager implements MessageListener {
+public class SituationManager extends JEEActiveQueryManager<String,String> implements MessageListener {
 	
-	private static final String ACTIVE_QUERY_NAME = "PurchasingConversation";
-	
-	private static final String MODEL="PurchaseGoods.cdm";
+	private static final String ACTIVE_QUERY_NAME = "Situations";
 
-	@Resource(mappedName = "java:/queue/aq/PurchasingConversation")
+	@Resource(mappedName = "java:/queue/aq/Situations")
 	Destination _sourceQueue;
 	
 	@Resource(mappedName = "java:/topic/aq/Notifications")
 	Destination _notificationTopic;
-
+	
 	@Resource(mappedName="java:jboss/infinispan/sam")
 	private org.infinispan.manager.CacheContainer _container;
 	
-	public PurchasingConversation() {
-		super(ACTIVE_QUERY_NAME);
+	public SituationManager() {
+		super(new ActiveQuerySpec(ACTIVE_QUERY_NAME, Activity.class, String.class), null);
 	}
 	
 	@PostConstruct
 	public void init() {
-		super.init(MODEL, null, _container, _sourceQueue, _notificationTopic);
-		
-		getResolver().addMessageTypeIDLocator("{http://www.jboss.org/examples/store}BuyRequest", "//@id");
-		getResolver().addMessageTypeIDLocator("{http://www.jboss.org/examples/store}BuyConfirmed", "//@id");
-		getResolver().addMessageTypeIDLocator("{http://www.jboss.org/examples/store}BuyFailed", "//@id");
-		getResolver().addMessageTypeIDLocator("{http://www.jboss.org/examples/store}AccountNotFound", "//@id");
-		getResolver().addMessageTypeIDLocator("{http://www.jboss.org/examples/creditAgency}CreditCheckRequest", "//@id");
-		getResolver().addMessageTypeIDLocator("{http://www.jboss.org/examples/creditAgency}CreditRating", "//@id");
-		getResolver().addMessageTypeIDLocator("{http://www.jboss.org/examples/creditAgency}CustomerUnknown", "//@id");
-		getResolver().addMessageTypeIDLocator("{http://www.jboss.org/examples/logistics}DeliveryRequest", "//@id");
-		getResolver().addMessageTypeIDLocator("{http://www.jboss.org/examples/logistics}DeliveryConfirmed", "//@id");
+		super.init(null, _container, _sourceQueue, _notificationTopic);
 	}
 
 	@PreDestroy

@@ -31,7 +31,7 @@ public class ActiveQueryProxy<T> implements ActiveQuery<T> {
 	private static final Logger LOG=Logger.getLogger(ActiveQueryProxy.class.getName());
 	
 	private String _name=null;
-	private ActiveQuery<?> _activeQuery=null;
+	private ActiveQuery<T> _activeQuery=null;
 	private java.util.Set<ActiveListener<T>> _listeners=new java.util.HashSet<ActiveListener<T>>();
 	private ChangeHandler _changeHandler=new ChangeHandler();
 
@@ -41,12 +41,12 @@ public class ActiveQueryProxy<T> implements ActiveQuery<T> {
 	 * @param name The query name
 	 * @param aq The active query
 	 */
-	public ActiveQueryProxy(String name, ActiveQuery<?> aq) {
+	public ActiveQueryProxy(String name, ActiveQuery<T> aq) {
 		_name = name;
 		_activeQuery = aq;
 	}
 	
-	protected ActiveQuery<?> getSource() {
+	protected ActiveQuery<T> getSource() {
 		return (_activeQuery);
 	}
 	
@@ -66,25 +66,11 @@ public class ActiveQueryProxy<T> implements ActiveQuery<T> {
 	 * @return The predicate
 	 */
 	public Predicate<T> getPredicate() {
-		ActiveQuery<?> aq=getSource();
+		ActiveQuery<T> aq=getSource();
 		if (aq == null) {
 			return (null);
 		}
-		return (transformPredicate(getSource().getPredicate()));
-	}
-	
-	@SuppressWarnings("unchecked")
-	protected Predicate<T> transformPredicate(Predicate<?> pred) {
-		return((Predicate<T>)pred);
-	}
-	
-	protected Object transformFromExternal(T value) {
-		return(value);
-	}
-	
-	@SuppressWarnings("unchecked")
-	protected T transformToExternal(Object value) {
-		return((T)value);
+		return (getSource().getPredicate());
 	}
 	
 	/**
@@ -144,7 +130,7 @@ public class ActiveQueryProxy<T> implements ActiveQuery<T> {
 		ActiveQuery<Object> aq=(ActiveQuery<Object>)getSource();
 		
 		if (aq != null) {
-			ret = aq.add(transformFromExternal(value));
+			ret = aq.add(value);
 			if (ret) {
 				notifyAddition(value);
 			}
@@ -178,7 +164,7 @@ public class ActiveQueryProxy<T> implements ActiveQuery<T> {
 		ActiveQuery<Object> aq=(ActiveQuery<Object>)getSource();
 		
 		if (aq != null) {
-			ret = aq.update(transformFromExternal(value));
+			ret = aq.update(value);
 			if (ret) {
 				notifyUpdate(value);
 			}
@@ -211,7 +197,7 @@ public class ActiveQueryProxy<T> implements ActiveQuery<T> {
 	 */
 	public boolean remove(T value) {
 		@SuppressWarnings("unchecked")
-		boolean ret=((ActiveQuery<Object>)getSource()).remove(transformFromExternal(value));
+		boolean ret=((ActiveQuery<Object>)getSource()).remove(value);
 			
 		if (ret) {
 			notifyRemoval(value);						
@@ -240,12 +226,12 @@ public class ActiveQueryProxy<T> implements ActiveQuery<T> {
 	 */
 	@SuppressWarnings("unchecked")
 	public java.util.List<T> getContents() {
-		ActiveQuery<Object> aq=(ActiveQuery<Object>)getSource();
+		ActiveQuery<T> aq=getSource();
 		
 		if (aq != null) {
 			java.util.List<T> ret=new java.util.Vector<T>();
-			for (Object source : getSource().getContents()) {
-				ret.add(transformToExternal(source));
+			for (T source : getSource().getContents()) {
+				ret.add(source);
 			}
 			return (ret);
 		}
@@ -261,6 +247,17 @@ public class ActiveQueryProxy<T> implements ActiveQuery<T> {
 				}
 			}
 		}
+	}
+	
+	/**
+	 * This method determines whether a value exists in the
+	 * Active Query contents.
+	 * 
+	 * @param value The value
+	 * @return Whether the value exists in the contents
+	 */
+	public boolean contains(T value) {
+		return(getSource().contains(value));
 	}
 	
 	/**

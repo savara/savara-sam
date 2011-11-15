@@ -22,30 +22,28 @@ import java.util.logging.Logger;
 
 import javax.jms.Destination;
 import javax.jms.MessageProducer;
-import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import org.savara.sam.aq.ActiveChangeType;
 import org.savara.sam.aq.ActiveListener;
 import org.savara.sam.aq.ActiveQuery;
 import org.savara.sam.aq.ActiveQueryProxy;
+import org.savara.sam.aq.Predicate;
 
 public class JEEActiveQueryProxy<T> extends ActiveQueryProxy<T> {
 
 	private static final Logger LOG=Logger.getLogger(JEEActiveQueryProxy.class.getName());
 	
 	private org.infinispan.Cache<String, ActiveQuery<?>> _cache;
-	private Session _session=null;
 	private boolean _sentInitRequest=false;
 	
 	private ClassLoader _classLoader=Thread.currentThread().getContextClassLoader();
 	private java.util.concurrent.BlockingQueue<Notification> _notifications=
 				new java.util.concurrent.ArrayBlockingQueue<Notification>(100);
 
-	public JEEActiveQueryProxy(String activeQueryName, Session session, org.infinispan.Cache<String, ActiveQuery<?>> cache) {
+	public JEEActiveQueryProxy(String activeQueryName, org.infinispan.Cache<String, ActiveQuery<?>> cache) {
 		super(activeQueryName, null);
 		
-		_session = session;
 		_cache = cache;	
 		
 		if (LOG.isLoggable(Level.FINEST)) {
@@ -80,13 +78,13 @@ public class JEEActiveQueryProxy<T> extends ActiveQueryProxy<T> {
 		if (ret == null && !_sentInitRequest) {
 			try {
 				// Send init request
-				Destination dest=_session.createQueue(getName());
-				MessageProducer mp=_session.createProducer(dest);
+				Destination dest=ActiveQueryServer.getSession().createQueue(getName());
+				MessageProducer mp=ActiveQueryServer.getSession().createProducer(dest);
 				
-				TextMessage m=_session.createTextMessage(AQDefinitions.INIT_COMMAND);				
+				TextMessage m=ActiveQueryServer.getSession().createTextMessage(AQDefinitions.INIT_COMMAND);				
 				mp.send(m);
 				
-				//mp.close();
+				mp.close();
 				
 				if (LOG.isLoggable(Level.FINE)) {
 					LOG.fine("Sent 'init' command for AQ '"+getName()+"' on destination: "+dest);
@@ -112,6 +110,66 @@ public class JEEActiveQueryProxy<T> extends ActiveQueryProxy<T> {
 			init();
 		}
 		super.addActiveListener(l);
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	public boolean add(T value) {
+		return(submitChange(value, ActiveChangeType.Add));
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	public boolean update(T value) {
+		return(submitChange(value, ActiveChangeType.Update));
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	public boolean remove(T value) {
+		return(submitChange(value, ActiveChangeType.Remove));
+	}
+	
+	protected boolean submitChange(T value, ActiveChangeType changeType) {
+		boolean ret=false;
+
+		if (changeType == ActiveChangeType.Add || changeType == ActiveChangeType.Update) {
+			Predicate<T> predicate=getPredicate();
+		
+			ret = (predicate == null || predicate.evaluate(value));
+		} else if (changeType == ActiveChangeType.Remove) {
+			
+			ret = contains(value);
+		}
+		
+		if (ret) {
+			// Submit addition to AQ queue
+			try {
+				javax.jms.ObjectMessage om=ActiveQueryServer.getSession().createObjectMessage(
+							(java.io.Serializable)value);
+				
+				om.setStringProperty(AQDefinitions.AQ_CHANGETYPE_PROPERTY, changeType.name());
+				
+				om.setStringProperty(AQDefinitions.ACTIVE_QUERY_NAME, getName());
+				
+				Destination dest=ActiveQueryServer.getSession().createQueue(getName());
+				MessageProducer mp=ActiveQueryServer.getSession().createProducer(dest);
+				
+				mp.send(om);
+				
+				mp.close();
+				
+			} catch(Exception e) {
+				LOG.log(Level.SEVERE, "Failed to change '"+changeType.name()+
+						"' to AQ '"+getName()+"'", e);
+				ret = false;
+			}
+		}
+		
+		return(ret);
 	}
 	
 	@SuppressWarnings("unchecked")

@@ -227,19 +227,11 @@ public class JEEActiveQueryManager<S,T> implements MessageListener {
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
 	public void onMessage(Message message) {
 		
 		if (message instanceof ObjectMessage) {
 			try {
-				@SuppressWarnings("unchecked")
-				java.util.List<S> activities=(java.util.List<S>)((ObjectMessage)message).getObject();
-				java.util.Vector<T> forwardAdditions=null;
-				java.util.Vector<T> forwardUpdates=null;
-				java.util.Vector<T> forwardRemovals=null;
-				java.util.Vector<S> retries=null;
-				ActiveChangeType changeType=ActiveChangeType.valueOf(
-							message.getStringProperty(AQDefinitions.AQ_CHANGETYPE_PROPERTY));
-				
 				ActiveQuery<T> aq=getActiveQuery();
 				
 				// TODO: If active query not returned, then need to postpone change
@@ -257,6 +249,25 @@ public class JEEActiveQueryManager<S,T> implements MessageListener {
 					
 					retry(om);
 				} else {
+					java.util.List<S> activities=null;
+					java.util.Vector<T> forwardAdditions=null;
+					java.util.Vector<T> forwardUpdates=null;
+					java.util.Vector<T> forwardRemovals=null;
+					java.util.Vector<S> retries=null;
+					ActiveChangeType changeType=ActiveChangeType.valueOf(
+								message.getStringProperty(AQDefinitions.AQ_CHANGETYPE_PROPERTY));
+					
+					Object obj=((ObjectMessage)message).getObject();
+
+					// Workaround to deal with both single objects and lists - should
+					// restructure really!
+					if (obj instanceof java.util.List<?>) {
+						activities = (java.util.List<S>)obj;
+					} else {
+						activities = new java.util.Vector<S>();
+						activities.add((S)obj);
+					}
+					
 					int retriesLeft=MAX_RETRY-getRetryCount(message);
 					
 					if (LOG.isLoggable(Level.FINEST)) {

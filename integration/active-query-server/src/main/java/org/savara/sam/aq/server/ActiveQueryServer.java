@@ -99,7 +99,7 @@ public class ActiveQueryServer implements ActiveQueryManager {
 	 * {@inheritDoc}
 	 */
 	public <T> ActiveQuery<T> getActiveQuery(String name) {
-		return (new JEEActiveQueryProxy<T>(name, getSession(), _cache));
+		return (new JEEActiveQueryProxy<T>(name, _cache));
 	}
 
 	/**

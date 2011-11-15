@@ -28,6 +28,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.savara.monitor.ConversationId;
 import org.savara.sam.activity.ActivityAnalysis;
+import org.savara.sam.activity.Situation;
+import org.savara.sam.activity.Situation.Status;
 import org.savara.sam.aq.ActiveListener;
 import org.savara.sam.aq.ActiveQuery;
 import org.savara.sam.aq.ActiveQueryManager;
@@ -61,10 +63,14 @@ public class AQMonitorServlet extends HttpServlet {
 	private ActiveQuerySpec _purchasingConversationSpec;
 	private ActiveListener<ConversationId> _purchasingConversationListener;
 	
+	private ActiveQuery<Situation> _situations;
+	private ActiveListener<Situation> _situationListener;
+	
 	private StringBuffer _responseTimeReport=new StringBuffer();
 	private StringBuffer _txnRatioReport=new StringBuffer();
 	private StringBuffer _slaWarningsReport=new StringBuffer();
 	private StringBuffer _purchasingConversationReport=new StringBuffer();
+	private StringBuffer _situationsReport=new StringBuffer();
 	
 	public void init() {
 		// Alternative means of retrieving the active query manager, if injection cannot be used
@@ -95,6 +101,10 @@ public class AQMonitorServlet extends HttpServlet {
 		_purchasingConversation = _activeQueryManager.getActiveQuery("PurchasingConversation");
 		_purchasingConversationListener = new PurchasingConversationNotifier();
 		_purchasingConversation.addActiveListener(_purchasingConversationListener);
+		
+		_situations = _activeQueryManager.getActiveQuery("Situations");
+		_situationListener = new SituationsNotifier();
+		_situations.addActiveListener(_situationListener);
 	}
 
 	@Override
@@ -104,6 +114,7 @@ public class AQMonitorServlet extends HttpServlet {
       writer.println("<h1>" + "SAVARA SAM Active Query Monitor" + "</h1>");
       writer.println(_txnRatioReport.toString());
       writer.println(_slaWarningsReport.toString());
+      writer.println(_situationsReport.toString());
       writer.println(_responseTimeReport.toString());
       writer.println(_purchasingConversationReport.toString());
       writer.println(PAGE_FOOTER);
@@ -281,4 +292,52 @@ public class AQMonitorServlet extends HttpServlet {
 		}		
 	}
 
+	public class SituationsNotifier implements ActiveListener<Situation> {
+
+		public SituationsNotifier() {
+			buildReport();
+		}
+		
+		protected void buildReport() {
+			_situationsReport = new StringBuffer();
+			
+			_situationsReport.append("<h3>Situations Report ("+new java.util.Date()+")</h3>");
+			
+			for (Situation situation : _situations.getContents()) {
+				
+				try {
+					if (situation.getStatus() == Status.New &&
+							(System.currentTimeMillis()-situation.getCreatedTimestamp()) > 20000) {
+						situation.changeStatus("Me", Status.Accepted, "accepted");
+						situation.takeOwnership("Me");
+						
+						_situations.update(situation);
+					}
+				} catch(Exception e) {
+					e.printStackTrace();
+				}
+				_situationsReport.append("<h5>"+situation+"</h5>");
+			}
+		}
+		
+		@Override
+		public void valueAdded(Situation value) {
+			buildReport();
+		}
+
+		@Override
+		public void valueUpdated(Situation value) {
+			buildReport();
+		}
+
+		@Override
+		public void valueRemoved(Situation value) {
+			buildReport();
+		}		
+
+		@Override
+		public void refresh() {
+			buildReport();
+		}		
+	}
 }

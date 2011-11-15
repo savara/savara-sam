@@ -34,9 +34,14 @@ import org.savara.protocol.ProtocolId;
 import org.savara.protocol.repository.ProtocolRepository;
 import org.savara.sam.activity.ActivityModel.Activity;
 import org.savara.sam.activity.ServiceModel;
+import org.savara.sam.activity.ServiceModel.ServiceInvocation;
+import org.savara.sam.activity.Situation;
+import org.savara.sam.activity.Situation.Priority;
+import org.savara.sam.activity.Situation.Severity;
 import org.savara.sam.aq.ActiveChangeType;
 import org.savara.sam.aq.ActiveQuery;
 import org.savara.sam.aq.ActiveQuerySpec;
+import org.savara.sam.aq.server.ActiveQueryServer;
 import org.savara.sam.aq.server.JEEActiveQueryManager;
 import org.scribble.common.resource.ResourceContent;
 import org.scribble.protocol.DefaultProtocolContext;
@@ -52,6 +57,7 @@ public class ConversationManager extends JEEActiveQueryManager<String,Conversati
 	private org.infinispan.Cache<String,Activity> _activities=null;
 	private org.infinispan.Cache<ConversationId,ConversationDetails> _conversationDetails=null;
 	private org.infinispan.manager.CacheContainer _container=null;
+	private ActiveQuery<Situation> _situations=null;
 	
 	private XPathConversationResolver _resolver=new XPathConversationResolver();
 	
@@ -84,6 +90,8 @@ public class ConversationManager extends JEEActiveQueryManager<String,Conversati
 		_conversationDetails = _container.getCache("conversationDetails");
 		
 		((ConversationActiveQuerySpec)getActiveQuerySpec()).setCache(_conversationDetails);
+		
+		_situations = ActiveQueryServer.getInstance().getActiveQuery("Situations");
 	}
 	
 	protected XPathConversationResolver getResolver() {
@@ -170,6 +178,8 @@ public class ConversationManager extends JEEActiveQueryManager<String,Conversati
 					_conversationDetails.put(result.getConversationId(), details);
 				}
 				
+				boolean wasValid=details.isValid();
+				
 				details.addActivity(id, act, result);
 				
 				if (LOG.isLoggable(Level.FINEST)) {
@@ -179,6 +189,22 @@ public class ConversationManager extends JEEActiveQueryManager<String,Conversati
 				_conversationDetails.replace(result.getConversationId(), details);
 				
 				ret = result.getConversationId();
+				
+				// If failed, then record situation if this activity caused the
+				// conversation instance to be invalid
+				if (!result.isValid() && wasValid) {
+					Situation situation=new Situation(act.getPrincipal(),
+							"Conversation '"+getActiveQueryName()+"' instance '"+
+								result.getConversationId()+
+								"' validation failure",
+								Severity.Major, Priority.High);
+					
+					situation.setProperty(null, "ActivityId", id);
+					situation.setProperty(null, "ConversationId", result.getConversationId().getId());
+					situation.setProperty(null, "InteractionSummary", getInteractionSummary(act));
+					
+					_situations.add(situation);
+				}
 				
 			} else {
 				LOG.severe("Monitor returned valid="+result.isValid()+" result, but with no conversation id");
@@ -207,6 +233,26 @@ public class ConversationManager extends JEEActiveQueryManager<String,Conversati
 		case Remove:
 			break;
 		}
+		
+		return(ret);
+	}
+	
+	protected String getInteractionSummary(Activity act) {
+		String ret=(act.getServiceInvocation().getDirection() == ServiceInvocation.Direction.INBOUND ?
+						"Receiving " : "Invoking ");
+				
+		ret += act.getServiceInvocation().getOperation()+"(";
+		
+		for (int i=0; i < act.getServiceInvocation().getMessageList().size(); i++) {
+			ServiceModel.Message m=act.getServiceInvocation().getMessageList().get(i);
+			ret += m.getMessageType();
+			
+			if (i < act.getServiceInvocation().getMessageList().size()-1) {
+				ret += ",";
+			}
+		}
+		
+		ret += ") on "+act.getServiceInvocation().getServiceType();
 		
 		return(ret);
 	}

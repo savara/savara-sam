@@ -159,25 +159,24 @@
             </cache-container>
             <cache-container name="sam" default-cache="queries">
                 <local-cache name="activities">
-                    <eviction strategy="LRU" max-entries="10000"/>
-                    <expiration max-idle="100000"/>
+                    <eviction strategy="NONE" max-entries="10000"/>
                 </local-cache>
                 <local-cache name="queries">
-                    <eviction strategy="LRU" max-entries="10000"/>
-                    <expiration max-idle="100000"/>
+                    <eviction strategy="NONE" max-entries="10000"/>
                 </local-cache>
                 <local-cache name="serviceInvocations">
-                    <eviction strategy="LRU" max-entries="10000"/>
+                    <eviction strategy="NONE" max-entries="10000"/>
                     <expiration max-idle="100000"/>
                 </local-cache>
                 <local-cache name="conversationSessions">
-                    <eviction strategy="LRU" max-entries="10000"/>
-                    <expiration max-idle="100000"/>
+                    <eviction strategy="NONE" max-entries="10000"/>
                 </local-cache>
                 <local-cache name="conversationDetails">
-                    <eviction strategy="LRU" max-entries="10000"/>
-                    <expiration max-idle="100000"/>
-                </local-cache>
+                    <eviction strategy="NONE" max-entries="10000"/>
+                 </local-cache>
+                <local-cache name="situations">
+                    <eviction strategy="NONE" max-entries="10000"/>
+                 </local-cache>
             </cache-container>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:jacorb:1.0">
@@ -307,6 +306,9 @@
 
                 <jms-queue name="ActivityMonitorServer">
                     <entry name="queue/ActivityMonitorServer"/>
+                </jms-queue>
+                <jms-queue name="Situations">
+                    <entry name="queue/aq/Situations"/>
                 </jms-queue>
                 <jms-queue name="Root">
                     <entry name="queue/aq/Root"/>

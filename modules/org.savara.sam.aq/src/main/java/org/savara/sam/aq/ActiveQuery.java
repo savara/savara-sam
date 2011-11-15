@@ -105,6 +105,15 @@ public interface ActiveQuery<T> {
 	public java.util.List<T> getContents();
 
 	/**
+	 * This method determines whether a value exists in the
+	 * Active Query contents.
+	 * 
+	 * @param value The value
+	 * @return Whether the value exists in the contents
+	 */
+	public boolean contains(T value);
+
+	/**
 	 * This method returns the size of the result set associated
 	 * with the active query.
 	 * 

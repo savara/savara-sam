@@ -229,6 +229,9 @@
                 <local-cache name="conversationDetails">
                     <eviction strategy="NONE" max-entries="10000"/>
                 </local-cache>
+                <local-cache name="situations">
+                    <eviction strategy="NONE" max-entries="10000"/>
+                </local-cache>
             </cache-container>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:jacorb:1.1"/>
@@ -347,6 +350,9 @@
 
 	                <jms-queue name="ActivityMonitorServer">
 	                    <entry name="queue/ActivityMonitorServer"/>
+	                </jms-queue>
+	                <jms-queue name="Situations">
+	                    <entry name="queue/aq/Situations"/>
 	                </jms-queue>
 	                <jms-queue name="Root">
 	                    <entry name="queue/aq/Root"/>

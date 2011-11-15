@@ -221,6 +221,17 @@ public class DefaultActiveQuery<T> implements ActiveQuery<T>, java.io.Serializab
 	}
 	
 	/**
+	 * This method determines whether a value exists in the
+	 * Active Query contents.
+	 * 
+	 * @param value The value
+	 * @return Whether the value exists in the contents
+	 */
+	public boolean contains(T value) {
+		return(_contents.contains(value));
+	}
+	
+	/**
 	 * This method returns the size of the result set associated
 	 * with the active query.
 	 * 
