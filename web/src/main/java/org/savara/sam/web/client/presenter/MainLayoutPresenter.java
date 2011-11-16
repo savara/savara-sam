@@ -3,10 +3,15 @@
  */
 package org.savara.sam.web.client.presenter;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.savara.sam.web.client.BootstrapContext;
 import org.savara.sam.web.client.NameTokens;
+import org.savara.sam.web.client.util.DefaultCallback;
 import org.savara.sam.web.shared.AQMonitorService;
 import org.savara.sam.web.shared.AQMonitorServiceAsync;
+import org.savara.sam.web.shared.dto.AQChartModel;
 import org.savara.sam.web.shared.dto.Conversation;
 import org.savara.sam.web.shared.dto.ResponseTime;
 import org.savara.sam.web.shared.dto.Statistic;
@@ -158,11 +163,7 @@ public class MainLayoutPresenter extends Presenter<MainLayoutPresenter.MainLayou
 	}
 	
 	public void refreshConversationChart(final boolean isSmall) {
-		service.getConversationDetails(new AsyncCallback<Conversation[]>() {
-
-			public void onFailure(Throwable t) {
-				System.out.println(t);
-			}
+		service.getConversationDetails(new DefaultCallback<Conversation[]>() {
 
 			public void onSuccess(Conversation[] value) {
 				getView().setConversationDetails(value);
@@ -170,6 +171,10 @@ public class MainLayoutPresenter extends Presenter<MainLayoutPresenter.MainLayou
 			}
 			
 		});	
+	}
+	
+	public Map<?, ?> refreshChartData(AQChartModel model) {
+		return new HashMap();
 	}
 	
 }

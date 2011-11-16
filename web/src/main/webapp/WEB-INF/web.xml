@@ -7,7 +7,7 @@
 
   <servlet>
      <servlet-name>AQMoniterService</servlet-name>
-     <servlet-class>org.savara.sam.web.server.AQMonitorServiceImpl</servlet-class>
+     <servlet-class>org.savara.sam.web.server.AQMonitorServiceMock</servlet-class>
   </servlet>
  
   <servlet-mapping>

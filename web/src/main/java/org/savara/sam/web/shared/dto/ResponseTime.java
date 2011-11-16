@@ -4,8 +4,6 @@
 package org.savara.sam.web.shared.dto;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author Jeff Yu
