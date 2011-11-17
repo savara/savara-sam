@@ -20,6 +20,7 @@ package org.savara.sam.web.client;
 import org.savara.sam.web.client.auth.CurrentUser;
 import org.savara.sam.web.client.presenter.LoginPresenter;
 import org.savara.sam.web.client.presenter.MainLayoutPresenter;
+import org.savara.sam.web.client.presenter.SituationLayoutPresenter;
 
 import com.google.gwt.event.shared.EventBus;
 import com.google.gwt.inject.client.AsyncProvider;
@@ -46,6 +47,7 @@ public interface ApplicationUI extends Ginjector {
     Provider<LoginPresenter> getLoginPresenter();
     
     AsyncProvider<MainLayoutPresenter> getMainLayoutPresenter();
+    AsyncProvider<SituationLayoutPresenter> getSituationLayoutPresenter();
 
     @DefaultGatekeeper
     Gatekeeper getLoggedInGateKeeper();

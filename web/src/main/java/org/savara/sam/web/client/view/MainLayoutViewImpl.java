@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.savara.sam.web.client.NameTokens;
 import org.savara.sam.web.client.presenter.MainLayoutPresenter;
 import org.savara.sam.web.client.presenter.MainLayoutPresenter.MainLayoutView;
 import org.savara.sam.web.client.view.ChartPortalLayout.ChartPortlet;
@@ -30,7 +31,6 @@ import com.smartgwt.client.types.MultipleAppearance;
 import com.smartgwt.client.types.VerticalAlignment;
 import com.smartgwt.client.types.VisibilityMode;
 import com.smartgwt.client.widgets.Canvas;
-import com.smartgwt.client.widgets.HTMLFlow;
 import com.smartgwt.client.widgets.HeaderControl;
 import com.smartgwt.client.widgets.Label;
 import com.smartgwt.client.widgets.Window;
@@ -61,6 +61,8 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 	private MainLayoutPresenter presenter;
 	
 	private Timer timer;
+	
+	private VLayout main;
 	
 	private ChartPortalLayout portal;
 		
@@ -97,6 +99,8 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
                 
         VisualizationUtils.loadVisualizationApi(onloadCallback, PieChart.PACKAGE, Table.PACKAGE);
 	}
+	
+	
 
 	private void initializeWindow() {
 		panel = new VLayout();
@@ -114,9 +118,9 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 		body.setHeight(850);
 		panel.addMember(body);
 				
-		addSectionStack(body);
+		addMenuStack(body);
 		
-		VLayout main = new VLayout(15);
+		main = new VLayout(15);
 		main.setMargin(10);
 		body.addMember(main);
 		
@@ -409,24 +413,40 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 	}
 
 
-	private void addSectionStack(HLayout body) {
+	private void addMenuStack(HLayout body) {
 		final SectionStack  linkStack = new SectionStack();
-		linkStack.setVisibilityMode(VisibilityMode.MULTIPLE);
+		linkStack.setVisibilityMode(VisibilityMode.MUTEX);
 		linkStack.setCanResizeSections(false);
 		linkStack.setWidth(180);
 		linkStack.setHeight(200);
 		
-		SectionStackSection dashboard = new SectionStackSection("Dashboard");
+		SectionStackSection dashboard = new SectionStackSection("Menus");
 		dashboard.setCanCollapse(true);
 		dashboard.setExpanded(true);
-		HTMLFlow flow = new HTMLFlow();
-		flow.setContents("Active Query");
-		flow.setPadding(5);
-		dashboard.addItem(flow);
+		
+		
+		VLayout links = new VLayout();
+		links.addMember(getLink("AQ and Charts", NameTokens.MAIN_VIEW));
+		links.addMember(getLink("Notifications", NameTokens.SITUATION_VIEW));
+		
+		dashboard.addItem(links);
 		
 		linkStack.addSection(dashboard);
 		
 		body.addMember(linkStack);
+	}
+	
+	private Label getLink(String description, final String pageName) {
+		Label link = new Label(description);
+		link.setStyleName("menu_link");
+		link.setHeight(30);
+		link.setAlign(Alignment.LEFT);
+		link.setWidth(150);
+		link.addClickHandler(new ClickHandler(){
+			public void onClick(ClickEvent event) {
+				
+			}});
+		return link;
 	}
 
 
@@ -448,6 +468,18 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 		footerLabel.setBorder("1px solid #808080");
 		
 		panel.addMember(footerLabel);
+	}
+	
+	@Override
+	public void setInSlot(Object slot, Widget content) {
+		if (slot == MainLayoutPresenter.TYPE_MainContent) {
+			if (content != null) {
+				main.clear();
+				main.addChild(content);
+			}
+		} else {
+			super.setInSlot(slot, content);
+		}
 	}
 	
 	

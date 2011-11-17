@@ -16,19 +16,25 @@ import org.savara.sam.web.shared.dto.Conversation;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.shared.EventBus;
+import com.google.gwt.event.shared.GwtEvent;
 import com.google.inject.Inject;
 import com.gwtplatform.mvp.client.Presenter;
 import com.gwtplatform.mvp.client.View;
+import com.gwtplatform.mvp.client.annotations.ContentSlot;
 import com.gwtplatform.mvp.client.annotations.NameToken;
 import com.gwtplatform.mvp.client.annotations.NoGatekeeper;
 import com.gwtplatform.mvp.client.annotations.ProxyCodeSplit;
+import com.gwtplatform.mvp.client.proxy.PlaceManager;
+import com.gwtplatform.mvp.client.proxy.PlaceRequest;
 import com.gwtplatform.mvp.client.proxy.ProxyPlace;
+import com.gwtplatform.mvp.client.proxy.RevealContentHandler;
 import com.gwtplatform.mvp.client.proxy.RevealRootLayoutContentEvent;
 import com.smartgwt.client.widgets.layout.VLayout;
 
 /**
+ * 
  * @author Jeff Yu
- *
+ * @date Nov 03, 2011
  */
 public class MainLayoutPresenter extends Presenter<MainLayoutPresenter.MainLayoutView, 
 												   MainLayoutPresenter.MainLayoutProxy> {
@@ -36,6 +42,8 @@ public class MainLayoutPresenter extends Presenter<MainLayoutPresenter.MainLayou
 	private BootstrapContext bootstrap;
 	
 	private AQMonitorServiceAsync service;
+	
+	private PlaceManager placeManager;
 		
 	public interface MainLayoutView extends View {
 				
@@ -53,6 +61,9 @@ public class MainLayoutPresenter extends Presenter<MainLayoutPresenter.MainLayou
 		
 	}
 	
+	@ContentSlot
+    public static final GwtEvent.Type<RevealContentHandler<?>> TYPE_MainContent = new GwtEvent.Type<RevealContentHandler<?>>();
+	
 	@ProxyCodeSplit
 	@NameToken(NameTokens.MAIN_VIEW)
 	@NoGatekeeper
@@ -62,10 +73,11 @@ public class MainLayoutPresenter extends Presenter<MainLayoutPresenter.MainLayou
     public MainLayoutPresenter(
             EventBus eventBus,
             MainLayoutView view,
-            MainLayoutProxy proxy, BootstrapContext bootstrap) {
+            MainLayoutProxy proxy, BootstrapContext bootstrap, PlaceManager placeManager) {
         super(eventBus, view, proxy);
         this.bootstrap = bootstrap;
-        service = (AQMonitorServiceAsync)GWT.create(AQMonitorService.class);
+        this.placeManager = placeManager;
+        service = (AQMonitorServiceAsync)GWT.create(AQMonitorService.class);  
     }
 	
     
@@ -75,6 +87,7 @@ public class MainLayoutPresenter extends Presenter<MainLayoutPresenter.MainLayou
 		RevealRootLayoutContentEvent.fire(this, this);
 	}
 	
+	@Override
 	public void onBind() {
 		super.onBind();
 		getView().setPresenter(this);
