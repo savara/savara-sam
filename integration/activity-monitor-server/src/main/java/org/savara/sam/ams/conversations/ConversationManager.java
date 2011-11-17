@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.jms.MessageListener;
 
@@ -67,10 +66,9 @@ public class ConversationManager extends JEEActiveQueryManager<String,Conversati
 							ConversationId.class), null);
 	}
 	
-	public void init(String model, ConnectionFactory connectionFactory,
-				org.infinispan.manager.CacheContainer container,
+	public void init(String model, org.infinispan.manager.CacheContainer container,
 				Destination source, Destination notification, Destination... destinations) {
-		super.init(connectionFactory, container, source, notification, destinations);
+		super.init(container, source, notification, destinations);
 		
 		_container = container;
 		

@@ -17,8 +17,6 @@
  */
 package org.savara.sam.aq.purchasingresponsetime;
 
-import java.util.concurrent.TimeUnit;
-
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
@@ -32,10 +30,8 @@ import javax.jms.Destination;
 import javax.jms.MessageListener;
 
 import org.savara.sam.activity.ActivityAnalysis;
-import org.savara.sam.activity.ActivityModel.Activity;
-import org.savara.sam.aq.ActiveChangeType;
+import org.savara.sam.ams.cep.CEPManager;
 import org.savara.sam.aq.ActiveQuerySpec;
-import org.savara.sam.aqs.JEEActiveQueryManager;
 
 @MessageDriven(name = "PurchasingResponseTime", messageListenerInterface = MessageListener.class,
                activationConfig =
@@ -45,7 +41,7 @@ import org.savara.sam.aqs.JEEActiveQueryManager;
                      })
 @TransactionManagement(value= TransactionManagementType.CONTAINER)
 @TransactionAttribute(value= TransactionAttributeType.REQUIRED)
-public class PurchasingResponseTime extends JEEActiveQueryManager<String,ActivityAnalysis> implements MessageListener {
+public class PurchasingResponseTime extends CEPManager<String,ActivityAnalysis> implements MessageListener {
 	
 	private static final String ACTIVE_QUERY_NAME = "PurchasingResponseTime";
 
@@ -58,9 +54,6 @@ public class PurchasingResponseTime extends JEEActiveQueryManager<String,Activit
 	@Resource(mappedName="java:jboss/infinispan/sam")
 	private org.infinispan.manager.CacheContainer _container;
 
-	private org.infinispan.Cache<String, ActivityAnalysis> _siCache;
-	private org.infinispan.Cache<String, Activity> _activitiesCache;
-	
 	// TODO: Determine how best to handle this type of active query, that has
 	// multiple parent AQs???
 	
@@ -71,60 +64,11 @@ public class PurchasingResponseTime extends JEEActiveQueryManager<String,Activit
 	
 	@PostConstruct
 	public void init() {
-		super.init(null, _container, _sourceQueue, _notificationTopic);
-
-		_siCache = _container.getCache("serviceInvocations");
-		_activitiesCache = _container.getCache("activities");
+		super.init(_container, _sourceQueue, _notificationTopic);
 	}
 
 	@PreDestroy
 	public void close() {
 		super.close();
-	}
-
-	@Override
-	protected ActivityAnalysis processActivity(String sourceAQName, String id, ActiveChangeType changeType,
-					int retriesLeft) throws Exception {
-		ActivityAnalysis ret=null;
-		
-		Activity activity=_activitiesCache.get(id);
-		
-		if (activity == null) {
-			throw new Exception("Failed to retrieve activity for query '"+
-							getActiveQueryName()+"' and id '"+id+"'");
-		}
-		
-		// Check if service interaction with correlation
-		if (activity != null && activity.getServiceInvocation() != null &&
-				activity.getServiceInvocation().getCorrelation() != null) {
-			String correlation=activity.getServiceInvocation().getCorrelation();
-			
-			// Check if correlated invocation already exists
-			ret = _siCache.get(correlation);
-			
-			if (ret == null) {
-				// Create activity results object for correlated match
-				ActivityAnalysis aa = new ActivityAnalysis();
-				
-				aa.addProperty("requestTimestamp", Long.class.getName(), activity.getTimestamp());
-				aa.addProperty("requestId", String.class.getName(), id);
-				aa.addProperty("serviceType", String.class.getName(), activity.getServiceInvocation().getServiceType());
-				aa.addProperty("operation", String.class.getName(), activity.getServiceInvocation().getOperation());
-				aa.addProperty("fault", String.class.getName(), activity.getServiceInvocation().getFault());
-				aa.addProperty("principal", String.class.getName(), activity.getPrincipal());
-
-				_siCache.put(correlation, aa, 150, TimeUnit.SECONDS);
-			} else {
-				long requestTimestamp=(Long)ret.getProperty("requestTimestamp").getValue();
-				
-				long responseTime=activity.getTimestamp()-requestTimestamp;
-				
-				ret.addProperty("responseTimestamp", Long.class.getName(), activity.getTimestamp());
-				ret.addProperty("responseId", String.class.getName(), id);
-				ret.addProperty("responseTime", Long.class.getName(), responseTime);
-			}
-		}
-		
-		return(ret);
 	}
 }

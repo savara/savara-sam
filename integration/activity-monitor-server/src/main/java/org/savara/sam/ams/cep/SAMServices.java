@@ -24,7 +24,7 @@ import org.savara.sam.activity.Situation;
  * notifications regarding active queries.
  *
  */
-public interface SAMServices<T> {
+public interface SAMServices {
 	
 	/**
 	 * This method enables the CEP rule to record a
@@ -40,14 +40,14 @@ public interface SAMServices<T> {
 	 * 
 	 * @param result The result
 	 */
-	public void setResult(T result);
+	public void setResult(Object result);
 	
 	/**
 	 * This method returns the result.
 	 * 
 	 * @return The result
 	 */
-	public T getResult();
+	public Object getResult();
 
 	/**
 	 * This method logs information.

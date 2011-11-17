@@ -60,7 +60,7 @@ public class PurchasingConversation extends ConversationManager implements Messa
 	
 	@PostConstruct
 	public void init() {
-		super.init(MODEL, null, _container, _sourceQueue, _notificationTopic);
+		super.init(MODEL, _container, _sourceQueue, _notificationTopic);
 		
 		getResolver().addMessageTypeIDLocator("{http://www.jboss.org/examples/store}BuyRequest", "//@id");
 		getResolver().addMessageTypeIDLocator("{http://www.jboss.org/examples/store}BuyConfirmed", "//@id");

@@ -5,7 +5,7 @@ option java_outer_classname = "ActivityModel";
 
 import "ServiceModel.proto";
 
-message ComponentId {
+message Component {
   optional string location = 1;
   optional string locationType = 2;
   optional string containerId = 3;
@@ -17,11 +17,12 @@ message ComponentId {
 }
 
 message Activity {
-  required ComponentId id = 1;
-  required int64 timestamp = 2;
+  optional string id = 1;
+  required Component component = 2;
+  required int64 timestamp = 3;
   
-  required string principal = 3;
+  optional string principal = 4;
   
   // The activity types
-  optional ServiceInvocation serviceInvocation = 4;
+  optional ServiceInvocation serviceInvocation = 5;
 }

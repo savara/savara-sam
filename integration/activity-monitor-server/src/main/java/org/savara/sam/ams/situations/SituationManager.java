@@ -60,7 +60,7 @@ public class SituationManager extends JEEActiveQueryManager<String,String> imple
 	
 	@PostConstruct
 	public void init() {
-		super.init(null, _container, _sourceQueue, _notificationTopic);
+		super.init(_container, _sourceQueue, _notificationTopic);
 	}
 
 	@PreDestroy

@@ -1,3 +1,4 @@
 Dependencies: org.infinispan export,
   org.savara.sam export,
+  deployment.activity-monitor-server.jar,
   deployment.active-query-server.jar

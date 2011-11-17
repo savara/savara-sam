@@ -20,7 +20,6 @@ package org.savara.sam.ams.cep;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.jms.MessageListener;
 
@@ -46,64 +45,85 @@ public class CEPManager<S,T> extends JEEActiveQueryManager<S,T> implements Messa
 	
 	private static final Logger LOG=Logger.getLogger(CEPManager.class.getName());
 	
-	private SAMServices<T> _services=null;
-	private String _cepRuleBase=null;
+	private static SAMServices _services=null;
+	private static java.util.Map<String,StatefulKnowledgeSession> _sessions=
+						new java.util.HashMap<String,StatefulKnowledgeSession>();
 	private StatefulKnowledgeSession _session=null;
 
 	public CEPManager(ActiveQuerySpec spec, String parentName) {
 		super(spec, parentName);
 	}
 	
-	public void init(String cepRule, ConnectionFactory connectionFactory,
-				org.infinispan.manager.CacheContainer container,
+	public void init(org.infinispan.manager.CacheContainer container,
 				Destination source, Destination notification, Destination... destinations) {
-		super.init(connectionFactory, container, source, notification, destinations);
+		super.init(container, source, notification, destinations);
 		
-		_cepRuleBase = cepRule;
+		if (_services == null) {
+			_services = new SAMServicesImpl(
+					ActiveQueryServer.getInstance().<Situation>getActiveQuery("Situations"));			
+		}
 		
 		_session = createSession();
-		
-		_services = new SAMServicesImpl<T>(
-				ActiveQueryServer.getInstance().<Situation>getActiveQuery("Situations"));
 	}
 	
     private StatefulKnowledgeSession createSession() {
-        KnowledgeBase kbase = loadRuleBase();
-        StatefulKnowledgeSession session = kbase.newStatefulKnowledgeSession();
-        session.setGlobal("services", this);
-        session.fireAllRules();
-        return session;
+    	StatefulKnowledgeSession ret=null;
+    	
+    	synchronized(_sessions) {
+    		ret = _sessions.get(getActiveQueryName());
+    		
+    		if (ret == null) {    			
+		        KnowledgeBase kbase = loadRuleBase();
+		        
+		        if (kbase != null) {
+			        ret = kbase.newStatefulKnowledgeSession();
+			        
+			        if (ret != null) {
+				        ret.setGlobal("services", _services);
+				        ret.fireAllRules();
+				        
+				        _sessions.put(getActiveQueryName(), ret);
+			        }
+		        }
+    		}
+    	}
+
+        return (ret);
     }
 
     private KnowledgeBase loadRuleBase() {
-        KnowledgeBuilder builder = KnowledgeBuilderFactory.newKnowledgeBuilder();
+    	String cepRuleBase=getActiveQueryName()+".drl";
+    	
         try {
+        	KnowledgeBuilder builder = KnowledgeBuilderFactory.newKnowledgeBuilder();
             builder.add(ResourceFactory.newInputStreamResource(
-            		Thread.currentThread().getContextClassLoader().getResourceAsStream("/"+_cepRuleBase)),
-                             ResourceType.determineResourceType(_cepRuleBase));
+            		Thread.currentThread().getContextClassLoader().getResourceAsStream("/"+cepRuleBase)),
+                             ResourceType.determineResourceType(cepRuleBase));
     		if (LOG.isLoggable(Level.FINE)) {
-    			LOG.fine("Loaded CEP rules '"+_cepRuleBase+"'");		
+    			LOG.fine("Loaded CEP rules '"+cepRuleBase+"'");		
     		}
 
-        } catch ( Exception e ) {
-            LOG.severe("Failed to load CEP rules '"+_cepRuleBase+"' for AQ '"+getActiveQueryName()+"'");
-        }
+	        if( builder.hasErrors() ) {
+	            LOG.severe("CEP rules have errors: "+builder.getErrors());
+	        } else {
+		        KnowledgeBaseConfiguration conf = KnowledgeBaseFactory.newKnowledgeBaseConfiguration();
+		        conf.setOption( EventProcessingOption.STREAM );
+		        conf.setOption( MBeansOption.ENABLED );
+		        KnowledgeBase kbase = KnowledgeBaseFactory.newKnowledgeBase(getActiveQueryName(), conf );
+		        kbase.addKnowledgePackages( builder.getKnowledgePackages() );
+		        return kbase;
+	        }
         
-        if( builder.hasErrors() ) {
-            LOG.severe("CEP rules have errors: "+builder.getErrors());
-        } else {
-	        KnowledgeBaseConfiguration conf = KnowledgeBaseFactory.newKnowledgeBaseConfiguration();
-	        conf.setOption( EventProcessingOption.STREAM );
-	        conf.setOption( MBeansOption.ENABLED );
-	        KnowledgeBase kbase = KnowledgeBaseFactory.newKnowledgeBase( "Purchasing", conf );
-	        kbase.addKnowledgePackages( builder.getKnowledgePackages() );
-	        return kbase;
+        } catch (Throwable e) {
+            LOG.log(Level.SEVERE, "Failed to load CEP rules '"+
+            			cepRuleBase+"' for AQ '"+getActiveQueryName()+"'", e);
         }
         
         return (null);
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
 	protected T processActivity(String sourceAQName, S sourceActivity, ActiveChangeType changeType,
 								int retriesLeft) throws Exception {
 		
@@ -140,7 +160,7 @@ public class CEPManager<S,T> extends JEEActiveQueryManager<S,T> implements Messa
 			LOG.fine("No AQ spec for '"+sourceAQName+"'");
 		}
 		
-		return(_services.getResult());
+		return((T)_services.getResult());
 	}
 	
     /**
@@ -149,9 +169,9 @@ public class CEPManager<S,T> extends JEEActiveQueryManager<S,T> implements Messa
      *
      * @param <T> The target active query element type
      */
-	public static class SAMServicesImpl<T> implements SAMServices<T> {
+	public static class SAMServicesImpl implements SAMServices {
 
-		private T _result=null;
+		private ThreadLocal<Object> _result=new ThreadLocal<Object>();
 		private ActiveQuery<Situation> _situations=null;
 		
 		public SAMServicesImpl(ActiveQuery<Situation> situations) {
@@ -176,12 +196,12 @@ public class CEPManager<S,T> extends JEEActiveQueryManager<S,T> implements Messa
 			}
 		}
 
-		public void setResult(T result) {
-			_result = result;
+		public void setResult(Object result) {
+			_result.set(result);
 		}
 
-		public T getResult() {
-			return _result;
+		public Object getResult() {
+			return _result.get();
 		}
 		
 	}

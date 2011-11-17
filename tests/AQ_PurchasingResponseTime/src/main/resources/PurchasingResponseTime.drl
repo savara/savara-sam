@@ -1,0 +1,40 @@
+
+
+import org.savara.sam.activity.ActivityModel.Activity
+import org.savara.sam.activity.ServiceModel.ServiceInvocation
+import org.savara.sam.activity.ActivityAnalysis
+
+global org.savara.sam.ams.cep.SAMServices services
+
+declare Activity
+    @role( event )
+    @timestamp( timestamp )
+    @expires( 2m20s )
+end
+
+rule "correlate request and response"
+when
+    $req : Activity( $id : serviceInvocation.correlation, serviceInvocation.invocationType == ServiceInvocation.InvocationType.REQUEST ) from entry-point "Purchasing" 
+    $resp : Activity( serviceInvocation.correlation == $id, this after[0,2m20s] $req , serviceInvocation.invocationType == ServiceInvocation.InvocationType.RESPONSE)  from entry-point "Purchasing"
+then
+    ActivityAnalysis aa=new ActivityAnalysis();
+
+	aa.addProperty("requestTimestamp", Long.class.getName(), $req.getTimestamp());
+	aa.addProperty("requestId", String.class.getName(), $req.getId());
+	aa.addProperty("serviceType", String.class.getName(), $req.getServiceInvocation().getServiceType());
+	aa.addProperty("operation", String.class.getName(), $req.getServiceInvocation().getOperation());
+	aa.addProperty("fault", String.class.getName(), $req.getServiceInvocation().getFault());
+	aa.addProperty("principal", String.class.getName(), $req.getPrincipal());
+    
+	long responseTime=$resp.getTimestamp()-$req.getTimestamp();
+	
+	//services.logInfo("REQUEST: "+$req);
+	//services.logInfo("RESPONSE: "+$resp);
+	services.logDebug("CORRELATION on id '"+$id+"' response time "+responseTime);
+	
+	aa.addProperty("responseTimestamp", Long.class.getName(), $resp.getTimestamp());
+	aa.addProperty("responseId", String.class.getName(), $resp.getId());
+	aa.addProperty("responseTime", Long.class.getName(), responseTime);
+
+    services.setResult(aa);
+end

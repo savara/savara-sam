@@ -63,7 +63,7 @@ public class Root extends JEEActiveQueryManager<String,String> implements Messag
 	
 	@PostConstruct
 	public void init() {
-		super.init(null, _container, _sourceQueue, _notificationTopic, _purchasing);
+		super.init(_container, _sourceQueue, _notificationTopic, _purchasing);
 	}
 
 	@PreDestroy

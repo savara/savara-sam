@@ -84,7 +84,7 @@ public class Purchasing extends JEEActiveQueryManager<String,String> implements 
 	
 	@PostConstruct
 	public void init() {
-		super.init(null, _container, _sourceQueue, _notificationTopic,
+		super.init(_container, _sourceQueue, _notificationTopic,
 				_purchasingStarted, _purchasingSuccessful,
 				_purchasingUnsuccessful, _purchasingResponseTime, _purchasingConversation);
 		

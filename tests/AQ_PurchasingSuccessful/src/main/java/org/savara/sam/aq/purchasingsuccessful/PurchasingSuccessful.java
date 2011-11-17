@@ -70,7 +70,7 @@ public class PurchasingSuccessful extends JEEActiveQueryManager<String,String> i
 	
 	@PostConstruct
 	public void init() {
-		super.init(null, _container, _sourceQueue, _notificationTopic);
+		super.init(_container, _sourceQueue, _notificationTopic);
 		
 		((JEECacheActiveQuerySpec)getActiveQuerySpec()).setCache(_container.getCache(CACHE_NAME));
 	}

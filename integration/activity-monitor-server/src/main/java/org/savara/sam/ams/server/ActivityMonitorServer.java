@@ -35,8 +35,10 @@ import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import org.savara.sam.activity.ActivityModel;
 import org.savara.sam.activity.ActivityModel.Activity;
 import org.savara.sam.aq.ActiveChangeType;
@@ -139,7 +141,10 @@ public class ActivityMonitorServer implements MessageListener {
 						Activity act=ActivityModel.Activity.parseFrom(b);
 						
 						// Store message in the database and get id
-						String id="id"+_random.nextInt();
+						String id=UUID.randomUUID().toString();
+						
+						// Set the id on the activity object
+						act = act.toBuilder().setId(id).build();
 						
 						// Store message in the cache
 						_cache.put(id, act);

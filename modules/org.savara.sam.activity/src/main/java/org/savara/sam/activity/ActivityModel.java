@@ -8,7 +8,7 @@ public final class ActivityModel {
   public static void registerAllExtensions(
       com.google.protobuf.ExtensionRegistry registry) {
   }
-  public interface ComponentIdOrBuilder
+  public interface ComponentOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
     
     // optional string location = 1;
@@ -43,32 +43,32 @@ public final class ActivityModel {
     boolean hasThreadId();
     String getThreadId();
   }
-  public static final class ComponentId extends
+  public static final class Component extends
       com.google.protobuf.GeneratedMessage
-      implements ComponentIdOrBuilder {
-    // Use ComponentId.newBuilder() to construct.
-    private ComponentId(Builder builder) {
+      implements ComponentOrBuilder {
+    // Use Component.newBuilder() to construct.
+    private Component(Builder builder) {
       super(builder);
     }
-    private ComponentId(boolean noInit) {}
+    private Component(boolean noInit) {}
     
-    private static final ComponentId defaultInstance;
-    public static ComponentId getDefaultInstance() {
+    private static final Component defaultInstance;
+    public static Component getDefaultInstance() {
       return defaultInstance;
     }
     
-    public ComponentId getDefaultInstanceForType() {
+    public Component getDefaultInstanceForType() {
       return defaultInstance;
     }
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.savara.sam.activity.ActivityModel.internal_static_org_savara_sam_activity_ComponentId_descriptor;
+      return org.savara.sam.activity.ActivityModel.internal_static_org_savara_sam_activity_Component_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.savara.sam.activity.ActivityModel.internal_static_org_savara_sam_activity_ComponentId_fieldAccessorTable;
+      return org.savara.sam.activity.ActivityModel.internal_static_org_savara_sam_activity_Component_fieldAccessorTable;
     }
     
     private int bitField0_;
@@ -427,41 +427,41 @@ public final class ActivityModel {
       return super.writeReplace();
     }
     
-    public static org.savara.sam.activity.ActivityModel.ComponentId parseFrom(
+    public static org.savara.sam.activity.ActivityModel.Component parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return newBuilder().mergeFrom(data).buildParsed();
     }
-    public static org.savara.sam.activity.ActivityModel.ComponentId parseFrom(
+    public static org.savara.sam.activity.ActivityModel.Component parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return newBuilder().mergeFrom(data, extensionRegistry)
                .buildParsed();
     }
-    public static org.savara.sam.activity.ActivityModel.ComponentId parseFrom(byte[] data)
+    public static org.savara.sam.activity.ActivityModel.Component parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return newBuilder().mergeFrom(data).buildParsed();
     }
-    public static org.savara.sam.activity.ActivityModel.ComponentId parseFrom(
+    public static org.savara.sam.activity.ActivityModel.Component parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return newBuilder().mergeFrom(data, extensionRegistry)
                .buildParsed();
     }
-    public static org.savara.sam.activity.ActivityModel.ComponentId parseFrom(java.io.InputStream input)
+    public static org.savara.sam.activity.ActivityModel.Component parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return newBuilder().mergeFrom(input).buildParsed();
     }
-    public static org.savara.sam.activity.ActivityModel.ComponentId parseFrom(
+    public static org.savara.sam.activity.ActivityModel.Component parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return newBuilder().mergeFrom(input, extensionRegistry)
                .buildParsed();
     }
-    public static org.savara.sam.activity.ActivityModel.ComponentId parseDelimitedFrom(java.io.InputStream input)
+    public static org.savara.sam.activity.ActivityModel.Component parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       Builder builder = newBuilder();
       if (builder.mergeDelimitedFrom(input)) {
@@ -470,7 +470,7 @@ public final class ActivityModel {
         return null;
       }
     }
-    public static org.savara.sam.activity.ActivityModel.ComponentId parseDelimitedFrom(
+    public static org.savara.sam.activity.ActivityModel.Component parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -481,12 +481,12 @@ public final class ActivityModel {
         return null;
       }
     }
-    public static org.savara.sam.activity.ActivityModel.ComponentId parseFrom(
+    public static org.savara.sam.activity.ActivityModel.Component parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return newBuilder().mergeFrom(input).buildParsed();
     }
-    public static org.savara.sam.activity.ActivityModel.ComponentId parseFrom(
+    public static org.savara.sam.activity.ActivityModel.Component parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -496,7 +496,7 @@ public final class ActivityModel {
     
     public static Builder newBuilder() { return Builder.create(); }
     public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder(org.savara.sam.activity.ActivityModel.ComponentId prototype) {
+    public static Builder newBuilder(org.savara.sam.activity.ActivityModel.Component prototype) {
       return newBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() { return newBuilder(this); }
@@ -509,18 +509,18 @@ public final class ActivityModel {
     }
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.savara.sam.activity.ActivityModel.ComponentIdOrBuilder {
+       implements org.savara.sam.activity.ActivityModel.ComponentOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.savara.sam.activity.ActivityModel.internal_static_org_savara_sam_activity_ComponentId_descriptor;
+        return org.savara.sam.activity.ActivityModel.internal_static_org_savara_sam_activity_Component_descriptor;
       }
       
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.savara.sam.activity.ActivityModel.internal_static_org_savara_sam_activity_ComponentId_fieldAccessorTable;
+        return org.savara.sam.activity.ActivityModel.internal_static_org_savara_sam_activity_Component_fieldAccessorTable;
       }
       
-      // Construct using org.savara.sam.activity.ActivityModel.ComponentId.newBuilder()
+      // Construct using org.savara.sam.activity.ActivityModel.Component.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -564,24 +564,24 @@ public final class ActivityModel {
       
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.savara.sam.activity.ActivityModel.ComponentId.getDescriptor();
+        return org.savara.sam.activity.ActivityModel.Component.getDescriptor();
       }
       
-      public org.savara.sam.activity.ActivityModel.ComponentId getDefaultInstanceForType() {
-        return org.savara.sam.activity.ActivityModel.ComponentId.getDefaultInstance();
+      public org.savara.sam.activity.ActivityModel.Component getDefaultInstanceForType() {
+        return org.savara.sam.activity.ActivityModel.Component.getDefaultInstance();
       }
       
-      public org.savara.sam.activity.ActivityModel.ComponentId build() {
-        org.savara.sam.activity.ActivityModel.ComponentId result = buildPartial();
+      public org.savara.sam.activity.ActivityModel.Component build() {
+        org.savara.sam.activity.ActivityModel.Component result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
       
-      private org.savara.sam.activity.ActivityModel.ComponentId buildParsed()
+      private org.savara.sam.activity.ActivityModel.Component buildParsed()
           throws com.google.protobuf.InvalidProtocolBufferException {
-        org.savara.sam.activity.ActivityModel.ComponentId result = buildPartial();
+        org.savara.sam.activity.ActivityModel.Component result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(
             result).asInvalidProtocolBufferException();
@@ -589,8 +589,8 @@ public final class ActivityModel {
         return result;
       }
       
-      public org.savara.sam.activity.ActivityModel.ComponentId buildPartial() {
-        org.savara.sam.activity.ActivityModel.ComponentId result = new org.savara.sam.activity.ActivityModel.ComponentId(this);
+      public org.savara.sam.activity.ActivityModel.Component buildPartial() {
+        org.savara.sam.activity.ActivityModel.Component result = new org.savara.sam.activity.ActivityModel.Component(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
@@ -631,16 +631,16 @@ public final class ActivityModel {
       }
       
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof org.savara.sam.activity.ActivityModel.ComponentId) {
-          return mergeFrom((org.savara.sam.activity.ActivityModel.ComponentId)other);
+        if (other instanceof org.savara.sam.activity.ActivityModel.Component) {
+          return mergeFrom((org.savara.sam.activity.ActivityModel.Component)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
       
-      public Builder mergeFrom(org.savara.sam.activity.ActivityModel.ComponentId other) {
-        if (other == org.savara.sam.activity.ActivityModel.ComponentId.getDefaultInstance()) return this;
+      public Builder mergeFrom(org.savara.sam.activity.ActivityModel.Component other) {
+        if (other == org.savara.sam.activity.ActivityModel.Component.getDefaultInstance()) return this;
         if (other.hasLocation()) {
           setLocation(other.getLocation());
         }
@@ -1030,34 +1030,38 @@ public final class ActivityModel {
         onChanged();
       }
       
-      // @@protoc_insertion_point(builder_scope:org.savara.sam.activity.ComponentId)
+      // @@protoc_insertion_point(builder_scope:org.savara.sam.activity.Component)
     }
     
     static {
-      defaultInstance = new ComponentId(true);
+      defaultInstance = new Component(true);
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:org.savara.sam.activity.ComponentId)
+    // @@protoc_insertion_point(class_scope:org.savara.sam.activity.Component)
   }
   
   public interface ActivityOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
     
-    // required .org.savara.sam.activity.ComponentId id = 1;
+    // optional string id = 1;
     boolean hasId();
-    org.savara.sam.activity.ActivityModel.ComponentId getId();
-    org.savara.sam.activity.ActivityModel.ComponentIdOrBuilder getIdOrBuilder();
+    String getId();
     
-    // required int64 timestamp = 2;
+    // required .org.savara.sam.activity.Component component = 2;
+    boolean hasComponent();
+    org.savara.sam.activity.ActivityModel.Component getComponent();
+    org.savara.sam.activity.ActivityModel.ComponentOrBuilder getComponentOrBuilder();
+    
+    // required int64 timestamp = 3;
     boolean hasTimestamp();
     long getTimestamp();
     
-    // required string principal = 3;
+    // optional string principal = 4;
     boolean hasPrincipal();
     String getPrincipal();
     
-    // optional .org.savara.sam.activity.ServiceInvocation serviceInvocation = 4;
+    // optional .org.savara.sam.activity.ServiceInvocation serviceInvocation = 5;
     boolean hasServiceInvocation();
     org.savara.sam.activity.ServiceModel.ServiceInvocation getServiceInvocation();
     org.savara.sam.activity.ServiceModel.ServiceInvocationOrBuilder getServiceInvocationOrBuilder();
@@ -1091,34 +1095,66 @@ public final class ActivityModel {
     }
     
     private int bitField0_;
-    // required .org.savara.sam.activity.ComponentId id = 1;
+    // optional string id = 1;
     public static final int ID_FIELD_NUMBER = 1;
-    private org.savara.sam.activity.ActivityModel.ComponentId id_;
+    private java.lang.Object id_;
     public boolean hasId() {
       return ((bitField0_ & 0x00000001) == 0x00000001);
     }
-    public org.savara.sam.activity.ActivityModel.ComponentId getId() {
-      return id_;
+    public String getId() {
+      java.lang.Object ref = id_;
+      if (ref instanceof String) {
+        return (String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        String s = bs.toStringUtf8();
+        if (com.google.protobuf.Internal.isValidUtf8(bs)) {
+          id_ = s;
+        }
+        return s;
+      }
     }
-    public org.savara.sam.activity.ActivityModel.ComponentIdOrBuilder getIdOrBuilder() {
-      return id_;
+    private com.google.protobuf.ByteString getIdBytes() {
+      java.lang.Object ref = id_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8((String) ref);
+        id_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
     }
     
-    // required int64 timestamp = 2;
-    public static final int TIMESTAMP_FIELD_NUMBER = 2;
+    // required .org.savara.sam.activity.Component component = 2;
+    public static final int COMPONENT_FIELD_NUMBER = 2;
+    private org.savara.sam.activity.ActivityModel.Component component_;
+    public boolean hasComponent() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    public org.savara.sam.activity.ActivityModel.Component getComponent() {
+      return component_;
+    }
+    public org.savara.sam.activity.ActivityModel.ComponentOrBuilder getComponentOrBuilder() {
+      return component_;
+    }
+    
+    // required int64 timestamp = 3;
+    public static final int TIMESTAMP_FIELD_NUMBER = 3;
     private long timestamp_;
     public boolean hasTimestamp() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
+      return ((bitField0_ & 0x00000004) == 0x00000004);
     }
     public long getTimestamp() {
       return timestamp_;
     }
     
-    // required string principal = 3;
-    public static final int PRINCIPAL_FIELD_NUMBER = 3;
+    // optional string principal = 4;
+    public static final int PRINCIPAL_FIELD_NUMBER = 4;
     private java.lang.Object principal_;
     public boolean hasPrincipal() {
-      return ((bitField0_ & 0x00000004) == 0x00000004);
+      return ((bitField0_ & 0x00000008) == 0x00000008);
     }
     public String getPrincipal() {
       java.lang.Object ref = principal_;
@@ -1146,11 +1182,11 @@ public final class ActivityModel {
       }
     }
     
-    // optional .org.savara.sam.activity.ServiceInvocation serviceInvocation = 4;
-    public static final int SERVICEINVOCATION_FIELD_NUMBER = 4;
+    // optional .org.savara.sam.activity.ServiceInvocation serviceInvocation = 5;
+    public static final int SERVICEINVOCATION_FIELD_NUMBER = 5;
     private org.savara.sam.activity.ServiceModel.ServiceInvocation serviceInvocation_;
     public boolean hasServiceInvocation() {
-      return ((bitField0_ & 0x00000008) == 0x00000008);
+      return ((bitField0_ & 0x00000010) == 0x00000010);
     }
     public org.savara.sam.activity.ServiceModel.ServiceInvocation getServiceInvocation() {
       return serviceInvocation_;
@@ -1160,7 +1196,8 @@ public final class ActivityModel {
     }
     
     private void initFields() {
-      id_ = org.savara.sam.activity.ActivityModel.ComponentId.getDefaultInstance();
+      id_ = "";
+      component_ = org.savara.sam.activity.ActivityModel.Component.getDefaultInstance();
       timestamp_ = 0L;
       principal_ = "";
       serviceInvocation_ = org.savara.sam.activity.ServiceModel.ServiceInvocation.getDefaultInstance();
@@ -1170,15 +1207,11 @@ public final class ActivityModel {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized != -1) return isInitialized == 1;
       
-      if (!hasId()) {
+      if (!hasComponent()) {
         memoizedIsInitialized = 0;
         return false;
       }
       if (!hasTimestamp()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
-      if (!hasPrincipal()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -1196,16 +1229,19 @@ public final class ActivityModel {
                         throws java.io.IOException {
       getSerializedSize();
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        output.writeMessage(1, id_);
+        output.writeBytes(1, getIdBytes());
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        output.writeInt64(2, timestamp_);
+        output.writeMessage(2, component_);
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
-        output.writeBytes(3, getPrincipalBytes());
+        output.writeInt64(3, timestamp_);
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
-        output.writeMessage(4, serviceInvocation_);
+        output.writeBytes(4, getPrincipalBytes());
+      }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        output.writeMessage(5, serviceInvocation_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -1218,19 +1254,23 @@ public final class ActivityModel {
       size = 0;
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(1, id_);
+          .computeBytesSize(1, getIdBytes());
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt64Size(2, timestamp_);
+          .computeMessageSize(2, component_);
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(3, getPrincipalBytes());
+          .computeInt64Size(3, timestamp_);
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(4, serviceInvocation_);
+          .computeBytesSize(4, getPrincipalBytes());
+      }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(5, serviceInvocation_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -1348,7 +1388,7 @@ public final class ActivityModel {
       }
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
-          getIdFieldBuilder();
+          getComponentFieldBuilder();
           getServiceInvocationFieldBuilder();
         }
       }
@@ -1358,22 +1398,24 @@ public final class ActivityModel {
       
       public Builder clear() {
         super.clear();
-        if (idBuilder_ == null) {
-          id_ = org.savara.sam.activity.ActivityModel.ComponentId.getDefaultInstance();
-        } else {
-          idBuilder_.clear();
-        }
+        id_ = "";
         bitField0_ = (bitField0_ & ~0x00000001);
-        timestamp_ = 0L;
+        if (componentBuilder_ == null) {
+          component_ = org.savara.sam.activity.ActivityModel.Component.getDefaultInstance();
+        } else {
+          componentBuilder_.clear();
+        }
         bitField0_ = (bitField0_ & ~0x00000002);
-        principal_ = "";
+        timestamp_ = 0L;
         bitField0_ = (bitField0_ & ~0x00000004);
+        principal_ = "";
+        bitField0_ = (bitField0_ & ~0x00000008);
         if (serviceInvocationBuilder_ == null) {
           serviceInvocation_ = org.savara.sam.activity.ServiceModel.ServiceInvocation.getDefaultInstance();
         } else {
           serviceInvocationBuilder_.clear();
         }
-        bitField0_ = (bitField0_ & ~0x00000008);
+        bitField0_ = (bitField0_ & ~0x00000010);
         return this;
       }
       
@@ -1415,21 +1457,25 @@ public final class ActivityModel {
         if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
           to_bitField0_ |= 0x00000001;
         }
-        if (idBuilder_ == null) {
-          result.id_ = id_;
-        } else {
-          result.id_ = idBuilder_.build();
-        }
+        result.id_ = id_;
         if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
           to_bitField0_ |= 0x00000002;
         }
-        result.timestamp_ = timestamp_;
+        if (componentBuilder_ == null) {
+          result.component_ = component_;
+        } else {
+          result.component_ = componentBuilder_.build();
+        }
         if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
           to_bitField0_ |= 0x00000004;
         }
-        result.principal_ = principal_;
+        result.timestamp_ = timestamp_;
         if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
           to_bitField0_ |= 0x00000008;
+        }
+        result.principal_ = principal_;
+        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+          to_bitField0_ |= 0x00000010;
         }
         if (serviceInvocationBuilder_ == null) {
           result.serviceInvocation_ = serviceInvocation_;
@@ -1453,7 +1499,10 @@ public final class ActivityModel {
       public Builder mergeFrom(org.savara.sam.activity.ActivityModel.Activity other) {
         if (other == org.savara.sam.activity.ActivityModel.Activity.getDefaultInstance()) return this;
         if (other.hasId()) {
-          mergeId(other.getId());
+          setId(other.getId());
+        }
+        if (other.hasComponent()) {
+          mergeComponent(other.getComponent());
         }
         if (other.hasTimestamp()) {
           setTimestamp(other.getTimestamp());
@@ -1469,15 +1518,11 @@ public final class ActivityModel {
       }
       
       public final boolean isInitialized() {
-        if (!hasId()) {
+        if (!hasComponent()) {
           
           return false;
         }
         if (!hasTimestamp()) {
-          
-          return false;
-        }
-        if (!hasPrincipal()) {
           
           return false;
         }
@@ -1514,25 +1559,30 @@ public final class ActivityModel {
               break;
             }
             case 10: {
-              org.savara.sam.activity.ActivityModel.ComponentId.Builder subBuilder = org.savara.sam.activity.ActivityModel.ComponentId.newBuilder();
-              if (hasId()) {
-                subBuilder.mergeFrom(getId());
-              }
-              input.readMessage(subBuilder, extensionRegistry);
-              setId(subBuilder.buildPartial());
+              bitField0_ |= 0x00000001;
+              id_ = input.readBytes();
               break;
             }
-            case 16: {
-              bitField0_ |= 0x00000002;
+            case 18: {
+              org.savara.sam.activity.ActivityModel.Component.Builder subBuilder = org.savara.sam.activity.ActivityModel.Component.newBuilder();
+              if (hasComponent()) {
+                subBuilder.mergeFrom(getComponent());
+              }
+              input.readMessage(subBuilder, extensionRegistry);
+              setComponent(subBuilder.buildPartial());
+              break;
+            }
+            case 24: {
+              bitField0_ |= 0x00000004;
               timestamp_ = input.readInt64();
               break;
             }
-            case 26: {
-              bitField0_ |= 0x00000004;
+            case 34: {
+              bitField0_ |= 0x00000008;
               principal_ = input.readBytes();
               break;
             }
-            case 34: {
+            case 42: {
               org.savara.sam.activity.ServiceModel.ServiceInvocation.Builder subBuilder = org.savara.sam.activity.ServiceModel.ServiceInvocation.newBuilder();
               if (hasServiceInvocation()) {
                 subBuilder.mergeFrom(getServiceInvocation());
@@ -1547,121 +1597,157 @@ public final class ActivityModel {
       
       private int bitField0_;
       
-      // required .org.savara.sam.activity.ComponentId id = 1;
-      private org.savara.sam.activity.ActivityModel.ComponentId id_ = org.savara.sam.activity.ActivityModel.ComponentId.getDefaultInstance();
-      private com.google.protobuf.SingleFieldBuilder<
-          org.savara.sam.activity.ActivityModel.ComponentId, org.savara.sam.activity.ActivityModel.ComponentId.Builder, org.savara.sam.activity.ActivityModel.ComponentIdOrBuilder> idBuilder_;
+      // optional string id = 1;
+      private java.lang.Object id_ = "";
       public boolean hasId() {
         return ((bitField0_ & 0x00000001) == 0x00000001);
       }
-      public org.savara.sam.activity.ActivityModel.ComponentId getId() {
-        if (idBuilder_ == null) {
-          return id_;
+      public String getId() {
+        java.lang.Object ref = id_;
+        if (!(ref instanceof String)) {
+          String s = ((com.google.protobuf.ByteString) ref).toStringUtf8();
+          id_ = s;
+          return s;
         } else {
-          return idBuilder_.getMessage();
+          return (String) ref;
         }
       }
-      public Builder setId(org.savara.sam.activity.ActivityModel.ComponentId value) {
-        if (idBuilder_ == null) {
-          if (value == null) {
-            throw new NullPointerException();
-          }
-          id_ = value;
-          onChanged();
-        } else {
-          idBuilder_.setMessage(value);
-        }
-        bitField0_ |= 0x00000001;
-        return this;
-      }
-      public Builder setId(
-          org.savara.sam.activity.ActivityModel.ComponentId.Builder builderForValue) {
-        if (idBuilder_ == null) {
-          id_ = builderForValue.build();
-          onChanged();
-        } else {
-          idBuilder_.setMessage(builderForValue.build());
-        }
-        bitField0_ |= 0x00000001;
-        return this;
-      }
-      public Builder mergeId(org.savara.sam.activity.ActivityModel.ComponentId value) {
-        if (idBuilder_ == null) {
-          if (((bitField0_ & 0x00000001) == 0x00000001) &&
-              id_ != org.savara.sam.activity.ActivityModel.ComponentId.getDefaultInstance()) {
-            id_ =
-              org.savara.sam.activity.ActivityModel.ComponentId.newBuilder(id_).mergeFrom(value).buildPartial();
-          } else {
-            id_ = value;
-          }
-          onChanged();
-        } else {
-          idBuilder_.mergeFrom(value);
-        }
-        bitField0_ |= 0x00000001;
+      public Builder setId(String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        id_ = value;
+        onChanged();
         return this;
       }
       public Builder clearId() {
-        if (idBuilder_ == null) {
-          id_ = org.savara.sam.activity.ActivityModel.ComponentId.getDefaultInstance();
-          onChanged();
-        } else {
-          idBuilder_.clear();
-        }
         bitField0_ = (bitField0_ & ~0x00000001);
+        id_ = getDefaultInstance().getId();
+        onChanged();
         return this;
       }
-      public org.savara.sam.activity.ActivityModel.ComponentId.Builder getIdBuilder() {
+      void setId(com.google.protobuf.ByteString value) {
         bitField0_ |= 0x00000001;
+        id_ = value;
         onChanged();
-        return getIdFieldBuilder().getBuilder();
       }
-      public org.savara.sam.activity.ActivityModel.ComponentIdOrBuilder getIdOrBuilder() {
-        if (idBuilder_ != null) {
-          return idBuilder_.getMessageOrBuilder();
+      
+      // required .org.savara.sam.activity.Component component = 2;
+      private org.savara.sam.activity.ActivityModel.Component component_ = org.savara.sam.activity.ActivityModel.Component.getDefaultInstance();
+      private com.google.protobuf.SingleFieldBuilder<
+          org.savara.sam.activity.ActivityModel.Component, org.savara.sam.activity.ActivityModel.Component.Builder, org.savara.sam.activity.ActivityModel.ComponentOrBuilder> componentBuilder_;
+      public boolean hasComponent() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      public org.savara.sam.activity.ActivityModel.Component getComponent() {
+        if (componentBuilder_ == null) {
+          return component_;
         } else {
-          return id_;
+          return componentBuilder_.getMessage();
+        }
+      }
+      public Builder setComponent(org.savara.sam.activity.ActivityModel.Component value) {
+        if (componentBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          component_ = value;
+          onChanged();
+        } else {
+          componentBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000002;
+        return this;
+      }
+      public Builder setComponent(
+          org.savara.sam.activity.ActivityModel.Component.Builder builderForValue) {
+        if (componentBuilder_ == null) {
+          component_ = builderForValue.build();
+          onChanged();
+        } else {
+          componentBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000002;
+        return this;
+      }
+      public Builder mergeComponent(org.savara.sam.activity.ActivityModel.Component value) {
+        if (componentBuilder_ == null) {
+          if (((bitField0_ & 0x00000002) == 0x00000002) &&
+              component_ != org.savara.sam.activity.ActivityModel.Component.getDefaultInstance()) {
+            component_ =
+              org.savara.sam.activity.ActivityModel.Component.newBuilder(component_).mergeFrom(value).buildPartial();
+          } else {
+            component_ = value;
+          }
+          onChanged();
+        } else {
+          componentBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000002;
+        return this;
+      }
+      public Builder clearComponent() {
+        if (componentBuilder_ == null) {
+          component_ = org.savara.sam.activity.ActivityModel.Component.getDefaultInstance();
+          onChanged();
+        } else {
+          componentBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000002);
+        return this;
+      }
+      public org.savara.sam.activity.ActivityModel.Component.Builder getComponentBuilder() {
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return getComponentFieldBuilder().getBuilder();
+      }
+      public org.savara.sam.activity.ActivityModel.ComponentOrBuilder getComponentOrBuilder() {
+        if (componentBuilder_ != null) {
+          return componentBuilder_.getMessageOrBuilder();
+        } else {
+          return component_;
         }
       }
       private com.google.protobuf.SingleFieldBuilder<
-          org.savara.sam.activity.ActivityModel.ComponentId, org.savara.sam.activity.ActivityModel.ComponentId.Builder, org.savara.sam.activity.ActivityModel.ComponentIdOrBuilder> 
-          getIdFieldBuilder() {
-        if (idBuilder_ == null) {
-          idBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-              org.savara.sam.activity.ActivityModel.ComponentId, org.savara.sam.activity.ActivityModel.ComponentId.Builder, org.savara.sam.activity.ActivityModel.ComponentIdOrBuilder>(
-                  id_,
+          org.savara.sam.activity.ActivityModel.Component, org.savara.sam.activity.ActivityModel.Component.Builder, org.savara.sam.activity.ActivityModel.ComponentOrBuilder> 
+          getComponentFieldBuilder() {
+        if (componentBuilder_ == null) {
+          componentBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.savara.sam.activity.ActivityModel.Component, org.savara.sam.activity.ActivityModel.Component.Builder, org.savara.sam.activity.ActivityModel.ComponentOrBuilder>(
+                  component_,
                   getParentForChildren(),
                   isClean());
-          id_ = null;
+          component_ = null;
         }
-        return idBuilder_;
+        return componentBuilder_;
       }
       
-      // required int64 timestamp = 2;
+      // required int64 timestamp = 3;
       private long timestamp_ ;
       public boolean hasTimestamp() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
+        return ((bitField0_ & 0x00000004) == 0x00000004);
       }
       public long getTimestamp() {
         return timestamp_;
       }
       public Builder setTimestamp(long value) {
-        bitField0_ |= 0x00000002;
+        bitField0_ |= 0x00000004;
         timestamp_ = value;
         onChanged();
         return this;
       }
       public Builder clearTimestamp() {
-        bitField0_ = (bitField0_ & ~0x00000002);
+        bitField0_ = (bitField0_ & ~0x00000004);
         timestamp_ = 0L;
         onChanged();
         return this;
       }
       
-      // required string principal = 3;
+      // optional string principal = 4;
       private java.lang.Object principal_ = "";
       public boolean hasPrincipal() {
-        return ((bitField0_ & 0x00000004) == 0x00000004);
+        return ((bitField0_ & 0x00000008) == 0x00000008);
       }
       public String getPrincipal() {
         java.lang.Object ref = principal_;
@@ -1677,29 +1763,29 @@ public final class ActivityModel {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000004;
+  bitField0_ |= 0x00000008;
         principal_ = value;
         onChanged();
         return this;
       }
       public Builder clearPrincipal() {
-        bitField0_ = (bitField0_ & ~0x00000004);
+        bitField0_ = (bitField0_ & ~0x00000008);
         principal_ = getDefaultInstance().getPrincipal();
         onChanged();
         return this;
       }
       void setPrincipal(com.google.protobuf.ByteString value) {
-        bitField0_ |= 0x00000004;
+        bitField0_ |= 0x00000008;
         principal_ = value;
         onChanged();
       }
       
-      // optional .org.savara.sam.activity.ServiceInvocation serviceInvocation = 4;
+      // optional .org.savara.sam.activity.ServiceInvocation serviceInvocation = 5;
       private org.savara.sam.activity.ServiceModel.ServiceInvocation serviceInvocation_ = org.savara.sam.activity.ServiceModel.ServiceInvocation.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
           org.savara.sam.activity.ServiceModel.ServiceInvocation, org.savara.sam.activity.ServiceModel.ServiceInvocation.Builder, org.savara.sam.activity.ServiceModel.ServiceInvocationOrBuilder> serviceInvocationBuilder_;
       public boolean hasServiceInvocation() {
-        return ((bitField0_ & 0x00000008) == 0x00000008);
+        return ((bitField0_ & 0x00000010) == 0x00000010);
       }
       public org.savara.sam.activity.ServiceModel.ServiceInvocation getServiceInvocation() {
         if (serviceInvocationBuilder_ == null) {
@@ -1718,7 +1804,7 @@ public final class ActivityModel {
         } else {
           serviceInvocationBuilder_.setMessage(value);
         }
-        bitField0_ |= 0x00000008;
+        bitField0_ |= 0x00000010;
         return this;
       }
       public Builder setServiceInvocation(
@@ -1729,12 +1815,12 @@ public final class ActivityModel {
         } else {
           serviceInvocationBuilder_.setMessage(builderForValue.build());
         }
-        bitField0_ |= 0x00000008;
+        bitField0_ |= 0x00000010;
         return this;
       }
       public Builder mergeServiceInvocation(org.savara.sam.activity.ServiceModel.ServiceInvocation value) {
         if (serviceInvocationBuilder_ == null) {
-          if (((bitField0_ & 0x00000008) == 0x00000008) &&
+          if (((bitField0_ & 0x00000010) == 0x00000010) &&
               serviceInvocation_ != org.savara.sam.activity.ServiceModel.ServiceInvocation.getDefaultInstance()) {
             serviceInvocation_ =
               org.savara.sam.activity.ServiceModel.ServiceInvocation.newBuilder(serviceInvocation_).mergeFrom(value).buildPartial();
@@ -1745,7 +1831,7 @@ public final class ActivityModel {
         } else {
           serviceInvocationBuilder_.mergeFrom(value);
         }
-        bitField0_ |= 0x00000008;
+        bitField0_ |= 0x00000010;
         return this;
       }
       public Builder clearServiceInvocation() {
@@ -1755,11 +1841,11 @@ public final class ActivityModel {
         } else {
           serviceInvocationBuilder_.clear();
         }
-        bitField0_ = (bitField0_ & ~0x00000008);
+        bitField0_ = (bitField0_ & ~0x00000010);
         return this;
       }
       public org.savara.sam.activity.ServiceModel.ServiceInvocation.Builder getServiceInvocationBuilder() {
-        bitField0_ |= 0x00000008;
+        bitField0_ |= 0x00000010;
         onChanged();
         return getServiceInvocationFieldBuilder().getBuilder();
       }
@@ -1796,10 +1882,10 @@ public final class ActivityModel {
   }
   
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_savara_sam_activity_ComponentId_descriptor;
+    internal_static_org_savara_sam_activity_Component_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_savara_sam_activity_ComponentId_fieldAccessorTable;
+      internal_static_org_savara_sam_activity_Component_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
     internal_static_org_savara_sam_activity_Activity_descriptor;
   private static
@@ -1815,37 +1901,37 @@ public final class ActivityModel {
   static {
     java.lang.String[] descriptorData = {
       "\n\023ActivityModel.proto\022\027org.savara.sam.ac" +
-      "tivity\032\022ServiceModel.proto\"\257\001\n\013Component" +
-      "Id\022\020\n\010location\030\001 \001(\t\022\024\n\014locationType\030\002 \001" +
-      "(\t\022\023\n\013containerId\030\003 \001(\t\022\023\n\013application\030\004" +
-      " \001(\t\022\021\n\tcomponent\030\005 \001(\t\022\025\n\rcomponentType" +
-      "\030\006 \001(\t\022\022\n\ninstanceId\030\007 \001(\t\022\020\n\010threadId\030\010" +
-      " \001(\t\"\251\001\n\010Activity\0220\n\002id\030\001 \002(\0132$.org.sava" +
-      "ra.sam.activity.ComponentId\022\021\n\ttimestamp" +
-      "\030\002 \002(\003\022\021\n\tprincipal\030\003 \002(\t\022E\n\021serviceInvo" +
-      "cation\030\004 \001(\0132*.org.savara.sam.activity.S",
-      "erviceInvocationB(\n\027org.savara.sam.activ" +
-      "ityB\rActivityModel"
+      "tivity\032\022ServiceModel.proto\"\255\001\n\tComponent" +
+      "\022\020\n\010location\030\001 \001(\t\022\024\n\014locationType\030\002 \001(\t" +
+      "\022\023\n\013containerId\030\003 \001(\t\022\023\n\013application\030\004 \001" +
+      "(\t\022\021\n\tcomponent\030\005 \001(\t\022\025\n\rcomponentType\030\006" +
+      " \001(\t\022\022\n\ninstanceId\030\007 \001(\t\022\020\n\010threadId\030\010 \001" +
+      "(\t\"\272\001\n\010Activity\022\n\n\002id\030\001 \001(\t\0225\n\tcomponent" +
+      "\030\002 \002(\0132\".org.savara.sam.activity.Compone" +
+      "nt\022\021\n\ttimestamp\030\003 \002(\003\022\021\n\tprincipal\030\004 \001(\t" +
+      "\022E\n\021serviceInvocation\030\005 \001(\0132*.org.savara",
+      ".sam.activity.ServiceInvocationB(\n\027org.s" +
+      "avara.sam.activityB\rActivityModel"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
         public com.google.protobuf.ExtensionRegistry assignDescriptors(
             com.google.protobuf.Descriptors.FileDescriptor root) {
           descriptor = root;
-          internal_static_org_savara_sam_activity_ComponentId_descriptor =
+          internal_static_org_savara_sam_activity_Component_descriptor =
             getDescriptor().getMessageTypes().get(0);
-          internal_static_org_savara_sam_activity_ComponentId_fieldAccessorTable = new
+          internal_static_org_savara_sam_activity_Component_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_savara_sam_activity_ComponentId_descriptor,
+              internal_static_org_savara_sam_activity_Component_descriptor,
               new java.lang.String[] { "Location", "LocationType", "ContainerId", "Application", "Component", "ComponentType", "InstanceId", "ThreadId", },
-              org.savara.sam.activity.ActivityModel.ComponentId.class,
-              org.savara.sam.activity.ActivityModel.ComponentId.Builder.class);
+              org.savara.sam.activity.ActivityModel.Component.class,
+              org.savara.sam.activity.ActivityModel.Component.Builder.class);
           internal_static_org_savara_sam_activity_Activity_descriptor =
             getDescriptor().getMessageTypes().get(1);
           internal_static_org_savara_sam_activity_Activity_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_savara_sam_activity_Activity_descriptor,
-              new java.lang.String[] { "Id", "Timestamp", "Principal", "ServiceInvocation", },
+              new java.lang.String[] { "Id", "Component", "Timestamp", "Principal", "ServiceInvocation", },
               org.savara.sam.activity.ActivityModel.Activity.class,
               org.savara.sam.activity.ActivityModel.Activity.Builder.class);
           return null;

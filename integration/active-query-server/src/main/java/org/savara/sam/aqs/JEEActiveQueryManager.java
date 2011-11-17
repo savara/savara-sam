@@ -18,7 +18,6 @@
 package org.savara.sam.aqs;
 
 //import javax.inject.Inject;
-import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.jms.Message;
 import javax.jms.MessageListener;
@@ -62,17 +61,13 @@ public class JEEActiveQueryManager<S,T> implements MessageListener {
 		_parentActiveQueryName = parentName;
 	}
 	
-	public void init(ConnectionFactory connectionFactory, org.infinispan.manager.CacheContainer container,
+	public void init(org.infinispan.manager.CacheContainer container,
 						Destination source, Destination notification, Destination... destinations) {
-		//_connectionFactory = connectionFactory;
 		_container = container;		
 		
 		_cache = _container.getCache("queries");
 		
 		try {
-			//_connection = _connectionFactory.createConnection();
-			//_session = ActiveQueryServer.getConnection().createSession(true, Session.AUTO_ACKNOWLEDGE);
-			
 			if (source != null) {
 				_source = ActiveQueryServer.getSession().createProducer(source);
 			}
@@ -89,14 +84,12 @@ public class JEEActiveQueryManager<S,T> implements MessageListener {
 		}
 		
 		// Register AQ spec
-		ActiveQueryServer aqs=_activeQueryServer;
-		
-		if (aqs == null) {
+		if (_activeQueryServer == null) {
 			// TODO: Needs to be injected!
-			aqs = ActiveQueryServer.getInstance();
+			_activeQueryServer = ActiveQueryServer.getInstance();
 		}
 		
-		aqs.register(getActiveQuerySpec());
+		_activeQueryServer.register(getActiveQuerySpec());
 	}
 	
 	public void close() {
@@ -352,6 +345,10 @@ public class JEEActiveQueryManager<S,T> implements MessageListener {
 								LOG.finest("AQ "+getActiveQueryName()+" didn't transform source activity = "+sourceActivity);
 							}
 						} catch(Exception e) {
+							if (LOG.isLoggable(Level.FINEST)) {
+								LOG.log(Level.FINEST, "AQ "+getActiveQueryName()+" initiating a retry", e);
+							}
+							
 							if (retries == null) {
 								retries = new java.util.Vector<S>();
 							}

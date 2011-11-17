@@ -197,7 +197,7 @@ public class EventGenerator {
 				
 				String roleName=((org.savara.scenario.model.Role)me.getRole()).getName();
 				
-				ComponentId cid=ComponentId.newBuilder().setComponentType(roleName).
+				Component comp=Component.newBuilder().setComponentType(roleName).
 									setInstanceId(roleName+"-"+id).build();
 
 				ServiceInvocation.Builder siBuilder=ServiceInvocation.newBuilder();
@@ -236,7 +236,7 @@ public class EventGenerator {
 					siBuilder.addMessage(m);
 				}
 
-				Activity activity=Activity.newBuilder().setId(cid).setTimestamp(System.currentTimeMillis()).
+				Activity activity=Activity.newBuilder().setComponent(comp).setTimestamp(System.currentTimeMillis()).
 							setServiceInvocation(siBuilder.build()).setPrincipal(principal).build();
 
 				_collector.process(activity);

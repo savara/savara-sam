@@ -43,6 +43,11 @@
             <filtered>true</filtered>
         </file>
         <file>
+            <source>src/main/resources/modules/drools/module.xml</source>
+            <outputDirectory>/modules/org/drools/main</outputDirectory>
+            <filtered>true</filtered>
+        </file>
+        <file>
             <source>src/main/resources/standalone/standalone.xml</source>
             <outputDirectory>/standalone/configuration</outputDirectory>
             <filtered>true</filtered>
@@ -126,6 +131,40 @@
             </includes>
             <outputDirectory>/modules/org/savara/main</outputDirectory>
             <outputFileNameMapping>${artifact.artifactId}-${emfcommon.version}.${artifact.extension}</outputFileNameMapping>
+        </dependencySet>
+
+	<!-- Drools -->
+        <dependencySet>
+            <useTransitiveDependencies>false</useTransitiveDependencies>
+            <includes>
+                <include>org.drools:*</include>
+            </includes>
+            <outputDirectory>/modules/org/drools/main</outputDirectory>
+            <outputFileNameMapping>${artifact.artifactId}-${drools.version}.${artifact.extension}</outputFileNameMapping>
+        </dependencySet>
+        <dependencySet>
+            <useTransitiveDependencies>false</useTransitiveDependencies>
+            <includes>
+                <include>org.mvel:mvel2</include>
+            </includes>
+            <outputDirectory>/modules/org/drools/main</outputDirectory>
+            <outputFileNameMapping>${artifact.artifactId}-${mvel.version}.${artifact.extension}</outputFileNameMapping>
+        </dependencySet>
+        <dependencySet>
+            <useTransitiveDependencies>false</useTransitiveDependencies>
+            <includes>
+                <include>org.eclipse.jdt.core.compiler:ecj</include>
+            </includes>
+            <outputDirectory>/modules/org/drools/main</outputDirectory>
+            <outputFileNameMapping>${artifact.artifactId}-${ecj.version}.${artifact.extension}</outputFileNameMapping>
+        </dependencySet>
+        <dependencySet>
+            <useTransitiveDependencies>false</useTransitiveDependencies>
+            <includes>
+                <include>org.antlr:antlr-runtime</include>
+            </includes>
+            <outputDirectory>/modules/org/drools/main</outputDirectory>
+            <outputFileNameMapping>${artifact.artifactId}-${antlr.version}.${artifact.extension}</outputFileNameMapping>
         </dependencySet>
 
 	<!-- Google protobuf -->
