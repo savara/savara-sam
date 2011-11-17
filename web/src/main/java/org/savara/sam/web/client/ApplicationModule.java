@@ -21,8 +21,10 @@ import org.savara.sam.web.client.auth.CurrentUser;
 import org.savara.sam.web.client.auth.LoggedInGateKeeper;
 import org.savara.sam.web.client.presenter.LoginPresenter;
 import org.savara.sam.web.client.presenter.MainLayoutPresenter;
+import org.savara.sam.web.client.presenter.SituationLayoutPresenter;
 import org.savara.sam.web.client.view.LoginPageView;
 import org.savara.sam.web.client.view.MainLayoutViewImpl;
+import org.savara.sam.web.client.view.SituationLayoutViewImpl;
 
 import com.google.gwt.event.shared.EventBus;
 import com.google.gwt.event.shared.SimpleEventBus;
@@ -57,6 +59,7 @@ public class ApplicationModule extends AbstractPresenterModule {
                 LoginPresenter.LoginProxy.class);
         bindPresenter(MainLayoutPresenter.class, MainLayoutPresenter.MainLayoutView.class, MainLayoutViewImpl.class,
         		MainLayoutPresenter.MainLayoutProxy.class);
-
+        bindPresenter(SituationLayoutPresenter.class, SituationLayoutPresenter.SituationLayoutView.class, SituationLayoutViewImpl.class,
+        		SituationLayoutPresenter.SituationLayoutProxy.class);
     }
 }

@@ -20,6 +20,7 @@ package org.savara.sam.web.client;
 import com.allen_sauer.gwt.log.client.Log;
 import com.google.gwt.core.client.GWT;
 import com.google.inject.Inject;
+import com.gwtplatform.mvp.client.proxy.PlaceRequest;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -68,4 +69,5 @@ public class BootstrapContext implements ApplicationProperties{
     public void removeProperty(String key) {
         ctx.remove(key);
     }
+    
 }

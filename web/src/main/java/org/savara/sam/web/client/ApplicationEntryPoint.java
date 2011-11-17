@@ -29,6 +29,5 @@ public class ApplicationEntryPoint implements EntryPoint {
     public void actualModuleLoad() {
         DelayedBindRegistry.bind(MODULE);
         MODULE.getPlaceManager().revealCurrentPlace();
-
     }
 }

@@ -4,5 +4,7 @@ body{ margin:0;}
 
 .headerLabel{background:url(images/savara-banner.png) no-repeat;}
 
+.menu_link{ color:blue; font-size:11px; font-family:Arial, Helvetica, sans-serif; text-decoration:underline; cursor: pointer; font-style: italic;}
+
 .validConversationTable{background:green;font-size:25px;color:green}
 .invalidConversationTable{background:red}
