@@ -4,31 +4,24 @@
 package org.savara.sam.web.client.view;
 
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.savara.sam.web.client.presenter.MainLayoutPresenter;
 import org.savara.sam.web.client.presenter.MainLayoutPresenter.MainLayoutView;
-import org.savara.sam.web.client.util.ColorUtil;
 import org.savara.sam.web.client.view.ChartPortalLayout.ChartPortlet;
+import org.savara.sam.web.shared.dto.AQChartModel;
+import org.savara.sam.web.shared.dto.AQChartModel.ChartType;
 import org.savara.sam.web.shared.dto.Conversation;
-import org.savara.sam.web.shared.dto.ResponseTime;
-import org.savara.sam.web.shared.dto.Statistic;
 
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
-import com.google.gwt.visualization.client.ChartArea;
 import com.google.gwt.visualization.client.DataTable;
-import com.google.gwt.visualization.client.LegendPosition;
 import com.google.gwt.visualization.client.VisualizationUtils;
 import com.google.gwt.visualization.client.visualizations.Table;
-import com.google.gwt.visualization.client.visualizations.corechart.ColumnChart;
-import com.google.gwt.visualization.client.visualizations.corechart.LineChart;
-import com.google.gwt.visualization.client.visualizations.corechart.Options;
 import com.google.gwt.visualization.client.visualizations.corechart.PieChart;
-import com.google.gwt.visualization.client.visualizations.corechart.PieChart.PieOptions;
-import com.google.gwt.visualization.client.visualizations.corechart.ScatterChart;
 import com.google.inject.Inject;
 import com.gwtplatform.mvp.client.ViewImpl;
 import com.smartgwt.client.types.Alignment;
@@ -70,12 +63,12 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 	private Timer timer;
 	
 	private ChartPortalLayout portal;
-	
-	private Statistic[] stats;
-	
-	private ResponseTime[] respTimes;
-	
+		
 	private Conversation[] cdetails;
+	
+	private List<AQChartModel> aqCharts = new ArrayList<AQChartModel>();
+	
+	private SelectItem aqSelect;
 		
 	@Inject
 	public MainLayoutViewImpl() {
@@ -83,17 +76,18 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
         Runnable onloadCallback = new Runnable() {
 			public void run() {				
 				initializeWindow();
-				presenter.refreshTxnRatio(true);
-				presenter.refreshTxnBarChart(true);
-				presenter.refreshTxnResponseTime(true);
-				presenter.refreshTxnResponseTimeWithOperations(true);
+				
+				for (AQChartModel model : aqCharts) {
+					presenter.refreshChartData(model);
+				}
+				
 				presenter.refreshConversationChart(true);
 				
 				timer = new Timer(){
 					public void run() {
-						presenter.refreshTxnRatio(true);
-						presenter.refreshTxnBarChart(true);
-						presenter.refreshTxnResponseTime(true);
+						for (AQChartModel model : aqCharts) {
+							presenter.refreshChartData(model);
+						}
 					}};
 				
 				//TODO: looks like the refreshing action sometimes block the whole page.
@@ -126,66 +120,51 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 		main.setMargin(10);
 		body.addMember(main);
 		
-		portal = new ChartPortalLayout(3);
-		portal.setMargin(0);
-		portal.setWidth100();
-		portal.setHeight100();
-		portal.setCanAcceptDrop(true);		
+		portal = new ChartPortalLayout(3);	
 			
 		setPortalMenus(main);
 		
         main.addMember(portal);
         
-        final String txnRatioTitle = "Txn Ratio";
-        ChartPortlet txnRatio = portal.createPortlet(txnRatioTitle, new ClickHandler() {
-			public void onClick(ClickEvent event) {
-				presenter.refreshTxnRatio(true);
-			}        	
-        }, new ClickHandler() {
-			public void onClick(ClickEvent event) {
-				showWindowModalWithChart(txnRatioTitle, createTxnRatioChart(stats, false));
-			}        	
-        }, new DragRepositionStopHandler() {
-
-			public void onDragRepositionStop(DragRepositionStopEvent event) {
-				presenter.refreshTxnRatio(true);
-			}
-        	
-        }); 
-        portal.addPortlet(txnRatio);
         
-        final String txnsBarTitle = "Txn Bar Chart";
-        ChartPortlet txnsBar = portal.createPortlet(txnsBarTitle, new ClickHandler(){
-			public void onClick(ClickEvent event) {
-				presenter.refreshTxnBarChart(true);
-			}
-          }, new ClickHandler() {
-				public void onClick(ClickEvent event) {
-					showWindowModalWithChart(txnsBarTitle, createTxnBarChart(stats, false));
-				}         	
-        }, new DragRepositionStopHandler() {
-			public void onDragRepositionStop(DragRepositionStopEvent event) {
-				presenter.refreshTxnBarChart(true);
-			}        	
-        });
-        portal.addPortlet(txnsBar);
+        AQChartModel txnRatioModel = new AQChartModel();
+        txnRatioModel.setName("Txn Ratio");
+        txnRatioModel.setChartType(ChartType.PIE_CHART);
+        txnRatioModel.setVerticalProperty("size");
+        txnRatioModel.setHorizontalProperty("name");
+        List<String> aqs = new ArrayList<String>();
+        aqs.add("PurchasingSuccessful");
+        aqs.add("PurchasingUnsuccessful");
+        txnRatioModel.setActiveQueryNames(aqs);
+               
+        portal.addPortlet(createPortlet(txnRatioModel));
         
-        ChartPortlet responseTime = portal.createPortlet("Response Time", new ClickHandler() {
-			public void onClick(ClickEvent event) {
-				presenter.refreshTxnResponseTime(true);
-			}
-        }, new ClickHandler() {
-			public void onClick(ClickEvent event) {
-				showWindowModalWithChart("Response Time", createResponseTimeLineChart(respTimes, false));
-			} 
-        }, new DragRepositionStopHandler(){
-
-			public void onDragRepositionStop(DragRepositionStopEvent event) {
-				presenter.refreshTxnResponseTime(true);
-			}
-        	
-        });
-        portal.addPortlet(responseTime);
+        AQChartModel txnsBarModel = new AQChartModel();
+        txnsBarModel.setName("Txn Bar Chart");
+        txnsBarModel.setChartType(ChartType.COLUMN_CHART);
+        txnsBarModel.setVerticalProperty("size");
+        txnsBarModel.setHorizontalProperty("name");
+        List<String> txnsBarAQs = new ArrayList<String>();
+        txnsBarAQs.add("PurchasingSuccessful");
+        txnsBarAQs.add("PurchasingUnsuccessful");
+        txnsBarAQs.add("PurchasingStarted");
+        txnsBarModel.setActiveQueryNames(txnsBarAQs);
+        txnsBarModel.setLegendName("Transactions");
+        
+        portal.addPortlet(createPortlet(txnsBarModel));
+        
+        AQChartModel responseTimeModel = new AQChartModel();
+        responseTimeModel.setName("Response Time");
+        responseTimeModel.setChartType(ChartType.LINE_CHART);
+        responseTimeModel.setVerticalProperty("responseTime");
+        responseTimeModel.setHorizontalProperty("requestTimestamp");
+        List<String> responseTimeAQ = new ArrayList<String>();
+        responseTimeAQ.add("PurchasingResponseTime");
+        responseTimeModel.setActiveQueryNames(responseTimeAQ);
+        responseTimeModel.setLegendName("Response Time");
+        
+        portal.addPortlet(createPortlet(responseTimeModel));
+        
         
         ChartPortlet conversationPortlet = portal.createPortlet("Conversation Chart", new ClickHandler(){
 			public void onClick(ClickEvent event) {
@@ -196,8 +175,8 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 			public void onClick(ClickEvent event) {
 				Label validConversation = new Label("<b>Valid Conversations</b>");
 				validConversation.setSize("600", "10");
-				showWindowModalWithChart("Conversation Chart", validConversation, createConversationTableChart(cdetails, false, true),
-						createConversationTableChart(cdetails, false, false));
+				//showWindowModalWithChart("Conversation Chart", validConversation, createConversationTableChart(cdetails, false, true),
+				//		createConversationTableChart(cdetails, false, false));
 			}        	
         }, new DragRepositionStopHandler(){
 			public void onDragRepositionStop(DragRepositionStopEvent event) {
@@ -208,57 +187,9 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 
         portal.addPortlet(conversationPortlet);
         
-
-        ChartPortlet rtOperationsPortlet = portal.createPortlet("Buy Operation Response Time Chart", new ClickHandler(){
-			public void onClick(ClickEvent event) {
-				presenter.refreshTxnResponseTimeWithOperations(true);
-			}        	
-        }, new ClickHandler() {
-			public void onClick(ClickEvent event) {
-				showWindowModalWithChart("Buy Operation Response Time Chart", createRTChartWithOperations(respTimes, false));
-			}        	
-        }, new DragRepositionStopHandler(){
-			public void onDragRepositionStop(DragRepositionStopEvent event) {
-				presenter.refreshTxnResponseTimeWithOperations(true);
-			}        	
-        });
-        
-        portal.addPortlet(rtOperationsPortlet);
         
 		addFooterLayout();
 		panel.draw();
-	}
-	
-	public void refreshTxnRatioChart(Statistic[] value, boolean isSmall) {
-		PieChart pc = createTxnRatioChart(value, isSmall);
-		VLayout txnRatioPanel = portal.getChartPortlet("Txn Ratio").getChartPanel();
-		txnRatioPanel.clear();
-		txnRatioPanel.addChild(pc);
-		txnRatioPanel.draw();
-	}
-	
-	public void refreshTxnBarChart(Statistic[] value, boolean isSmall) {
-		ColumnChart cc = createTxnBarChart(value, isSmall);
-		VLayout txnsBarPanel = portal.getChartPortlet("Txn Bar Chart").getChartPanel();
-		txnsBarPanel.clear();
-		txnsBarPanel.addChild(cc);
-		txnsBarPanel.draw();
-	}
-	
-	public void refreshResponseTime(ResponseTime[] value, boolean isSmall) {
-		LineChart lc = createResponseTimeLineChart(value, isSmall);
-		VLayout responseTimePanel = portal.getChartPortlet("Response Time").getChartPanel();
-		responseTimePanel.clear();
-		responseTimePanel.addChild(lc);
-		responseTimePanel.draw();
-	}
-	
-	public void refreshRTWithOperation(ResponseTime[] value, boolean isSmall) {
-		LineChart lc = createRTChartWithOperations(value, isSmall);
-		VLayout rtOperationsPanel = portal.getChartPortlet("Buy Operation Response Time Chart").getChartPanel();
-		rtOperationsPanel.clear();
-		rtOperationsPanel.addChild(lc);
-		rtOperationsPanel.draw();
 	}
 	
 	public void refreshConversationChart(Conversation[] value, boolean isSmall) {
@@ -277,16 +208,22 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 		conversationPanel.draw();
 	}
 	
-	private void showWindowModalWithChart(String title, Widget... charts) {
+	private void showWindowModalWithChart(final AQChartModel model) {
 		final Window window = new Window();
 		window.setWidth(850);
 		window.setHeight(650);
 		
-		//TODO: need to add the refresh click handler
-		HeaderControl refreshBtn = new HeaderControl(HeaderControl.REFRESH);
+		final VLayout chartLayout = new VLayout();
+		chartLayout.setMargin(25);
+		
+		HeaderControl refreshBtn = new HeaderControl(HeaderControl.REFRESH, new ClickHandler() {
+			public void onClick(ClickEvent event) {
+				presenter.refreshChartData(model, chartLayout, ChartManager.BIG_WIDTH, ChartManager.BIG_HEIGHT);
+			}			
+		});
 		window.setHeaderControls(HeaderControls.HEADER_LABEL, refreshBtn, HeaderControls.CLOSE_BUTTON);
 		
-		window.setTitle(title);
+		window.setTitle(model.getName());
 		window.setIsModal(true);
 		window.setShowModalMask(true);
 		window.centerInPage();
@@ -298,101 +235,11 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 			}
 			
 		});
-		VLayout chartLayout = new VLayout();
-		chartLayout.setMargin(25);
-		for (Widget chart : charts) {
-			chartLayout.addMember(chart);
-		}
+		
+		presenter.refreshChartData(model, chartLayout, ChartManager.BIG_WIDTH, ChartManager.BIG_HEIGHT);
 		window.addChild(chartLayout);
 		window.show();
-	}
-	
-	private PieChart createTxnRatioChart(Statistic[] values, boolean isSmall) {
-		DataTable dt = DataTable.create();
-		dt.addColumn(ColumnType.STRING, "transaction type");
-		dt.addColumn(ColumnType.NUMBER, "percentage");
-		dt.addRows(values == null ? 0 : values.length);
-		if (values != null) {
-			for (int i = 0; i < values.length; i++) {
-				Statistic statistic = values[i];
-				String name = statistic.getName();
-				if ("Successful".equalsIgnoreCase(name) || "Unsuccessful".equalsIgnoreCase(name)) {
-					dt.setValue(i, 0, name);
-					dt.setValue(i, 1, statistic.getValue());
-				}
-			}		
-		}
-		
-		Options options = isSmall ? smallOptions() : bigOptions();
-		PieOptions po = (PieOptions)options;
-		po.setTitle("Transactions Ratio Pie Chart");
-		po.set3D(true);
-		
-		PieChart pc = new PieChart(dt, po);
-		
-		return pc;
-	}
-	
-	private ColumnChart createTxnBarChart(Statistic[] values, boolean isSmall) {
-		DataTable dt = DataTable.create();
-		dt.addColumn(ColumnType.STRING, "transaction type");
-		dt.addColumn(ColumnType.NUMBER, "Txns");
-		dt.addRows(values == null ? 0 : values.length);
-		if (values != null) {
-			for (int i = 0; i < values.length; i++) {
-				Statistic statistic = values[i];
-				String name = statistic.getName();
-				if ("Successful".equalsIgnoreCase(name) || "Unsuccessful".equalsIgnoreCase(name) || "Started".equalsIgnoreCase(name)) {
-					dt.setValue(i, 0, name);
-					dt.setValue(i, 1, statistic.getValue());
-				}
-			}
-		}
-		
-		ColumnChart cc = new ColumnChart(dt, isSmall ? smallOptions() : bigOptions());
-		return cc;
-	}
-	
-	private Options bigOptions() {
-		Options options = Options.create();
-		options.setWidth(800);
-		options.setHeight(600);
-		ChartArea area = ChartArea.create();
-		area.setWidth(700);
-		area.setHeight(500);
-		options.setChartArea(area);
-		options.setLegend(LegendPosition.BOTTOM);
-		return options;
-	}
-	
-	private Options smallOptions() {
-		Options options = Options.create();
-		options.setWidth(250);
-		options.setHeight(200);
-		options.setLegend(LegendPosition.BOTTOM);
-		return options;
-	}
-	
-	private LineChart createResponseTimeLineChart(ResponseTime[] values, boolean isSmall) {
-		DataTable dt = DataTable.create();
-		dt.addColumn(ColumnType.DATETIME, "Request Time");
-		dt.addColumn(ColumnType.NUMBER, "Response Time");
-		dt.addRows(values == null ? 0 : values.length);
-		if (values != null) {
-			for (int i = 0; i < values.length; i++) {
-				ResponseTime rt = values[i];
-				Date d = new Date();
-				d.setTime(rt.getRequestTime().longValue());
-				dt.setValue(i, 0, d);
-				dt.setValue(i, 1, rt.getResponseTime());
-			}
-		}
-		
-		Options options = isSmall ? smallOptions() : bigOptions();
-		options.set("backgroundColor", ColorUtil.getResponseTimeBGColor(respTimes, 9000));
-		
-		return new LineChart(dt, options);
-	}
+	}	
 	
 	private Table createConversationTableChart(Conversation[] values, boolean isSmall, boolean isValid) {
 		DataTable dt = DataTable.create();
@@ -438,57 +285,6 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 		
 		return new Table(dt, toption);
 	}
-	
-	private LineChart createRTChartWithOperations(ResponseTime[] values, boolean isSmall) {
-		DataTable dt = DataTable.create();
-		dt.addColumn(ColumnType.DATETIME, "Request Time");
-		dt.addColumn(ColumnType.NUMBER, "Response Time");
-		
-		int size = 0;		
-		for (int i = 0; i < values.length; i++) {
-			ResponseTime rt = values[i];
-			if ("buy".equalsIgnoreCase(rt.getOperation())) {
-				size ++;
-			}
-		}
-		
-		dt.addRows(size);
-		
-		int position = 0;
-		if (values != null) {
-			for (int i = 0; i < values.length; i++) {
-				ResponseTime rt = values[i];
-				if ("buy".equalsIgnoreCase(rt.getOperation())){
-					Date d = new Date();
-					d.setTime(rt.getRequestTime().longValue());
-					dt.setValue(position, 0, d);
-					dt.setValue(position, 1, rt.getResponseTime());
-					position ++;
-				} 
-			}
-		
-		}	
-		
-		Options options = isSmall ? smallOptions() : bigOptions();
-		options.set("backgroundColor", ColorUtil.getResponseTimeBGColor(respTimes, 9000));
-		
-		return new LineChart(dt, options);
-	}
-	
-	private ScatterChart createResponseTimeScatterChart(ResponseTime[] values, boolean isSmall) {
-		DataTable dt = DataTable.create();
-		dt.addColumn(ColumnType.STRING, "Operation");
-		dt.addColumn(ColumnType.NUMBER, "Response Time");
-		dt.addRows(values == null ? 0 : values.length);
-		if (values != null) {
-			for (int i = 0; i < values.length; i++) {
-				ResponseTime rt = values[i];
-				dt.setValue(i, 0, rt.getOperation());
-				dt.setValue(i, 1, rt.getResponseTime());
-			}
-		}
-		return new ScatterChart(dt, isSmall ? smallOptions() : bigOptions());
-	}
 
 
 	private void setPortalMenus(VLayout main) {
@@ -530,19 +326,23 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 				final TextItem title = new TextItem();
 				title.setTitle("Chart title");
 				
-				final SelectItem aqSelect = new SelectItem();
-				aqSelect.setTitle("AQ Select");
+				aqSelect = new SelectItem();
+				aqSelect.setTitle("Active Queries");
 				aqSelect.setMultiple(true);
 				aqSelect.setMultipleAppearance(MultipleAppearance.PICKLIST);
-				aqSelect.setValueMap("Successful AQ", "Unsuccessful AQ", "Started Txn AQ", "Response Time AQ");
+				presenter.refreshActiveQueries();
 				
 				final SelectItem chartType = new SelectItem();
 				chartType.setTitle("Chart Type");
-				chartType.setValueMap("Pie Chart", "Line Chart", "Table Chart");
+				chartType.setValueMap(ChartType.PIE_CHART.toString(), ChartType.COLUMN_CHART.toString(), ChartType.LINE_CHART.toString());
+				
+				final SelectItem xAxis = new SelectItem();
+				xAxis.setTitle("X Axis mapped property");
+				xAxis.setValueMap("requestTimestamp", "name");
 				
 				final SelectItem yAxis = new SelectItem();
 				yAxis.setTitle("Y Axis mapped property");
-				yAxis.setValueMap("Response Time");
+				yAxis.setValueMap("responseTime", "size");
 				
 				final ButtonItem submitBtn = new ButtonItem();
 				submitBtn.setTitle("Create");
@@ -555,25 +355,21 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 							com.smartgwt.client.widgets.form.fields.events.ClickEvent event) {
 							final String theTitle = title.getValueAsString();
 							
+							if (!portal.isTitleUnique(theTitle)) {
+								return;
+							}
+							
+							AQChartModel model = new AQChartModel();
+							model.setName(theTitle);
+							model.setChartType(ChartType.valueOf(chartType.getValueAsString()));
+							model.setHorizontalProperty(xAxis.getValueAsString());
+							model.setVerticalProperty(yAxis.getValueAsString());
+							model.setActiveQueryNames(aqSelect.getValues());
+							
 							window.destroy();
 							
-							ChartPortlet thePortlet = portal.createPortlet(theTitle, new ClickHandler() {
-								public void onClick(ClickEvent event) {
-									presenter.refreshTxnRatio(true);
-								}        	
-					        }, new ClickHandler() {
-								public void onClick(ClickEvent event) {
-									showWindowModalWithChart(theTitle, createTxnRatioChart(stats, false));
-								}        	
-					        }, new DragRepositionStopHandler() {
-
-								public void onDragRepositionStop(DragRepositionStopEvent event) {
-									presenter.refreshTxnRatio(true);
-								}
-					        	
-					        });
-							
-							portal.addPortlet(thePortlet);
+							portal.addPortlet(createPortlet(model));
+							presenter.refreshChartData(model);
 							
 					}
 					
@@ -591,7 +387,7 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 					
 				});
 				
-				form.setFields(title, aqSelect, chartType, yAxis, submitBtn, cancelBtn);
+				form.setFields(title, aqSelect, chartType, xAxis, yAxis, submitBtn, cancelBtn);
 				
 				window.addItem(form);
 				
@@ -663,22 +459,63 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 		this.presenter = presenter;
 	}
 
-	public void setStats(Statistic[] stats) {
-		this.stats = stats;
-	}
-
-	public void setRespTimes(ResponseTime[] respTimes) {
-		this.respTimes = respTimes;
-	}
-
-	public void refreshRespTimeScatterChart(ResponseTime[] value,
-			boolean isSmall) {
-		//TODO: to be experimented.
-		
-	}
 
 	public void setConversationDetails(Conversation[] cdetails) {
 		this.cdetails = cdetails;
+	}
+	
+	private ChartPortlet createPortlet(final AQChartModel model) {
+	        ChartPortlet txnRatio = portal.createPortlet(model.getName(), new ClickHandler() {
+				public void onClick(ClickEvent event) {
+					presenter.refreshChartData(model);
+				}        	
+	        }, new ClickHandler() {
+				public void onClick(ClickEvent event) {
+					showWindowModalWithChart(model);
+				}        	
+	        }, new DragRepositionStopHandler() {
+
+				public void onDragRepositionStop(DragRepositionStopEvent event) {
+					presenter.refreshChartData(model);
+				}
+	        	
+	        }); 
+		
+	        aqCharts.add(model);
+		return txnRatio;
+	}
+	
+	public void refreshChart(AQChartModel model, Map data, VLayout panel, int width, int height) {		
+		panel.clear();
+		
+		if (AQChartModel.ChartType.PIE_CHART.equals(model.getChartType()) 
+				|| AQChartModel.ChartType.COLUMN_CHART.equals(model.getChartType())) {
+			Map<String, Integer> result = new HashMap<String, Integer>();
+			for (Object key : data.keySet()) {
+				result.put((String)key, (Integer)data.get(key));
+			}
+			if (AQChartModel.ChartType.PIE_CHART.equals(model.getChartType())) {
+				panel.addChild(ChartManager.createPieChart(result, model.getName(), width, height));
+			} else {
+				panel.addChild(ChartManager.createColumnChart(result, model.getName(), model.getLegendName(), width, height));
+			}
+		} else if (AQChartModel.ChartType.LINE_CHART.equals(model.getChartType())){
+			Map<Long, Long> result = new HashMap<Long, Long>();
+			for (Object key : data.keySet()) {
+				result.put((Long)key, (Long)data.get(key));
+			}
+			panel.addChild(ChartManager.createLineChart(result, model.getName(), model.getLegendName(),  width, height, 9000));
+		}		
+		panel.draw();		
+	}
+	
+	public void refreshChart(AQChartModel model, Map data) {
+		VLayout chartPanel = portal.getChartPortlet(model.getName()).getChartPanel();
+		refreshChart(model, data, chartPanel, ChartManager.SMALL_WIDTH, ChartManager.SMALL_HEIGHT);
+	}
+
+	public void setActiveQueries(List<String> activeQueries) {
+		aqSelect.setValueMap(activeQueries.toArray(new String[0]));
 	}
 
 }

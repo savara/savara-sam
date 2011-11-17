@@ -19,8 +19,6 @@ import org.savara.sam.conversation.ConversationDetails;
 import org.savara.sam.web.shared.AQMonitorService;
 import org.savara.sam.web.shared.dto.AQChartModel;
 import org.savara.sam.web.shared.dto.Conversation;
-import org.savara.sam.web.shared.dto.ResponseTime;
-import org.savara.sam.web.shared.dto.Statistic;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
@@ -65,43 +63,6 @@ public class AQMonitorServiceImpl extends RemoteServiceServlet implements AQMoni
 		}
 		return aqNames;
 	}
-	
-	public Statistic[] getStatistics() {
-
-		Statistic running = new Statistic();
-		running.setValue(_startedTxns.size() - _completedTxns.size() - _failedTxns.size());
-		running.setName("Running");
-		
-		Statistic successful = new Statistic();
-		successful.setValue(_completedTxns.size());		
-		successful.setName("Successful");
-		
-		Statistic failed = new Statistic();
-		failed.setValue(_failedTxns.size());
-		failed.setName("Unsuccessful");
-		
-		Statistic started = new Statistic();
-		started.setName("Started");
-		started.setValue(_startedTxns.size());
-		
-		Statistic[] result = new Statistic[]{running, successful, failed, started};
-		 return result;
-	}
-
-
-	public ResponseTime[] getResponseTimes() {
-		List<ActivityAnalysis> contents= _responseTime.getContents();
-		List<ResponseTime> result = new ArrayList<ResponseTime>();
-		for (ActivityAnalysis aa : contents) {
-			ResponseTime rt = new ResponseTime();
-			rt.setRequestTime((Long)aa.getProperty("requestTimestamp").getValue());
-			rt.setResponseTime((Long)aa.getProperty("responseTime").getValue());
-			rt.setOperation(aa.getProperty("operation").getValue().toString());
-			result.add(rt);
-		}
-		ResponseTime[] rts = result.toArray(new ResponseTime[0]);
-		return rts;
-	}
 
 	public Conversation[] getConversationDetails() {
 		if (_purchasingConversationSpec == null) {
@@ -127,15 +88,16 @@ public class AQMonitorServiceImpl extends RemoteServiceServlet implements AQMoni
 		Conversation[] cds = result.toArray(new Conversation[result.size()]);
 		return cds;
 	}
-
-	public Map<?, ?> getChartData(AQChartModel model) {
+	
+	@SuppressWarnings("unchecked")
+	public Map getChartData(AQChartModel model) {
 		List<String> aqNames = model.getActiveQueryNames();
 		Map result = new HashMap();
 		
 		for (String aqName :aqNames) {
 			_activeQuery = _activeQueryManager.getActiveQuery(aqName);
 			if ("size".equals(model.getVerticalProperty()) && "name".equals(model.getHorizontalProperty())) {
-				result.put(aqName, new Long(_activeQuery.size()));
+				result.put(aqName, new Integer(_activeQuery.size()));
 			} else if ("requestTimestamp".equals(model.getHorizontalProperty()) && "responseTime".equals(model.getVerticalProperty())) {
 				List<?> content = _activeQuery.getContents();
 				for (Object o : content) {

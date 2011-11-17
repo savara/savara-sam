@@ -60,7 +60,7 @@ public class ChartPortalLayout extends HLayout{
     }
     
     public boolean isTitleUnique(String title) {
-    	return portletTitles.contains(title);
+    	return !portletTitles.contains(title);
     }
     
     public void removePortlet(String title) {
@@ -79,10 +79,10 @@ public class ChartPortalLayout extends HLayout{
     	for (int i = 0; i< getMembers().length; i++) {
     		ChartPortalColumn portalColumn = (ChartPortalColumn)getMember(i);
     		for (int y = 0; y < portalColumn.getMembers().length; y++) {
-    			ChartPortlet portlet = (ChartPortlet)portalColumn.getMember(y);
-    			if (title.equals(portlet.getTitle())) {
-    				return portlet;
-    			}
+    			ChartPortlet portlet = (ChartPortlet) portalColumn.getMember(y);
+	    			if (title.equals(portlet.getTitle())) {
+	    				return portlet;
+	    			}
     		}
     	}
     	return null;
@@ -124,7 +124,7 @@ public class ChartPortalLayout extends HLayout{
 	
 	/**
 	 *
-	 * Portlet name should be unique.
+	 * Portlet title should be unique.
 	 *
 	 */
 	public  class ChartPortlet extends Portlet {

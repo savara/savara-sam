@@ -27,6 +27,9 @@ public class ChartManager {
 	public static final int SMALL_WIDTH = 250;
 	public static final int SMALL_HEIGHT = 200;
 	
+	public static final int BIG_WIDTH = 800;
+	public static final int BIG_HEIGHT = 600;
+	
 	public final static String[] WARN_COLORS = new String[]{"#FFFFFF","#FAD4DE", "#F2A5B8", "#C7798D", "#B36075","#F70A45"};
 	
 	/**
@@ -69,10 +72,10 @@ public class ChartManager {
 	 * @param height
 	 * @return
 	 */
-	public static ColumnChart createColumnChart(Map<String, Integer> data, String title, int width, int height) {
+	public static ColumnChart createColumnChart(Map<String, Integer> data, String title, String legendName, int width, int height) {
 		DataTable dt = DataTable.create();
 		dt.addColumn(ColumnType.STRING, "name");
-		dt.addColumn(ColumnType.NUMBER, "value");
+		dt.addColumn(ColumnType.NUMBER, legendName == null ? "" : legendName);
 		dt.addRows(data == null ? 0 : data.size());
 		
 		if (data != null) {
@@ -98,10 +101,10 @@ public class ChartManager {
 	 * @param threshold
 	 * @return
 	 */
-	public static LineChart createLineChart(Map<Long, Long> data, String title, int width, int height, long threshold) {
+	public static LineChart createLineChart(Map<Long, Long> data, String title, String legendName, int width, int height, long threshold) {
 		DataTable dt = DataTable.create();
 		dt.addColumn(ColumnType.DATETIME, "date");
-		dt.addColumn(ColumnType.NUMBER, "value");
+		dt.addColumn(ColumnType.NUMBER, legendName == null ? "" : legendName);
 		dt.addRows(data == null ? 0 : data.size());
 		
 		if (data != null) {
@@ -115,7 +118,7 @@ public class ChartManager {
 			}
 		}
 		
-		Options options = createOptions(width, height, title);
+		Options options = createOptions(width, height, title + " (SLA " + getResponseTimeSLARatio(data.values(), 9000) + "%)");
 		
 		if (threshold != 0) {
 			options.set("backgroundColor", getLineChartBGColor(data.values(), 9000));
@@ -125,17 +128,8 @@ public class ChartManager {
 	}
 	
 	private static String getLineChartBGColor(Collection<Long> values, long threshold) {
-		int failedCount = 0;
-		
-		if (values != null) {
-			for (Long value : values) {
-				if (value.longValue() > threshold) {
-					failedCount ++;
-				}
-			}
-		}
-		
-		int ratio = (failedCount * 100 /values.size());
+
+		int ratio = getResponseTimeSLARatio(values, threshold);
 
 		int result = 0;
 		
@@ -146,6 +140,21 @@ public class ChartManager {
 		if (ratio > 20) result = 5;
 		
 		return WARN_COLORS[result];
+	}
+	
+	private static int getResponseTimeSLARatio(Collection<Long> values, long threshold) {
+		int failedCount = 0;
+		
+		if (values != null) {
+			for (Long value : values) {
+				if (value.longValue() > threshold) {
+					failedCount ++;
+				}
+			}
+		}
+		
+		return failedCount * 100 /values.size();
+		
 	}
 	
 	private static Options createOptions(int width, int height, String title) {

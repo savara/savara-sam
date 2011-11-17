@@ -12,8 +12,6 @@ import java.util.Map;
 import org.savara.sam.web.shared.AQMonitorService;
 import org.savara.sam.web.shared.dto.AQChartModel;
 import org.savara.sam.web.shared.dto.Conversation;
-import org.savara.sam.web.shared.dto.ResponseTime;
-import org.savara.sam.web.shared.dto.Statistic;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
@@ -26,63 +24,6 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
  */
 public class AQMonitorServiceMock extends RemoteServiceServlet implements AQMonitorService {
 
-	/* (non-Javadoc)
-	 * @see org.savara.sam.web.shared.AQMonitorService#getStatistics()
-	 */
-	public Statistic[] getStatistics() {
-		Statistic successful = new Statistic();
-		successful.setValue(18);		
-		successful.setName("Successful");
-		
-		Statistic failed = new Statistic();
-		failed.setValue(2);
-		failed.setName("Unsuccessful");
-		
-		Statistic started = new Statistic();
-		started.setName("Started");
-		started.setValue(20);
-		
-		Statistic[] result = new Statistic[]{successful, failed, started};
-		return result;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.savara.sam.web.shared.AQMonitorService#getResponseTimes()
-	 */
-	public ResponseTime[] getResponseTimes() {
-		ResponseTime first = new ResponseTime();
-		first.setRequestTime(new Date().getTime());
-		first.setOperation("buy");
-		first.setResponseTime(Long.valueOf(980));
-		
-		ResponseTime second = new ResponseTime();
-		second.setRequestTime(new Date().getTime() + 1000);
-		second.setOperation("deliver");
-		second.setResponseTime(Long.valueOf(990));
-		
-		ResponseTime third = new ResponseTime();
-		third.setRequestTime(new Date().getTime() + 1500);
-		third.setOperation("buy");
-		third.setResponseTime(Long.valueOf(790));
-		
-		ResponseTime fourth = new ResponseTime();
-		fourth.setRequestTime(new Date().getTime() + 1500);
-		fourth.setOperation("checkCredit");
-		fourth.setResponseTime(Long.valueOf(890));
-		
-		ResponseTime fiveth = new ResponseTime();
-		fiveth.setRequestTime(new Date().getTime() + 1500);
-		fiveth.setOperation("deliver");
-		fiveth.setResponseTime(Long.valueOf(290));
-		
-		ResponseTime sixth = new ResponseTime();
-		sixth.setRequestTime(new Date().getTime() + 1500);
-		sixth.setOperation("buy");
-		sixth.setResponseTime(Long.valueOf(1090));
-		
-		ResponseTime[] result = new ResponseTime[]{first, second, third, fourth, fiveth, sixth};
-		return result;
-	}
 
 	public Conversation[] getConversationDetails() {
 		
@@ -117,29 +58,29 @@ public class AQMonitorServiceMock extends RemoteServiceServlet implements AQMoni
 	}
 	
 	@SuppressWarnings("unchecked")
-	public Map<?, ?> getChartData(AQChartModel model) {
+	public Map getChartData(AQChartModel model) {
 		List<String> aqNames = model.getActiveQueryNames();
 		Map result = new HashMap();
 		
 		long today = new Date().getTime();
-		
-		if ("size".equals(model.getVerticalProperty()) && "name".equals(model.getHorizontalProperty())) {
-			result.put("PurchasingStarted", new Long(20));
-			result.put("PurchasingSuccessful", new Long(18));
-			result.put("PurchasingUnsuccessful", new Long(2));
-		} else if ("requestTimestamp".equals(model.getHorizontalProperty()) && "responseTime".equals(model.getVerticalProperty())) {
-			result.put(new Long(today), new Long(980));
-			result.put(new Long(today + 1000), new Long(980));
-			result.put(new Long(today + 2000), new Long(990));
-			result.put(new Long(today + 3500), new Long(790));
-			result.put(new Long(today + 4000), new Long(890));
-			result.put(new Long(today + 4600), new Long(290));
-			result.put(new Long(today + 6400), new Long(1090));
-			result.put(new Long(today + 8000), new Long(9001));
-		} else {
-			throw new UnsupportedOperationException("Unsupported operations for now");
-		}
-			
+		for (String aq : model.getActiveQueryNames()) {
+			if ("size".equals(model.getVerticalProperty()) && "name".equals(model.getHorizontalProperty())) {
+				if ("PurchasingStarted".equals(aq)) result.put("PurchasingStarted", new Integer(20));
+				else if ("PurchasingSuccessful".equals(aq)) result.put("PurchasingSuccessful", new Integer(18));
+				else if ("PurchasingUnsuccessful".equals(aq)) result.put("PurchasingUnsuccessful", new Integer(2));
+			} else if ("requestTimestamp".equals(model.getHorizontalProperty()) && "responseTime".equals(model.getVerticalProperty())) {
+				result.put(new Long(today), new Long(980));
+				result.put(new Long(today + 1000), new Long(980));
+				result.put(new Long(today + 2000), new Long(990));
+				result.put(new Long(today + 3500), new Long(790));
+				result.put(new Long(today + 4000), new Long(890));
+				result.put(new Long(today + 4600), new Long(290));
+				result.put(new Long(today + 6400), new Long(1090));
+				result.put(new Long(today + 8000), new Long(9001));
+			} else {
+				throw new UnsupportedOperationException("Unsupported operations for now");
+			}
+		}	
 		return result;
 	}
 

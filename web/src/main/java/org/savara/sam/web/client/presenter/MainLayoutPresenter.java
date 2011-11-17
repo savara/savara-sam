@@ -3,7 +3,7 @@
  */
 package org.savara.sam.web.client.presenter;
 
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.savara.sam.web.client.BootstrapContext;
@@ -13,12 +13,9 @@ import org.savara.sam.web.shared.AQMonitorService;
 import org.savara.sam.web.shared.AQMonitorServiceAsync;
 import org.savara.sam.web.shared.dto.AQChartModel;
 import org.savara.sam.web.shared.dto.Conversation;
-import org.savara.sam.web.shared.dto.ResponseTime;
-import org.savara.sam.web.shared.dto.Statistic;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.shared.EventBus;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
 import com.gwtplatform.mvp.client.Presenter;
 import com.gwtplatform.mvp.client.View;
@@ -27,6 +24,7 @@ import com.gwtplatform.mvp.client.annotations.NoGatekeeper;
 import com.gwtplatform.mvp.client.annotations.ProxyCodeSplit;
 import com.gwtplatform.mvp.client.proxy.ProxyPlace;
 import com.gwtplatform.mvp.client.proxy.RevealRootLayoutContentEvent;
+import com.smartgwt.client.widgets.layout.VLayout;
 
 /**
  * @author Jeff Yu
@@ -42,24 +40,16 @@ public class MainLayoutPresenter extends Presenter<MainLayoutPresenter.MainLayou
 	public interface MainLayoutView extends View {
 				
 		public void setPresenter(MainLayoutPresenter presenter);
-		
-		public void refreshTxnRatioChart(Statistic[] value, boolean isSmall);
-		
-		public void refreshTxnBarChart(Statistic[] value, boolean isSmall);
-		
-		public void refreshResponseTime(ResponseTime[] value, boolean isSmall);
-		
-		public void refreshRTWithOperation(ResponseTime[] value, boolean isSmall);
-		
-		public void refreshRespTimeScatterChart(ResponseTime[] value, boolean isSmall);
-		
+				
 		public void refreshConversationChart(Conversation[] value, boolean isSmall);
-		
-		public void setStats(Statistic[] stats);
-		
-		public void setRespTimes(ResponseTime[] respTimes);
-		
+				
 		public void setConversationDetails(Conversation[] details);
+				
+		public void refreshChart(AQChartModel model, Map data, VLayout panel, int width, int height);
+		
+		public void refreshChart(AQChartModel model, Map data);
+		
+		public void setActiveQueries(List<String> activeQueries);
 		
 	}
 	
@@ -90,78 +80,6 @@ public class MainLayoutPresenter extends Presenter<MainLayoutPresenter.MainLayou
 		getView().setPresenter(this);
 	}
 	
-	
-	public void refreshTxnRatio(final boolean isSmall) {
-		service.getStatistics(new AsyncCallback<Statistic[]>() {
-			public void onFailure(Throwable t) {
-				System.out.println(t);
-			}
-
-			public void onSuccess(Statistic[] value) {
-				getView().setStats(value);
-				getView().refreshTxnRatioChart(value, isSmall);
-			}			
-		});
-	}
-	
-	public void refreshTxnBarChart(final boolean isSmall) {
-		service.getStatistics(new AsyncCallback<Statistic[]>() {
-			public void onFailure(Throwable t) {
-				System.out.println(t);
-			}
-
-			public void onSuccess(Statistic[] value) {
-				getView().setStats(value);
-				getView().refreshTxnBarChart(value, isSmall);
-			}			
-		});
-	}
-	
-	public void refreshTxnResponseTime(final boolean isSmall) {
-		service.getResponseTimes(new AsyncCallback<ResponseTime[]>() {
-
-			public void onFailure(Throwable t) {
-				System.out.println(t);
-			}
-
-			public void onSuccess(ResponseTime[] value) {
-				getView().setRespTimes(value);
-				getView().refreshResponseTime(value, isSmall);
-			}
-			
-		});	
-	}
-	
-	public void refreshTxnResponseTimeWithOperations(final boolean isSmall) {
-		service.getResponseTimes(new AsyncCallback<ResponseTime[]>() {
-
-			public void onFailure(Throwable t) {
-				System.out.println(t);
-			}
-
-			public void onSuccess(ResponseTime[] value) {
-				getView().setRespTimes(value);
-				getView().refreshRTWithOperation(value, isSmall);
-			}
-			
-		});	
-	}
-	
-	public void refreshTxnResponseTimeScatterChart(final boolean isSmall) {
-		service.getResponseTimes(new AsyncCallback<ResponseTime[]>() {
-
-			public void onFailure(Throwable t) {
-				System.out.println(t);
-			}
-
-			public void onSuccess(ResponseTime[] value) {
-				getView().setRespTimes(value);
-				getView().refreshRespTimeScatterChart(value, isSmall);
-			}
-			
-		});	
-	}
-	
 	public void refreshConversationChart(final boolean isSmall) {
 		service.getConversationDetails(new DefaultCallback<Conversation[]>() {
 
@@ -173,8 +91,32 @@ public class MainLayoutPresenter extends Presenter<MainLayoutPresenter.MainLayou
 		});	
 	}
 	
-	public Map<?, ?> refreshChartData(AQChartModel model) {
-		return new HashMap();
+	public void refreshChartData(final AQChartModel model) {
+		service.getChartData(model, new DefaultCallback<Map>(){
+			public void onSuccess(Map data) {
+				getView().refreshChart(model, data);
+			}
+						
+		});
+	}
+	
+	public void refreshChartData(final AQChartModel model, final VLayout panel, final int width, final int height) {
+		service.getChartData(model, new DefaultCallback<Map>(){
+			public void onSuccess(Map data) {
+				getView().refreshChart(model, data, panel, width, height);
+			}
+						
+		});
+	}
+	
+	public void refreshActiveQueries() {
+		service.getSystemAQNames(new DefaultCallback<List<String>>(){
+			public void onSuccess(List<String> data) {
+				if (data != null) {
+					getView().setActiveQueries(data);
+				}
+			}			
+		});
 	}
 	
 }
