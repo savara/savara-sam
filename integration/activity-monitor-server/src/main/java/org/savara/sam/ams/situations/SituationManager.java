@@ -15,7 +15,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.savara.sam.server;
+package org.savara.sam.ams.situations;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -31,7 +31,7 @@ import javax.jms.MessageListener;
 
 import org.savara.sam.activity.ActivityModel.Activity;
 import org.savara.sam.aq.ActiveQuerySpec;
-import org.savara.sam.aq.server.JEEActiveQueryManager;
+import org.savara.sam.aqs.JEEActiveQueryManager;
 
 @MessageDriven(name = "Situations", messageListenerInterface = MessageListener.class,
                activationConfig =

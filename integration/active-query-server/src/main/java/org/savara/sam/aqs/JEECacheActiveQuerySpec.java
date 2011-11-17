@@ -15,37 +15,37 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.savara.sam.conversation;
+package org.savara.sam.aqs;
 
-import static org.junit.Assert.*;
+import org.savara.sam.aq.ActiveQuerySpec;
 
-import org.junit.Test;
-import org.savara.monitor.ConversationId;
-import org.savara.monitor.Message;
+public class JEECacheActiveQuerySpec extends ActiveQuerySpec {
 
-public class XPathConversationResolverTest {
+	private org.infinispan.Cache<?,?> _cache=null;
 
-	@Test
-	public void test() {
-		XPathConversationResolver resolver=new XPathConversationResolver();
-		
-		resolver.addMessageTypeIDLocator("TestMessage", "//@id");
-		
-		String id="abc";
-		
-		Message mesg=new Message();
-		mesg.getTypes().add("TestMessage");
-		mesg.getValues().add("<message id=\""+id+"\" />");
-		
-		ConversationId cid=resolver.getConversationId(null, mesg);
-		
-		if (cid == null) {
-			fail("Conversation id is null");
-		}
-		
-		if (!cid.getId().equals(id)) {
-			fail("Conversation id incorrect, expecting '"+id+"' but got: "+cid.getId());
-		}
+	/**
+	 * The Active Query specification constructor.
+	 * 
+	 * @param name The active query name
+	 * @param type The type represented by the active query
+	 * @param internalType Optional type that defines the internal representation
+	 * 				if different from the 'type'
+	 */
+	public JEECacheActiveQuerySpec(String name, Class<?> type, Class<?> internalType) {
+		super(name, type, internalType);
 	}
-
+	
+	public void setCache(org.infinispan.Cache<?,?> cache) {
+		_cache = cache;
+	}
+	
+	public Object resolve(Object source) {
+		Object ret=null;
+		
+		if (_cache != null) {
+			ret = _cache.get(source);
+		}
+		
+		return(ret);
+	}
 }

@@ -35,7 +35,7 @@ import org.savara.sam.activity.ActivityAnalysis;
 import org.savara.sam.activity.ActivityModel.Activity;
 import org.savara.sam.aq.ActiveChangeType;
 import org.savara.sam.aq.ActiveQuerySpec;
-import org.savara.sam.aq.server.JEEActiveQueryManager;
+import org.savara.sam.aqs.JEEActiveQueryManager;
 
 @MessageDriven(name = "PurchasingResponseTime", messageListenerInterface = MessageListener.class,
                activationConfig =

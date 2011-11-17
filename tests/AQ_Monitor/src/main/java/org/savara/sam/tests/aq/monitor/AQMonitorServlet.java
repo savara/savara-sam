@@ -35,7 +35,7 @@ import org.savara.sam.aq.ActiveQuery;
 import org.savara.sam.aq.ActiveQueryManager;
 import org.savara.sam.aq.ActiveQuerySpec;
 import org.savara.sam.aq.Predicate;
-import org.savara.sam.conversation.ConversationDetails;
+import org.savara.sam.activity.ConversationDetails;
 
 @WebServlet("/Main")
 public class AQMonitorServlet extends HttpServlet {
@@ -74,7 +74,7 @@ public class AQMonitorServlet extends HttpServlet {
 	
 	public void init() {
 		// Alternative means of retrieving the active query manager, if injection cannot be used
-		_activeQueryManager = org.savara.sam.aq.server.ActiveQueryServer.getInstance();
+		_activeQueryManager = org.savara.sam.aqs.ActiveQueryServer.getInstance();
 
 		_startedTxns = _activeQueryManager.getActiveQuery("PurchasingStarted");		
 		_completedTxns = _activeQueryManager.getActiveQuery("PurchasingSuccessful");

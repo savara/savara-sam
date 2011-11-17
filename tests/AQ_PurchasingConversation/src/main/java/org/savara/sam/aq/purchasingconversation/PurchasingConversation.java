@@ -29,7 +29,7 @@ import javax.ejb.TransactionManagementType;
 import javax.jms.Destination;
 import javax.jms.MessageListener;
 
-import org.savara.sam.conversation.ConversationManager;
+import org.savara.sam.ams.conversations.ConversationManager;
 
 @MessageDriven(name = "PurchasingConversation", messageListenerInterface = MessageListener.class,
                activationConfig =

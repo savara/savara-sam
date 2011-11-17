@@ -15,7 +15,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.savara.sam.server;
+package org.savara.sam.ams.server;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -40,7 +40,7 @@ import java.util.logging.Logger;
 import org.savara.sam.activity.ActivityModel;
 import org.savara.sam.activity.ActivityModel.Activity;
 import org.savara.sam.aq.ActiveChangeType;
-import org.savara.sam.aq.server.AQDefinitions;
+import org.savara.sam.aqs.AQDefinitions;
 
 @MessageDriven(name = "ActivityMonitorServer", messageListenerInterface = MessageListener.class,
                activationConfig =

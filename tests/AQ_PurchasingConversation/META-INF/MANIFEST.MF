@@ -1,5 +1,5 @@
 Dependencies: org.infinispan export,
   org.savara.sam export,
   org.savara export,
-  deployment.conversation-manager.jar,
+  deployment.activity-monitor-server.jar,
   deployment.active-query-server.jar

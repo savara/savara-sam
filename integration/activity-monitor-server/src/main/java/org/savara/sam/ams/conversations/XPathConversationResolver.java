@@ -15,7 +15,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.savara.sam.conversation;
+package org.savara.sam.ams.conversations;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;

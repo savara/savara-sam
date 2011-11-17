@@ -31,7 +31,7 @@ import javax.jms.MessageListener;
 
 import org.savara.sam.activity.ActivityModel.Activity;
 import org.savara.sam.aq.ActiveQuerySpec;
-import org.savara.sam.aq.server.JEEActiveQueryManager;
+import org.savara.sam.aqs.JEEActiveQueryManager;
 
 @MessageDriven(name = "Root", messageListenerInterface = MessageListener.class,
                activationConfig =

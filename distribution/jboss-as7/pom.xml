@@ -59,16 +59,11 @@
             <artifactId>active-query-server</artifactId>
 	    <version>${sam.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.savara.sam.integration</groupId>
-            <artifactId>conversation-manager</artifactId>
-			<version>${sam.version}</version>
-		</dependency>
-		<dependency>	
+	<dependency>	
             <groupId>org.savara.sam</groupId>
             <artifactId>sam-web</artifactId>
-			<type>war</type>
-	    	<version>${sam.version}</version>
+	    <type>war</type>
+	    <version>${sam.version}</version>
         </dependency>
 
 	<!-- Savara core module dependencies -->

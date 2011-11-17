@@ -29,5 +29,6 @@
 
     <dependencies>
 	<module name="com.google.protobuf" />
+	<module name="org.savara" /> <!-- only required if monitor result stored as part of conversation details -->
     </dependencies>
 </module>

@@ -1,4 +1,4 @@
 Dependencies: org.savara,
   org.savara.sam,
   deployment.active-query-server.jar,
-  deployment.conversation-manager.jar
+  deployment.activity-monitor-server.jar

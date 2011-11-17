@@ -15,16 +15,38 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.savara.sam.aq.server;
+package org.savara.sam.ams.conversations;
 
-public class AQDefinitions {
+import static org.junit.Assert.*;
 
-	public static final String ACTIVE_QUERY_NAME="ActiveQueryName";
-	
-	public static final String AQ_CHANGETYPE_PROPERTY="ChangeType";
-	
-	// Commands
-	public static final String INIT_COMMAND="init";
-	public static final String REFRESH_COMMAND="refresh";
-	
+import org.junit.Test;
+import org.savara.monitor.ConversationId;
+import org.savara.monitor.Message;
+import org.savara.sam.ams.conversations.XPathConversationResolver;
+
+public class XPathConversationResolverTest {
+
+	@Test
+	public void test() {
+		XPathConversationResolver resolver=new XPathConversationResolver();
+		
+		resolver.addMessageTypeIDLocator("TestMessage", "//@id");
+		
+		String id="abc";
+		
+		Message mesg=new Message();
+		mesg.getTypes().add("TestMessage");
+		mesg.getValues().add("<message id=\""+id+"\" />");
+		
+		ConversationId cid=resolver.getConversationId(null, mesg);
+		
+		if (cid == null) {
+			fail("Conversation id is null");
+		}
+		
+		if (!cid.getId().equals(id)) {
+			fail("Conversation id incorrect, expecting '"+id+"' but got: "+cid.getId());
+		}
+	}
+
 }

@@ -15,37 +15,16 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.savara.sam.aq.server;
+package org.savara.sam.aqs;
 
-import org.savara.sam.aq.ActiveQuerySpec;
+public class AQDefinitions {
 
-public class JEECacheActiveQuerySpec extends ActiveQuerySpec {
-
-	private org.infinispan.Cache<?,?> _cache=null;
-
-	/**
-	 * The Active Query specification constructor.
-	 * 
-	 * @param name The active query name
-	 * @param type The type represented by the active query
-	 * @param internalType Optional type that defines the internal representation
-	 * 				if different from the 'type'
-	 */
-	public JEECacheActiveQuerySpec(String name, Class<?> type, Class<?> internalType) {
-		super(name, type, internalType);
-	}
+	public static final String ACTIVE_QUERY_NAME="ActiveQueryName";
 	
-	public void setCache(org.infinispan.Cache<?,?> cache) {
-		_cache = cache;
-	}
+	public static final String AQ_CHANGETYPE_PROPERTY="ChangeType";
 	
-	public Object resolve(Object source) {
-		Object ret=null;
-		
-		if (_cache != null) {
-			ret = _cache.get(source);
-		}
-		
-		return(ret);
-	}
+	// Commands
+	public static final String INIT_COMMAND="init";
+	public static final String REFRESH_COMMAND="refresh";
+	
 }

@@ -15,7 +15,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.savara.sam.aq.server;
+package org.savara.sam.aqs;
 
 import javax.ejb.ActivationConfigProperty;
 import javax.ejb.MessageDriven;

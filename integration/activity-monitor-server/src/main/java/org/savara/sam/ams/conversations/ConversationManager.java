@@ -15,7 +15,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.savara.sam.conversation;
+package org.savara.sam.ams.conversations;
 
 import java.util.List;
 import java.util.logging.Level;
@@ -33,6 +33,7 @@ import org.savara.protocol.ProtocolCriteria.Direction;
 import org.savara.protocol.ProtocolId;
 import org.savara.protocol.repository.ProtocolRepository;
 import org.savara.sam.activity.ActivityModel.Activity;
+import org.savara.sam.activity.ConversationDetails;
 import org.savara.sam.activity.ServiceModel;
 import org.savara.sam.activity.ServiceModel.ServiceInvocation;
 import org.savara.sam.activity.Situation;
@@ -41,8 +42,8 @@ import org.savara.sam.activity.Situation.Severity;
 import org.savara.sam.aq.ActiveChangeType;
 import org.savara.sam.aq.ActiveQuery;
 import org.savara.sam.aq.ActiveQuerySpec;
-import org.savara.sam.aq.server.ActiveQueryServer;
-import org.savara.sam.aq.server.JEEActiveQueryManager;
+import org.savara.sam.aqs.ActiveQueryServer;
+import org.savara.sam.aqs.JEEActiveQueryManager;
 import org.scribble.common.resource.ResourceContent;
 import org.scribble.protocol.DefaultProtocolContext;
 import org.scribble.protocol.ProtocolContext;

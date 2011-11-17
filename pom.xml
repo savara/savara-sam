@@ -55,6 +55,7 @@
 		<scribble.version>2.0.0-SNAPSHOT</scribble.version>
 		<protobuf.version>2.4.0a</protobuf.version>
 		<junit.version>4.4</junit.version>
+		<infinispan.version>5.0.1.FINAL</infinispan.version>
 	</properties>
 
 	<modules>

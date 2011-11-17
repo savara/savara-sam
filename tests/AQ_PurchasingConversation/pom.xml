@@ -31,7 +31,7 @@
       </dependency>
       <dependency>
          <groupId>org.savara.sam.integration</groupId>
-         <artifactId>conversation-manager</artifactId>
+         <artifactId>activity-monitor-server</artifactId>
          <version>${sam.version}</version>
       </dependency>
       <dependency>
