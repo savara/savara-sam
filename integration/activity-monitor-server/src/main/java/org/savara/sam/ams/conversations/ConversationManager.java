@@ -109,7 +109,7 @@ public class ConversationManager extends JEEActiveQueryManager<String,Conversati
 	}
 
 	@Override
-	protected ConversationId processActivity(String id, ActiveChangeType changeType,
+	protected ConversationId processActivity(String sourceAQName, String id, ActiveChangeType changeType,
 								int retriesLeft) throws Exception {
 		ConversationId ret=null;
 		

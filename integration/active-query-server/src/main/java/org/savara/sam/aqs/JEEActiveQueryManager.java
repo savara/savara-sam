@@ -31,6 +31,7 @@ import java.util.logging.Logger;
 
 import org.savara.sam.aq.ActiveChangeType;
 import org.savara.sam.aq.ActiveQuery;
+import org.savara.sam.aq.ActiveQueryManager;
 import org.savara.sam.aq.ActiveQuerySpec;
 import org.savara.sam.aq.DefaultActiveQuery;
 import org.savara.sam.aq.Predicate;
@@ -109,6 +110,10 @@ public class JEEActiveQueryManager<S,T> implements MessageListener {
 		*/
 	}
 	
+	public ActiveQueryManager getActiveQueryManager() {
+		return(_activeQueryServer);
+	}
+	
 	protected void initRootAQ(ActiveQuery<T> root) {
 	}
 	
@@ -180,7 +185,7 @@ public class JEEActiveQueryManager<S,T> implements MessageListener {
 	}
 	
 	@SuppressWarnings("unchecked")
-	protected T processActivity(S sourceActivity, ActiveChangeType changeType,
+	protected T processActivity(String sourceAQName, S sourceActivity, ActiveChangeType changeType,
 						int retriesLeft) throws Exception {
 		return((T)sourceActivity);
 	}
@@ -254,8 +259,11 @@ public class JEEActiveQueryManager<S,T> implements MessageListener {
 					java.util.Vector<T> forwardUpdates=null;
 					java.util.Vector<T> forwardRemovals=null;
 					java.util.Vector<S> retries=null;
+					
+					String sourceAQName=message.getStringProperty(AQDefinitions.ACTIVE_QUERY_NAME);
+					
 					ActiveChangeType changeType=ActiveChangeType.valueOf(
-								message.getStringProperty(AQDefinitions.AQ_CHANGETYPE_PROPERTY));
+							message.getStringProperty(AQDefinitions.AQ_CHANGETYPE_PROPERTY));
 					
 					Object obj=((ObjectMessage)message).getObject();
 
@@ -279,7 +287,7 @@ public class JEEActiveQueryManager<S,T> implements MessageListener {
 						T activity=null;
 						
 						try {
-							activity = processActivity(sourceActivity, changeType, retriesLeft);
+							activity = processActivity(sourceAQName, sourceActivity, changeType, retriesLeft);
 
 							if (activity != null) {
 								

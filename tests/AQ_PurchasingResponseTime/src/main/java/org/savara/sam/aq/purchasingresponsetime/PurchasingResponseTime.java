@@ -83,7 +83,7 @@ public class PurchasingResponseTime extends JEEActiveQueryManager<String,Activit
 	}
 
 	@Override
-	protected ActivityAnalysis processActivity(String id, ActiveChangeType changeType,
+	protected ActivityAnalysis processActivity(String sourceAQName, String id, ActiveChangeType changeType,
 					int retriesLeft) throws Exception {
 		ActivityAnalysis ret=null;
 		
