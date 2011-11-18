@@ -17,11 +17,18 @@
  */
 package org.savara.sam.aqs;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+//import javax.jms.Connection;
+//import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
+//import javax.jms.JMSException;
+//import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
+//import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import org.savara.sam.aq.ActiveChangeType;
@@ -40,8 +47,14 @@ public class JEEActiveQueryProxy<T> extends ActiveQueryProxy<T> {
 	private ClassLoader _classLoader=Thread.currentThread().getContextClassLoader();
 	private java.util.concurrent.BlockingQueue<Notification> _notifications=
 				new java.util.concurrent.ArrayBlockingQueue<Notification>(100);
-
-	public JEEActiveQueryProxy(String activeQueryName, org.infinispan.Cache<String, ActiveQuery<?>> cache) {
+	//private MessageConsumer _consumer=null;
+	//private Connection _connection=null;
+	//private Session _session=null;
+	
+    private static ExecutorService _executorService=Executors.newCachedThreadPool();
+    
+	public JEEActiveQueryProxy(final String activeQueryName, org.infinispan.Cache<String,
+						ActiveQuery<?>> cache) {
 		super(activeQueryName, null);
 		
 		_cache = cache;	
@@ -51,19 +64,102 @@ public class JEEActiveQueryProxy<T> extends ActiveQueryProxy<T> {
 							" with classloader: "+_classLoader);
 		}
 		
-		// Start thread to receive notifications and dispatch them
-		new Thread(new Runnable() {
-			public void run() {
-				while (true) {
+		/*
+		 * This approach causes problems with the number of managed connections.
+		 * 
+		try {
+			_executorService.execute(new Runnable() {
+				public void run() {		
+					int errorCount=0;
+					long lastError=0;
+
 					try {
-						Notification n=_notifications.take();
-						n.apply(JEEActiveQueryProxy.this);
+						javax.naming.InitialContext context=new javax.naming.InitialContext();
+						ConnectionFactory cf=(ConnectionFactory)context.lookup("java:/JmsXA");
+						_connection = cf.createConnection();
+						_session = _connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+								
+						_connection.start();
+						
+						String selector=AQDefinitions.ACTIVE_QUERY_NAME+" = '"+activeQueryName+"'";
+						
+						javax.jms.Destination dest=_session.createTopic("Notifications");
+						_consumer = _session.createConsumer(dest, selector);
 					} catch(Exception e) {
 						e.printStackTrace();
 					}
+
+					do {
+						try {
+							javax.jms.Message m=_consumer.receive();
+							Object value=null;
+
+							if (m instanceof javax.jms.ObjectMessage) {
+								value=((javax.jms.ObjectMessage)m).getObject();
+							} else if (m instanceof javax.jms.BytesMessage) {
+								byte[] b=new byte[(int)((javax.jms.BytesMessage)m).getBodyLength()];
+								((javax.jms.BytesMessage)m).readBytes(b);
+								
+								value = getObject(b);
+							}
+							
+							if (value != null) {
+								ActiveChangeType changeType=ActiveChangeType.valueOf(
+										m.getStringProperty(AQDefinitions.AQ_CHANGETYPE_PROPERTY));
+								
+								if (value instanceof java.util.List<?>) {
+									for (Object val : (java.util.List<?>)value) {
+										if (changeType == ActiveChangeType.Add) {
+											notifyAddition(val);
+										} else if (changeType == ActiveChangeType.Remove) {
+											notifyRemoval(val);
+										}
+									}
+								} else {
+									if (changeType == ActiveChangeType.Add) {
+										notifyAddition(value);
+									} else if (changeType == ActiveChangeType.Remove) {
+										notifyRemoval(value);
+									}
+								}
+							}
+						} catch (JMSException e) {
+							if (lastError > 0 && (System.currentTimeMillis()-lastError)>60000) {
+								errorCount = 0;
+							}
+							if (errorCount++ > 100) {
+								LOG.log(Level.SEVERE, 
+										"Failed to handle notification for AQ '"+
+										activeQueryName+"' - stopping consumer", e);
+								break;
+							}
+						}
+					} while (true);
+				}
+			});
+		} catch(Exception e) {
+			LOG.log(Level.SEVERE, "Failed to setup notification consumer", e);
+		}
+		*/
+		
+		// Start thread to receive notifications and dispatch them
+		_executorService.execute(new Runnable() {
+			public void run() {
+				while (true) {
+					try {
+						final Notification n=_notifications.take();
+						
+						_executorService.execute(new Runnable() {
+							public void run() {
+								n.apply(JEEActiveQueryProxy.this);								
+							}
+						});
+					} catch(Exception e) {
+						LOG.log(Level.SEVERE, "Failed to handle notification", e);
+					}
 				}
 			}
-		}).start();
+		});
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -178,7 +274,13 @@ public class JEEActiveQueryProxy<T> extends ActiveQueryProxy<T> {
 	}
 	
 	protected void notifyAddition(final byte[] val) {
-		_notifications.add(new Notification(val, ActiveChangeType.Add));
+		try {
+			_notifications.add(new Notification(val, ActiveChangeType.Add));
+		} catch(Exception e) {
+			LOG.warning("Notification failed, probably due to a slow listener");
+			// TODO: Could set flag on AQProxy, and possibly cause a refresh to be
+			// sent - although that might slow things down even more?
+		}
 	}
 	
 	public void removeActiveListener(ActiveListener<T> l) {
@@ -210,6 +312,15 @@ public class JEEActiveQueryProxy<T> extends ActiveQueryProxy<T> {
 	
 	protected void close() {
 		ActiveQueryNotificationManager.unregister(this);
+		
+		/*
+		try {
+			_session.close();
+			_connection.close();
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+		*/
 	}
 
 	public Object getObject(byte[] bArr){

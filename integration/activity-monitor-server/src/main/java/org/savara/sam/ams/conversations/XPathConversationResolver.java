@@ -42,6 +42,16 @@ public class XPathConversationResolver implements ConversationResolver {
 	private java.util.Map<String,XPathExpression> _messageTypeToXPath=
 							new java.util.HashMap<String,XPathExpression>();
 	
+	private javax.xml.parsers.DocumentBuilder _builder=null;
+	
+	public XPathConversationResolver() {
+		try {
+			_builder = javax.xml.parsers.DocumentBuilderFactory.newInstance().newDocumentBuilder();
+		} catch(Exception e) {
+			e.printStackTrace();
+		}	
+	}
+	
 	public void addMessageTypeIDLocator(String mesgType, String xpathExpr) {
 		
 		try {
@@ -69,7 +79,9 @@ public class XPathConversationResolver implements ConversationResolver {
 				try {
 					InputSource is=new InputSource(new java.io.ByteArrayInputStream(value.getBytes()));
 					
-					String result=xpathExpr.evaluate(is);
+					org.w3c.dom.Document doc=_builder.parse(is);
+					
+					String result=xpathExpr.evaluate(doc);
 					
 					if (result != null) {
 						ret = new ConversationId(result);

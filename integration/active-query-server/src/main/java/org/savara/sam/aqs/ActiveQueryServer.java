@@ -107,7 +107,7 @@ public class ActiveQueryServer implements ActiveQueryManager {
 	 */
 	public <T> ActiveQuery<T> createActiveQuery(ActiveQuery<T> parent,
 			Predicate<T> predicate) {
-		ActiveQuery<T> ret=new ActiveQueryProxy<T>(null, new DefaultActiveQuery<T>(null, predicate, true));
+		ActiveQuery<T> ret=new ActiveQueryProxy<T>(null, new DefaultActiveQuery<T>(null, predicate));
 		
 		parent.addActiveListener(ret.getChangeHandler());
 		

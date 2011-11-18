@@ -17,11 +17,14 @@
  */
 package org.savara.sam.aqs;
 
+import java.util.concurrent.TimeUnit;
+
+import org.infinispan.util.concurrent.NotifyingFuture;
 import org.savara.sam.aq.ActiveQuerySpec;
 
-public class JEECacheActiveQuerySpec extends ActiveQuerySpec {
+public class JEECacheActiveQuerySpec<S,T> extends ActiveQuerySpec {
 
-	private org.infinispan.Cache<?,?> _cache=null;
+	private org.infinispan.Cache<S,T> _cache=null;
 
 	/**
 	 * The Active Query specification constructor.
@@ -35,7 +38,7 @@ public class JEECacheActiveQuerySpec extends ActiveQuerySpec {
 		super(name, type, internalType);
 	}
 	
-	public void setCache(org.infinispan.Cache<?,?> cache) {
+	public void setCache(org.infinispan.Cache<S,T> cache) {
 		_cache = cache;
 	}
 	
@@ -43,7 +46,17 @@ public class JEECacheActiveQuerySpec extends ActiveQuerySpec {
 		Object ret=null;
 		
 		if (_cache != null) {
-			ret = _cache.get(source);
+			@SuppressWarnings("unchecked")
+			NotifyingFuture<T> future=_cache.getAsync((S)source);
+			try {
+				ret = future.get(1000, TimeUnit.MILLISECONDS);
+			} catch(Exception e) {
+				future.cancel(false);
+				
+				// Trigger retry rather than waiting on a cache lock
+				throw new RuntimeException("Failed to retrieve cached object, AQ '"+
+							getName()+"' key '"+source+"'");
+			}
 		}
 		
 		return(ret);

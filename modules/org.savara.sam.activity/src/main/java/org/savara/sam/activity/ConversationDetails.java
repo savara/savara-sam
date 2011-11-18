@@ -98,7 +98,7 @@ public class ConversationDetails implements java.io.Serializable {
 	
 	public String toString() {
 		return("Conversation "+_id+" valid="+_valid+" start="+_startTimestamp+
-				" end="+_endTimestamp+" details="+_details);
+				" end="+_endTimestamp+" details="+new java.util.Vector<ActivityResultDetails>(_details));
 	}
 	
 	public int hashCode() {

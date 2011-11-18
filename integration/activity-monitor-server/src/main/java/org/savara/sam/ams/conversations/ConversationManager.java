@@ -18,12 +18,14 @@
 package org.savara.sam.ams.conversations;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.jms.Destination;
 import javax.jms.MessageListener;
 
+import org.infinispan.util.concurrent.NotifyingFuture;
 import org.savara.monitor.ConversationId;
 import org.savara.monitor.Message;
 import org.savara.monitor.MonitorResult;
@@ -40,9 +42,9 @@ import org.savara.sam.activity.Situation.Priority;
 import org.savara.sam.activity.Situation.Severity;
 import org.savara.sam.aq.ActiveChangeType;
 import org.savara.sam.aq.ActiveQuery;
-import org.savara.sam.aq.ActiveQuerySpec;
 import org.savara.sam.aqs.ActiveQueryServer;
 import org.savara.sam.aqs.JEEActiveQueryManager;
+import org.savara.sam.aqs.JEECacheActiveQuerySpec;
 import org.scribble.common.resource.ResourceContent;
 import org.scribble.protocol.DefaultProtocolContext;
 import org.scribble.protocol.ProtocolContext;
@@ -62,10 +64,11 @@ public class ConversationManager extends JEEActiveQueryManager<String,Conversati
 	private XPathConversationResolver _resolver=new XPathConversationResolver();
 	
 	public ConversationManager(String conversationName) {
-		super(new ConversationActiveQuerySpec(conversationName, ConversationDetails.class,
-							ConversationId.class), null);
+		super(new JEECacheActiveQuerySpec<ConversationId,ConversationDetails>(conversationName,
+					ConversationDetails.class, ConversationId.class), null);
 	}
 	
+	@SuppressWarnings("unchecked")
 	public void init(String model, org.infinispan.manager.CacheContainer container,
 				Destination source, Destination notification, Destination... destinations) {
 		super.init(container, source, notification, destinations);
@@ -88,7 +91,7 @@ public class ConversationManager extends JEEActiveQueryManager<String,Conversati
 		_activities = _container.getCache("activities");
 		_conversationDetails = _container.getCache("conversationDetails");
 		
-		((ConversationActiveQuerySpec)getActiveQuerySpec()).setCache(_conversationDetails);
+		((JEECacheActiveQuerySpec<ConversationId,ConversationDetails>)getActiveQuerySpec()).setCache(_conversationDetails);
 		
 		_situations = ActiveQueryServer.getInstance().getActiveQuery("Situations");
 	}
@@ -111,11 +114,21 @@ public class ConversationManager extends JEEActiveQueryManager<String,Conversati
 								int retriesLeft) throws Exception {
 		ConversationId ret=null;
 		
-		Activity act=_activities.get(id);
+		Activity act=null; //_activities.get(id);
 		
+		NotifyingFuture<Activity> future=_activities.getAsync(id);
+		try {
+			act = future.get(1000, TimeUnit.MILLISECONDS);
+		} catch(Exception e) {
+			future.cancel(false);
+		}
+
 		if (act == null) {
 			if (LOG.isLoggable(Level.FINEST)) {
 				LOG.finest("Conversation manager failed to retrieve activity '"+id+"' - retrying...");
+			}
+			if (retriesLeft == 0) {
+				LOG.severe("Failed to process activity for conversation '"+getActiveQueryName()+"'");
 			}
 			throw new Exception("Failed to find activity with activity id '"+id+"' - retrying");
 		} else if (LOG.isLoggable(Level.FINEST)) {
@@ -317,6 +330,7 @@ public class ConversationManager extends JEEActiveQueryManager<String,Conversati
 		}
 	}
 	
+	/*
 	public static class ConversationActiveQuerySpec extends ActiveQuerySpec {
 		
 		private org.infinispan.Cache<ConversationId, ConversationDetails> _cache;
@@ -340,4 +354,5 @@ public class ConversationManager extends JEEActiveQueryManager<String,Conversati
 			return(ret);
 		}
 	}
+	*/
 }

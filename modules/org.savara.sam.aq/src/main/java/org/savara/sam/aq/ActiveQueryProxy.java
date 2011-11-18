@@ -229,11 +229,14 @@ public class ActiveQueryProxy<T> implements ActiveQuery<T> {
 		ActiveQuery<T> aq=getSource();
 		
 		if (aq != null) {
+			/*
 			java.util.List<T> ret=new java.util.Vector<T>();
 			for (T source : getSource().getContents()) {
 				ret.add(source);
 			}
 			return (ret);
+			*/
+			return (aq.getContents());
 		}
 		
 		return ((java.util.List<T>)Collections.EMPTY_LIST);

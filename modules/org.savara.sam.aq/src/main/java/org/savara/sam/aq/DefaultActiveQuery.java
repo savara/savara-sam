@@ -34,7 +34,7 @@ public class DefaultActiveQuery<T> implements ActiveQuery<T>, java.io.Serializab
 	private String _name=null;
 	private Predicate<T> _predicate=null;
 	private java.util.List<T> _contents=new java.util.Vector<T>();
-	private boolean _copyOnRead=false;
+	private boolean _copyOnRead=true;
 
 	/**
 	 * The constructor for the active query.
