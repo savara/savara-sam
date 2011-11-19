@@ -103,14 +103,8 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 	
 
 	private void initializeWindow() {
-		panel = new VLayout();
-		panel.setWidth("1180");
-		panel.setPadding(0);
-		panel.setBorder("1px solid black");
-		panel.setAlign(Alignment.CENTER);
-		panel.setAlign(VerticalAlignment.TOP);
-		
-		addHeaderLayout();
+		panel  = LayoutUtil.getPagePanel();
+		panel.addMember(LayoutUtil.getHeaderLayout());
 		
 		HLayout body = new HLayout();
 		body.setWidth100();
@@ -118,14 +112,15 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 		body.setHeight(850);
 		panel.addMember(body);
 				
-		addMenuStack(body);
+		body.addMember(LayoutUtil.getMenuStack());
 		
-		main = new VLayout(15);
-		main.setMargin(10);
+		main = new VLayout();
+		main.setMargin(5);
 		body.addMember(main);
 		
 		portal = new ChartPortalLayout(3);	
-			
+		portal.setMargin(8);
+		
 		setPortalMenus(main);
 		
         main.addMember(portal);
@@ -192,7 +187,7 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
         portal.addPortlet(conversationPortlet);
         
         
-		addFooterLayout();
+		panel.addMember(LayoutUtil.getFooterLayout());
 		panel.draw();
 	}
 	
@@ -306,7 +301,7 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 			public void onClick(
 					com.smartgwt.client.widgets.form.fields.events.ClickEvent event) {
 				final Window window = new Window();
-				window.setWidth(350);
+				window.setWidth(450);
 				window.setHeight(300);
 				window.setTitle("Add an AQ chart");
 				window.setShowMinimizeButton(false);
@@ -328,7 +323,7 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 				form.setLayoutAlign(VerticalAlignment.BOTTOM);
 				
 				final TextItem title = new TextItem();
-				title.setTitle("Chart title");
+				title.setTitle("name");
 				
 				aqSelect = new SelectItem();
 				aqSelect.setTitle("Active Queries");
@@ -410,78 +405,7 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
         menus.addMember(form);
         
         main.addMember(menus);
-	}
-
-
-	private void addMenuStack(HLayout body) {
-		final SectionStack  linkStack = new SectionStack();
-		linkStack.setVisibilityMode(VisibilityMode.MUTEX);
-		linkStack.setCanResizeSections(false);
-		linkStack.setWidth(180);
-		linkStack.setHeight(200);
-		
-		SectionStackSection dashboard = new SectionStackSection("Menus");
-		dashboard.setCanCollapse(true);
-		dashboard.setExpanded(true);
-		
-		
-		VLayout links = new VLayout();
-		links.addMember(getLink("AQ and Charts", NameTokens.MAIN_VIEW));
-		links.addMember(getLink("Notifications", NameTokens.SITUATION_VIEW));
-		
-		dashboard.addItem(links);
-		
-		linkStack.addSection(dashboard);
-		
-		body.addMember(linkStack);
-	}
-	
-	private Label getLink(String description, final String pageName) {
-		Label link = new Label(description);
-		link.setStyleName("menu_link");
-		link.setHeight(30);
-		link.setAlign(Alignment.LEFT);
-		link.setWidth(150);
-		link.addClickHandler(new ClickHandler(){
-			public void onClick(ClickEvent event) {
-				
-			}});
-		return link;
-	}
-
-
-	private void addHeaderLayout() {
-		Label headerLabel = new Label();
-		headerLabel.setMargin(0);
-		headerLabel.setSize("100%", "100");
-		headerLabel.setAlign(Alignment.LEFT);
-		headerLabel.setStyleName("headerLabel");
-		panel.addMember(headerLabel);
-	}
-
-
-	private void addFooterLayout() {
-		Label footerLabel = new Label();
-		footerLabel.setContents("Savara SAM :: Footer ");
-		footerLabel.setSize("100%", "30");
-		footerLabel.setAlign(Alignment.CENTER);
-		footerLabel.setBorder("1px solid #808080");
-		
-		panel.addMember(footerLabel);
-	}
-	
-	@Override
-	public void setInSlot(Object slot, Widget content) {
-		if (slot == MainLayoutPresenter.TYPE_MainContent) {
-			if (content != null) {
-				main.clear();
-				main.addChild(content);
-			}
-		} else {
-			super.setInSlot(slot, content);
-		}
-	}
-	
+	}	
 	
 	public Widget asWidget() {
 		return panel;

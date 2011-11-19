@@ -9,9 +9,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.savara.sam.activity.Situation;
 import org.savara.sam.web.shared.AQMonitorService;
 import org.savara.sam.web.shared.dto.AQChartModel;
 import org.savara.sam.web.shared.dto.Conversation;
+import org.savara.sam.web.shared.dto.SituationDTO;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
@@ -81,6 +83,27 @@ public class AQMonitorServiceMock extends RemoteServiceServlet implements AQMoni
 				throw new UnsupportedOperationException("Unsupported operations for now");
 			}
 		}	
+		return result;
+	}
+
+	public List<SituationDTO> getSituations() {
+		List<SituationDTO> result = new ArrayList<SituationDTO>();
+		
+		SituationDTO dto = new SituationDTO();
+		dto.setId("ID1");
+		Date today = new Date();
+		dto.setCreatedDate(today);
+		dto.setDescription("this is the description....");
+		dto.setExternalRef("JIRA-101");
+		dto.setOwner("Me");
+		dto.setPrincipal("Jeff");
+		dto.setPriority("High");
+		dto.setSeverity("DANGER");
+		dto.setStatus("Accepted");
+		
+		result.add(dto);
+
+		
 		return result;
 	}
 

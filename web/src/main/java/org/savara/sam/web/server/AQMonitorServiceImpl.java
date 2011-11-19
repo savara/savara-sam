@@ -5,12 +5,14 @@ package org.savara.sam.web.server;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.savara.monitor.ConversationId;
 import org.savara.sam.activity.ActivityAnalysis;
+import org.savara.sam.activity.Situation;
 import org.savara.sam.aq.ActiveQuery;
 import org.savara.sam.aq.ActiveQueryManager;
 import org.savara.sam.aq.ActiveQuerySpec;
@@ -19,6 +21,7 @@ import org.savara.sam.activity.ConversationDetails;
 import org.savara.sam.web.shared.AQMonitorService;
 import org.savara.sam.web.shared.dto.AQChartModel;
 import org.savara.sam.web.shared.dto.Conversation;
+import org.savara.sam.web.shared.dto.SituationDTO;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
@@ -109,6 +112,32 @@ public class AQMonitorServiceImpl extends RemoteServiceServlet implements AQMoni
 			}
 		}
 			
+		return result;
+	}
+
+	public List<SituationDTO> getSituations() {
+		ActiveQuery<Situation> situations = _activeQueryManager.getActiveQuery("Situations");
+		List<SituationDTO> result = new ArrayList<SituationDTO>();
+		
+		if (situations != null) {
+			for (Situation situation : situations.getContents()) {
+				SituationDTO dto = new SituationDTO();
+				dto.setId(situation.getId());
+				Date today = new Date();
+				today.setTime(situation.getCreatedTimestamp());
+				dto.setCreatedDate(today);
+				dto.setDescription(situation.getDescription());
+				dto.setExternalRef(situation.getExternalReference());
+				dto.setOwner(situation.getOwner());
+				dto.setPrincipal(situation.getPrincipal());
+				dto.setPriority(situation.getPriority().toString());
+				dto.setSeverity(situation.getSeverity().toString());
+				dto.setStatus(situation.getStatus().toString());
+				
+				result.add(dto);
+			}
+		}
+		
 		return result;
 	}
 
