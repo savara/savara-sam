@@ -96,13 +96,27 @@ public class AQMonitorServiceMock extends RemoteServiceServlet implements AQMoni
 		dto.setDescription("this is the description....");
 		dto.setExternalRef("JIRA-101");
 		dto.setOwner("Me");
-		dto.setPrincipal("Jeff");
+		dto.setPrincipal("Jeff Yu");
 		dto.setPriority("High");
-		dto.setSeverity("DANGER");
+		dto.setSeverity("Major");
 		dto.setStatus("Accepted");
 		
 		result.add(dto);
-
+		
+		
+		SituationDTO dto2 = new SituationDTO();
+		dto2.setId("ID2");
+		Date today2 = new Date();
+		dto2.setCreatedDate(today2);
+		dto2.setDescription("this is the description....");
+		dto2.setExternalRef("JIRA-101");
+		dto2.setOwner("Gary");
+		dto2.setPrincipal("Gary Brown");
+		dto2.setPriority("Low");
+		dto2.setSeverity("Minor");
+		dto2.setStatus("New");
+		
+		result.add(dto2);
 		
 		return result;
 	}

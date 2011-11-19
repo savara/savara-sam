@@ -3,14 +3,9 @@
  */
 package org.savara.sam.web.client.presenter;
 
-import java.util.List;
-
 import org.savara.sam.web.client.NameTokens;
-import org.savara.sam.web.client.util.DefaultCallback;
-import org.savara.sam.web.client.view.SituationRecord;
 import org.savara.sam.web.shared.AQMonitorService;
 import org.savara.sam.web.shared.AQMonitorServiceAsync;
-import org.savara.sam.web.shared.dto.SituationDTO;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.shared.EventBus;
@@ -22,7 +17,6 @@ import com.gwtplatform.mvp.client.annotations.NoGatekeeper;
 import com.gwtplatform.mvp.client.annotations.ProxyCodeSplit;
 import com.gwtplatform.mvp.client.proxy.ProxyPlace;
 import com.gwtplatform.mvp.client.proxy.RevealRootLayoutContentEvent;
-import com.smartgwt.client.widgets.grid.ListGridRecord;
 
 /**
  * @author Jeff Yu
@@ -43,9 +37,7 @@ public class SituationLayoutPresenter extends Presenter<SituationLayoutPresenter
 	public interface SituationLayoutView extends View {
 		
 		public void setPresenter(SituationLayoutPresenter presenter);
-		
-		public void refreshData(ListGridRecord[] data);
-	
+			
 	}	
 
 	@ProxyCodeSplit
@@ -63,32 +55,6 @@ public class SituationLayoutPresenter extends Presenter<SituationLayoutPresenter
 	public void onBind() {
 		super.onBind();
 		getView().setPresenter(this);
-		refreshData();
-	}
-	
-	public void refreshData() {
-		service.getSituations(new DefaultCallback<List<SituationDTO>>(){
-
-			public void onSuccess(List<SituationDTO> data) {
-				
-				if (data != null && data.size() > 0) {
-					SituationRecord[] records = new SituationRecord[data.size()];
-					int i = 0;
-					for (SituationDTO dto : data) {
-						SituationRecord record = new SituationRecord();
-						record.setId(dto.getId());
-						record.setExternalRef(dto.getExternalRef());
-						record.setDescription(dto.getDescription());
-						record.setPriority(dto.getPriority());
-						records[i] = record;
-						i++;
-					}
-					getView().refreshData(records);
-				}
-				
-			}
-			
-		});
 	}
 	
 }

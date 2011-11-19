@@ -9,6 +9,10 @@ import org.savara.sam.web.client.presenter.SituationLayoutPresenter.SituationLay
 import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.Inject;
 import com.gwtplatform.mvp.client.ViewImpl;
+import com.smartgwt.client.data.Criteria;
+import com.smartgwt.client.data.DataSource;
+import com.smartgwt.client.data.Record;
+import com.smartgwt.client.widgets.Canvas;
 import com.smartgwt.client.widgets.events.ClickEvent;
 import com.smartgwt.client.widgets.events.ClickHandler;
 import com.smartgwt.client.widgets.grid.ListGrid;
@@ -18,6 +22,7 @@ import com.smartgwt.client.widgets.layout.HLayout;
 import com.smartgwt.client.widgets.layout.VLayout;
 import com.smartgwt.client.widgets.toolbar.ToolStrip;
 import com.smartgwt.client.widgets.toolbar.ToolStripButton;
+import com.smartgwt.client.widgets.viewer.DetailViewer;
 
 /**
  * @author Jeff Yu
@@ -59,6 +64,7 @@ public class SituationLayoutViewImpl extends ViewImpl implements SituationLayout
 		
 		VLayout situationList = new VLayout();
 		situationList.setWidth100();
+		situationList.setHeight100();
 		
 		ToolStrip situationTS = new ToolStrip();
 		situationTS.setWidth100();
@@ -66,39 +72,53 @@ public class SituationLayoutViewImpl extends ViewImpl implements SituationLayout
 		ToolStripButton refresh = new ToolStripButton("Refresh", "[SKIN]/headerIcons/refresh.png");
 		refresh.addClickHandler(new ClickHandler(){
 			public void onClick(ClickEvent event) {
-				presenter.refreshData();
+				notificationList.refreshFields();
 			}			
 		});
 		situationTS.addButton(refresh);
-    
-        notificationList = new ListGrid();  
+		
+		final DataSource situationDS = new SituationDataSource();
+		
+        notificationList = new ListGrid(){
+                @Override  
+                protected Canvas getCellHoverComponent(Record record, Integer rowNum, Integer colNum) {
+                    DetailViewer detailViewer = new DetailViewer();  
+                    detailViewer.setWidth(400);  
+                    detailViewer.setDataSource(situationDS);  
+                    Criteria criteria = new Criteria();  
+                    criteria.addCriteria("rowNum", rowNum);  
+                    detailViewer.fetchData(criteria);  
+      
+                    return detailViewer;  
+                }  
+      
+        };  
         notificationList.setWidth100();
+        notificationList.setHeight100();
         notificationList.setShowAllRecords(true);  
         notificationList.setCellHeight(22);  
-  
-        ListGridField idField = new ListGridField("id", "ID");
-        ListGridField desField = new ListGridField("description", "Description");
-        ListGridField severityField = new ListGridField("severity", "Severity");
-        ListGridField priorityField = new ListGridField("priority", "Priority");
-        ListGridField statusField = new ListGridField("status", "Status");
-        ListGridField principalField = new ListGridField("principal", "Principal");
-        ListGridField externalRefField = new ListGridField("externalRef", "External Reference");
-        ListGridField ownerField = new ListGridField("owner", "Owner");
-        ListGridField dateField = new ListGridField("date", "Date");
         
-        notificationList.setFields(idField, desField,severityField, priorityField, statusField, principalField, externalRefField, ownerField, dateField);  
-  
-        notificationList.setCanEdit(true);  
+        notificationList.setDataSource(situationDS);
+        
+        notificationList.setCanEdit(true);        
+        notificationList.setShowFilterEditor(true);
+        notificationList.setAutoFetchData(true);
+        notificationList.setFilterOnKeypress(true);
+        
+        notificationList.setCanHover(true);
+        notificationList.setShowHover(true);
+        notificationList.setShowHoverComponents(true);
         
         situationList.addMember(situationTS);
         situationList.addMember(notificationList);
-                
+        
+        notificationList.draw();
         return situationList;
 	}
 	
 	
 	public void refreshData(ListGridRecord[] data) {
-		notificationList.setData(data);
+		
 	}
 	
 	public void setPresenter(SituationLayoutPresenter presenter) {
