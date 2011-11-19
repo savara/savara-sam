@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.savara.sam.activity.Situation;
 import org.savara.sam.web.shared.AQMonitorService;
 import org.savara.sam.web.shared.dto.AQChartModel;
 import org.savara.sam.web.shared.dto.Conversation;
@@ -26,7 +25,9 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
  */
 public class AQMonitorServiceMock extends RemoteServiceServlet implements AQMonitorService {
 
-
+	
+	private Map<String, String> localAQs = new HashMap<String, String>();
+	
 	public Conversation[] getConversationDetails() {
 		
 		Date d = new Date();
@@ -56,6 +57,10 @@ public class AQMonitorServiceMock extends RemoteServiceServlet implements AQMoni
 		aqNames.add("PurchasingUnsuccessful");
 		aqNames.add("PurchasingResponseTime");
 		aqNames.add("PurchasingConversation");
+		
+		if (localAQs.size() > 0) {
+			aqNames.addAll(localAQs.keySet());
+		}
 		return aqNames;
 	}
 	
@@ -63,6 +68,10 @@ public class AQMonitorServiceMock extends RemoteServiceServlet implements AQMoni
 	public Map getChartData(AQChartModel model) {
 		List<String> aqNames = model.getActiveQueryNames();
 		Map result = new HashMap();
+		
+		if (model.getPredicate() != null) {
+			localAQs.put(model.getName(), "localAQ");
+		}
 		
 		long today = new Date().getTime();
 		for (String aq : model.getActiveQueryNames()) {

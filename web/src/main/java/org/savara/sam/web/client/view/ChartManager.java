@@ -59,6 +59,7 @@ public class ChartManager {
 		Options options = createOptions(width, height, title);
 		PieOptions po = (PieOptions)options;
 		po.set3D(true);
+		po.setColors("Red", "Green", "Blue", "Coral", "Purple", "Olive", "Pink", "Salmon", "Yellow", "Tan", "Violet", "Snow", "Silver", "SlateGray", "Navy");
 		
 		return new PieChart(dt, po);
 	}

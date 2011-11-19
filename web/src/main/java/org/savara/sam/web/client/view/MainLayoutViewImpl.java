@@ -186,6 +186,17 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 
         portal.addPortlet(conversationPortlet);
         
+        AQChartModel buyRT = new AQChartModel();
+        buyRT.setName("Buy_Operation_Response_Time");
+        buyRT.setChartType(ChartType.LINE_CHART);
+        buyRT.setVerticalProperty("responseTime");
+        buyRT.setHorizontalProperty("requestTimestamp");
+        buyRT.setActiveQueryNames("PurchasingResponseTime");
+        buyRT.setLegendName("Response Time");
+        buyRT.setPredicate("operation='buy'");
+        
+        portal.addPortlet(createPortlet(buyRT));
+        
         
 		panel.addMember(LayoutUtil.getFooterLayout());
 		panel.draw();
@@ -331,6 +342,9 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 				aqSelect.setMultipleAppearance(MultipleAppearance.PICKLIST);
 				presenter.refreshActiveQueries();
 				
+				final TextItem predicate = new TextItem();
+				predicate.setTitle("Predicate");
+				
 				final SelectItem chartType = new SelectItem();
 				chartType.setTitle("Chart Type");
 				chartType.setValueMap(ChartType.PIE_CHART.toString(), ChartType.COLUMN_CHART.toString(), ChartType.LINE_CHART.toString());
@@ -368,7 +382,8 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 							window.destroy();
 							
 							portal.addPortlet(createPortlet(model));
-							presenter.refreshChartData(model);
+																					
+							presenter.refreshChartData(model);							
 							
 					}
 					
@@ -386,7 +401,7 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 					
 				});
 				
-				form.setFields(title, aqSelect, chartType, xAxis, yAxis, submitBtn, cancelBtn);
+				form.setFields(title, aqSelect, predicate, chartType, xAxis, yAxis, submitBtn, cancelBtn);
 				
 				window.addItem(form);
 				

@@ -69,15 +69,15 @@ public class SituationLayoutViewImpl extends ViewImpl implements SituationLayout
 		ToolStrip situationTS = new ToolStrip();
 		situationTS.setWidth100();
 		
+		final DataSource situationDS = new SituationDataSource();
+		
 		ToolStripButton refresh = new ToolStripButton("Refresh", "[SKIN]/headerIcons/refresh.png");
 		refresh.addClickHandler(new ClickHandler(){
 			public void onClick(ClickEvent event) {
-				notificationList.refreshFields();
+				notificationList.setDataSource(situationDS);				
 			}			
 		});
 		situationTS.addButton(refresh);
-		
-		final DataSource situationDS = new SituationDataSource();
 		
         notificationList = new ListGrid(){
                 @Override  

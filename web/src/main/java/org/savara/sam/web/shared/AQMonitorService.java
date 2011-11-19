@@ -21,7 +21,7 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 public interface AQMonitorService extends RemoteService{
 	
 	public List<String> getSystemAQNames();
-	
+		
 	public Map getChartData(AQChartModel model);
 	
 	public List<SituationDTO> getSituations();

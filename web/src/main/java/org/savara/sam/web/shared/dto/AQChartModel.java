@@ -32,6 +32,8 @@ public class AQChartModel implements Serializable{
 	private String horizontalProperty;
 	
 	private String legendName;
+	
+	private String predicate;
 
 	public String getName() {
 		return name;
@@ -49,7 +51,7 @@ public class AQChartModel implements Serializable{
 		this.activeQueryNames = activeQueryNames;
 	}
 	
-	public void setActiveQueryNames(String[] aqNames) {
+	public void setActiveQueryNames(String... aqNames) {
 		this.activeQueryNames = new ArrayList<String>();
 		for (int i = 0; i < aqNames.length; i++) {
 			activeQueryNames.add(aqNames[i]);
@@ -86,6 +88,14 @@ public class AQChartModel implements Serializable{
 
 	public void setLegendName(String legendName) {
 		this.legendName = legendName;
+	}
+
+	public String getPredicate() {
+		return predicate;
+	}
+
+	public void setPredicate(String predicate) {
+		this.predicate = predicate;
 	}
 	
 }
