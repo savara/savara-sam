@@ -118,11 +118,22 @@ public class ConversationManager extends JEEActiveQueryManager<String,Conversati
 		
 		NotifyingFuture<Activity> future=_activities.getAsync(id);
 		try {
+			if (LOG.isLoggable(Level.FINEST)) {
+				LOG.finest("Get cached activity with key '"+id+"'");
+			}
 			act = future.get(1000, TimeUnit.MILLISECONDS);
+			
+			if (LOG.isLoggable(Level.FINEST)) {
+				LOG.finest("Got cached activity with key '"+id+"' ret="+ret);
+			}
 		} catch(Exception e) {
 			future.cancel(false);
+			
+			if (LOG.isLoggable(Level.FINEST)) {
+				LOG.finest("Failed to get cached activity with key '"+id+"'");
+			}
 		}
-
+		
 		if (act == null) {
 			if (LOG.isLoggable(Level.FINEST)) {
 				LOG.finest("Conversation manager failed to retrieve activity '"+id+"' - retrying...");
@@ -329,30 +340,4 @@ public class ConversationManager extends JEEActiveQueryManager<String,Conversati
 			return (ret);
 		}
 	}
-	
-	/*
-	public static class ConversationActiveQuerySpec extends ActiveQuerySpec {
-		
-		private org.infinispan.Cache<ConversationId, ConversationDetails> _cache;
-		
-		public ConversationActiveQuerySpec(String name, Class<?> type, Class<?> internalType) {
-			super(name, type, internalType);
-		}
-		
-		protected void setCache(org.infinispan.Cache<ConversationId, ConversationDetails> cache) {
-			_cache = cache;
-		}
-		
-		@Override
-		public Object resolve(Object source) {
-			Object ret=null;
-			
-			if (source instanceof ConversationId) {
-				ret = _cache.get(source);
-			}
-			
-			return(ret);
-		}
-	}
-	*/
 }

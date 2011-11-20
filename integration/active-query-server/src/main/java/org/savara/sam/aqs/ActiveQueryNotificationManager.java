@@ -71,8 +71,8 @@ public class ActiveQueryNotificationManager implements MessageListener {
 					handle = true;
 
 					// Check if some messages should be flushed
-					if (_messageIds.size() > 500) {
-						for (int i=0; i < 100; i++) {
+					if (_messageIds.size() > 5000) {
+						for (int i=0; i < 1000; i++) {
 							_messageIds.remove(0);
 						}
 					}					

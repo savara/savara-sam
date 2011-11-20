@@ -53,6 +53,8 @@ public class JEEActiveQueryManager<S,T> implements MessageListener {
 	private org.infinispan.manager.CacheContainer _container;
 	private org.infinispan.Cache<String, DefaultActiveQuery<T>> _cache;
 	
+	private static java.util.List<String> _messageIds=new java.util.Vector<String>();
+
 	//@Inject
 	private ActiveQueryServer _activeQueryServer=null;
 	
@@ -227,6 +229,31 @@ public class JEEActiveQueryManager<S,T> implements MessageListener {
 	
 	@SuppressWarnings("unchecked")
 	public void onMessage(Message message) {
+		
+		boolean handle=false;
+		
+		// Filter out duplicates
+		try {
+			synchronized(_messageIds) {
+				if (!_messageIds.contains(message.getJMSMessageID())) {
+					_messageIds.add(message.getJMSMessageID());
+					handle = true;
+	
+					// Check if some messages should be flushed
+					if (_messageIds.size() > 5000) {
+						for (int i=0; i < 1000; i++) {
+							_messageIds.remove(0);
+						}
+					}					
+				}
+			}
+		} catch(Exception e) {
+			LOG.log(Level.SEVERE, "Failed to manage message ids", e);
+		}
+
+		if (!handle) {
+			return;
+		}
 		
 		if (message instanceof ObjectMessage) {
 			try {
