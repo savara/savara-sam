@@ -60,10 +60,7 @@ public class MainLayoutPresenter extends Presenter<MainLayoutPresenter.MainLayou
 		public void setActiveQueries(List<String> activeQueries);
 		
 	}
-	
-	@ContentSlot
-    public static final GwtEvent.Type<RevealContentHandler<?>> TYPE_MainContent = new GwtEvent.Type<RevealContentHandler<?>>();
-	
+		
 	@ProxyCodeSplit
 	@NameToken(NameTokens.MAIN_VIEW)
 	@NoGatekeeper

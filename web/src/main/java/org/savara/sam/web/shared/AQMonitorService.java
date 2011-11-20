@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.savara.sam.web.shared.dto.AQChartModel;
 import org.savara.sam.web.shared.dto.Conversation;
+import org.savara.sam.web.shared.dto.SituationDTO;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
@@ -20,8 +21,10 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 public interface AQMonitorService extends RemoteService{
 	
 	public List<String> getSystemAQNames();
-	
+		
 	public Map getChartData(AQChartModel model);
+	
+	public List<SituationDTO> getSituations();
 		
 	public Conversation[] getConversationDetails();
 	

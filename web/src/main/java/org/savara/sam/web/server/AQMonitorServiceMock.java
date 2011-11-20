@@ -12,6 +12,7 @@ import java.util.Map;
 import org.savara.sam.web.shared.AQMonitorService;
 import org.savara.sam.web.shared.dto.AQChartModel;
 import org.savara.sam.web.shared.dto.Conversation;
+import org.savara.sam.web.shared.dto.SituationDTO;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
@@ -24,7 +25,9 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
  */
 public class AQMonitorServiceMock extends RemoteServiceServlet implements AQMonitorService {
 
-
+	
+	private Map<String, String> localAQs = new HashMap<String, String>();
+	
 	public Conversation[] getConversationDetails() {
 		
 		Date d = new Date();
@@ -54,6 +57,10 @@ public class AQMonitorServiceMock extends RemoteServiceServlet implements AQMoni
 		aqNames.add("PurchasingUnsuccessful");
 		aqNames.add("PurchasingResponseTime");
 		aqNames.add("PurchasingConversation");
+		
+		if (localAQs.size() > 0) {
+			aqNames.addAll(localAQs.keySet());
+		}
 		return aqNames;
 	}
 	
@@ -61,6 +68,10 @@ public class AQMonitorServiceMock extends RemoteServiceServlet implements AQMoni
 	public Map getChartData(AQChartModel model) {
 		List<String> aqNames = model.getActiveQueryNames();
 		Map result = new HashMap();
+		
+		if (model.getPredicate() != null) {
+			localAQs.put(model.getName(), "localAQ");
+		}
 		
 		long today = new Date().getTime();
 		for (String aq : model.getActiveQueryNames()) {
@@ -81,6 +92,41 @@ public class AQMonitorServiceMock extends RemoteServiceServlet implements AQMoni
 				throw new UnsupportedOperationException("Unsupported operations for now");
 			}
 		}	
+		return result;
+	}
+
+	public List<SituationDTO> getSituations() {
+		List<SituationDTO> result = new ArrayList<SituationDTO>();
+		
+		SituationDTO dto = new SituationDTO();
+		dto.setId("ID1");
+		Date today = new Date();
+		dto.setCreatedDate(today);
+		dto.setDescription("this is the description....");
+		dto.setExternalRef("JIRA-101");
+		dto.setOwner("Me");
+		dto.setPrincipal("Jeff Yu");
+		dto.setPriority("High");
+		dto.setSeverity("Major");
+		dto.setStatus("Accepted");
+		
+		result.add(dto);
+		
+		
+		SituationDTO dto2 = new SituationDTO();
+		dto2.setId("ID2");
+		Date today2 = new Date();
+		dto2.setCreatedDate(today2);
+		dto2.setDescription("this is the description....");
+		dto2.setExternalRef("JIRA-101");
+		dto2.setOwner("Gary");
+		dto2.setPrincipal("Gary Brown");
+		dto2.setPriority("Low");
+		dto2.setSeverity("Minor");
+		dto2.setStatus("New");
+		
+		result.add(dto2);
+		
 		return result;
 	}
 

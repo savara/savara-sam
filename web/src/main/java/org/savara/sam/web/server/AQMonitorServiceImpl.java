@@ -5,20 +5,24 @@ package org.savara.sam.web.server;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.savara.monitor.ConversationId;
 import org.savara.sam.activity.ActivityAnalysis;
+import org.savara.sam.activity.Situation;
 import org.savara.sam.aq.ActiveQuery;
 import org.savara.sam.aq.ActiveQueryManager;
 import org.savara.sam.aq.ActiveQuerySpec;
+import org.savara.sam.aq.Predicate;
 import org.savara.sam.aqs.ActiveQueryServer;
 import org.savara.sam.activity.ConversationDetails;
 import org.savara.sam.web.shared.AQMonitorService;
 import org.savara.sam.web.shared.dto.AQChartModel;
 import org.savara.sam.web.shared.dto.Conversation;
+import org.savara.sam.web.shared.dto.SituationDTO;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
@@ -32,25 +36,16 @@ public class AQMonitorServiceImpl extends RemoteServiceServlet implements AQMoni
 	private static final long serialVersionUID = 8965645007479773817L;
 	
 	private ActiveQueryManager _activeQueryManager;
-	
-	private ActiveQuery<String> _startedTxns;
-	private ActiveQuery<String> _completedTxns;
-	private ActiveQuery<String> _failedTxns;
-	
-	private ActiveQuery<ActivityAnalysis> _responseTime;
-	
+		
 	private ActiveQuery<ConversationId> _purchasingConversation;
 	private ActiveQuerySpec _purchasingConversationSpec;
 	
 	private ActiveQuery<?> _activeQuery;
+	
+	private Map<String, ActiveQuery> _localAQs = new HashMap<String, ActiveQuery>();
 		
 	public AQMonitorServiceImpl() {
 		_activeQueryManager = ActiveQueryServer.getInstance();
-		_startedTxns = _activeQueryManager.getActiveQuery("PurchasingStarted");
-		_completedTxns = _activeQueryManager.getActiveQuery("PurchasingSuccessful");
-		_failedTxns = _activeQueryManager.getActiveQuery("PurchasingUnsuccessful");
-		
-		_responseTime = _activeQueryManager.getActiveQuery("PurchasingResponseTime");
 		
 		_purchasingConversation = _activeQueryManager.getActiveQuery("PurchasingConversation");
 	}
@@ -61,6 +56,11 @@ public class AQMonitorServiceImpl extends RemoteServiceServlet implements AQMoni
 		for (ActiveQuerySpec spec : aqSpecs) {
 			aqNames.add(spec.getName());
 		}
+		
+		if (_localAQs.size() > 0) {
+			aqNames.addAll(_localAQs.keySet());
+		}
+		
 		return aqNames;
 	}
 
@@ -91,11 +91,18 @@ public class AQMonitorServiceImpl extends RemoteServiceServlet implements AQMoni
 	
 	@SuppressWarnings("unchecked")
 	public Map getChartData(AQChartModel model) {
-		List<String> aqNames = model.getActiveQueryNames();
 		Map result = new HashMap();
 		
-		for (String aqName :aqNames) {
-			_activeQuery = _activeQueryManager.getActiveQuery(aqName);
+		if (model.getPredicate() != null && !_localAQs.containsKey(model.getName())) {
+			createLocalAQ(model.getName(), model.getActiveQueryNames().get(0), model.getPredicate());
+			model.setActiveQueryNames(model.getName());
+		}
+		for (String aqName : model.getActiveQueryNames()) {
+			if (_localAQs.get(aqName) != null) {
+				_activeQuery = _localAQs.get(aqName);
+			} else {
+				_activeQuery = _activeQueryManager.getActiveQuery(aqName);
+			}
 			if ("size".equals(model.getVerticalProperty()) && "name".equals(model.getHorizontalProperty())) {
 				result.put(aqName, new Integer(_activeQuery.size()));
 			} else if ("requestTimestamp".equals(model.getHorizontalProperty()) && "responseTime".equals(model.getVerticalProperty())) {
@@ -110,6 +117,47 @@ public class AQMonitorServiceImpl extends RemoteServiceServlet implements AQMoni
 		}
 			
 		return result;
+	}
+
+	public List<SituationDTO> getSituations() {
+		ActiveQuery<Situation> situations = _activeQueryManager.getActiveQuery("Situations");
+		List<SituationDTO> result = new ArrayList<SituationDTO>();
+		
+		if (situations != null) {
+			for (Situation situation : situations.getContents()) {
+				SituationDTO dto = new SituationDTO();
+				dto.setId(situation.getId());
+				Date today = new Date();
+				today.setTime(situation.getCreatedTimestamp());
+				dto.setCreatedDate(today);
+				dto.setDescription(situation.getDescription());
+				dto.setExternalRef(situation.getExternalReference());
+				dto.setOwner(situation.getOwner());
+				dto.setPrincipal(situation.getPrincipal());
+				dto.setPriority(situation.getPriority().toString());
+				dto.setSeverity(situation.getSeverity().toString());
+				dto.setStatus(situation.getStatus().toString());
+				
+				result.add(dto);
+			}
+		}
+		
+		return result;
+	}
+
+	private void createLocalAQ(String name, String parentAQName, String predicate) {
+		if (parentAQName != null) {
+			System.out.println("============== ParentAQName: " + parentAQName);
+			ActiveQuery<ActivityAnalysis> aq = _activeQueryManager.getActiveQuery(parentAQName);
+			ActiveQuery<ActivityAnalysis> localAQ = _activeQueryManager.createActiveQuery(aq, new Predicate<ActivityAnalysis>(){
+				public boolean evaluate(ActivityAnalysis aa) {
+					String operation = (String)aa.getProperty("operation").getValue();
+					return "buy".equalsIgnoreCase(operation.trim());
+				}				
+			});
+			_localAQs.put(name, localAQ);
+		}
+		
 	}
 
 
