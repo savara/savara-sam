@@ -69,8 +69,8 @@ public class LayoutUtil {
 		linkStack.addSection(dashboard);
 		
 		VerticalPanel links = new VerticalPanel();
-		Hyperlink chartLink = new Hyperlink("AQ and Charts", NameTokens.MAIN_VIEW);
-		Hyperlink notificationList = new Hyperlink("Notifications", NameTokens.SITUATION_VIEW);
+		Hyperlink chartLink = new Hyperlink("Charts", NameTokens.MAIN_VIEW);
+		Hyperlink notificationList = new Hyperlink("Situations", NameTokens.SITUATION_VIEW);
 		links.add(chartLink);
 		links.add(notificationList);
 		links.setSpacing(5);

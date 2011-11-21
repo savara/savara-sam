@@ -95,6 +95,9 @@ public class AQMonitorServiceImpl extends RemoteServiceServlet implements AQMoni
 		
 		if (model.getPredicate() != null && !_localAQs.containsKey(model.getName())) {
 			createLocalAQ(model.getName(), model.getActiveQueryNames().get(0), model.getPredicate());
+		}
+		//Means that we need to replace the AQ to use the local AQ.
+		if (model.getPredicate() != null) {
 			model.setActiveQueryNames(model.getName());
 		}
 		for (String aqName : model.getActiveQueryNames()) {
