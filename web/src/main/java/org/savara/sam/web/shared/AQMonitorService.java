@@ -26,6 +26,6 @@ public interface AQMonitorService extends RemoteService{
 	
 	public List<SituationDTO> getSituations();
 		
-	public Conversation[] getConversationDetails();
+	public List<Conversation> getConversationDetails();
 	
 }

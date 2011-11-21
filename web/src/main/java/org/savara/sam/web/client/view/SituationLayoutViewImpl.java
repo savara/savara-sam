@@ -90,7 +90,19 @@ public class SituationLayoutViewImpl extends ViewImpl implements SituationLayout
                     detailViewer.fetchData(criteria);  
       
                     return detailViewer;  
-                }  
+                }
+                
+                @Override
+                protected String getBaseStyle(ListGridRecord record, int rowNum, int colNum) {
+                    String severity = record.getAttributeAsString("severity");
+                	if ("Major".equalsIgnoreCase(severity)) { 
+                        return "majorSituation";  
+                    } else if ("Critical".equalsIgnoreCase(severity)) {
+                    	return "criticalSituation";
+                    } else {
+                        return super.getBaseStyle(record, rowNum, colNum);  
+                    }  
+                }
       
         };  
         notificationList.setWidth100();
@@ -108,6 +120,8 @@ public class SituationLayoutViewImpl extends ViewImpl implements SituationLayout
         notificationList.setCanHover(true);
         notificationList.setShowHover(true);
         notificationList.setShowHoverComponents(true);
+        notificationList.setBackgroundColor("red");
+        
         
         situationList.addMember(situationTS);
         situationList.addMember(notificationList);

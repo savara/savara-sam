@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.savara.sam.web.client.NameTokens;
 import org.savara.sam.web.client.presenter.MainLayoutPresenter;
 import org.savara.sam.web.client.presenter.MainLayoutPresenter.MainLayoutView;
 import org.savara.sam.web.client.view.ChartPortalLayout.ChartPortlet;
@@ -18,10 +17,7 @@ import org.savara.sam.web.shared.dto.Conversation;
 
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Widget;
-import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
-import com.google.gwt.visualization.client.DataTable;
 import com.google.gwt.visualization.client.VisualizationUtils;
-import com.google.gwt.visualization.client.visualizations.Table;
 import com.google.gwt.visualization.client.visualizations.corechart.PieChart;
 import com.google.inject.Inject;
 import com.gwtplatform.mvp.client.ViewImpl;
@@ -29,10 +25,7 @@ import com.smartgwt.client.types.Alignment;
 import com.smartgwt.client.types.HeaderControls;
 import com.smartgwt.client.types.MultipleAppearance;
 import com.smartgwt.client.types.VerticalAlignment;
-import com.smartgwt.client.types.VisibilityMode;
-import com.smartgwt.client.widgets.Canvas;
 import com.smartgwt.client.widgets.HeaderControl;
-import com.smartgwt.client.widgets.Label;
 import com.smartgwt.client.widgets.Window;
 import com.smartgwt.client.widgets.events.ClickEvent;
 import com.smartgwt.client.widgets.events.ClickHandler;
@@ -45,8 +38,6 @@ import com.smartgwt.client.widgets.form.fields.ButtonItem;
 import com.smartgwt.client.widgets.form.fields.SelectItem;
 import com.smartgwt.client.widgets.form.fields.TextItem;
 import com.smartgwt.client.widgets.layout.HLayout;
-import com.smartgwt.client.widgets.layout.SectionStack;
-import com.smartgwt.client.widgets.layout.SectionStackSection;
 import com.smartgwt.client.widgets.layout.VLayout;
 
 /**
@@ -65,8 +56,6 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 	private VLayout main;
 	
 	private ChartPortalLayout portal;
-		
-	private Conversation[] cdetails;
 	
 	private List<AQChartModel> aqCharts = new ArrayList<AQChartModel>();
 	
@@ -80,10 +69,12 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 				initializeWindow();
 				
 				for (AQChartModel model : aqCharts) {
-					presenter.refreshChartData(model);
+					if (ChartType.TABLE_CHART.equals(model.getChartType())) {
+						presenter.refreshTableChart(model);
+					} else {
+						presenter.refreshChartData(model);
+					}
 				}
-				
-				presenter.refreshConversationChart(true);
 				
 				timer = new Timer(){
 					public void run() {
@@ -97,7 +88,7 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 			}        	
         };
                 
-        VisualizationUtils.loadVisualizationApi(onloadCallback, PieChart.PACKAGE, Table.PACKAGE);
+        VisualizationUtils.loadVisualizationApi(onloadCallback, PieChart.PACKAGE);
 	}
 	
 	
@@ -164,27 +155,14 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
         
         portal.addPortlet(createPortlet(responseTimeModel));
         
+        AQChartModel conversationModel = new AQChartModel();
+        conversationModel.setName("conversations list");
+        conversationModel.setChartType(ChartType.TABLE_CHART);
+        conversationModel.setActiveQueryNames("PurchasingConversation");
+        conversationModel.setHorizontalProperty("test");
+        conversationModel.setVerticalProperty("test");
         
-        ChartPortlet conversationPortlet = portal.createPortlet("Conversation Chart", new ClickHandler(){
-			public void onClick(ClickEvent event) {
-				presenter.refreshConversationChart(true);
-			}
-        	
-        }, new ClickHandler() {
-			public void onClick(ClickEvent event) {
-				Label validConversation = new Label("<b>Valid Conversations</b>");
-				validConversation.setSize("600", "10");
-				//showWindowModalWithChart("Conversation Chart", validConversation, createConversationTableChart(cdetails, false, true),
-				//		createConversationTableChart(cdetails, false, false));
-			}        	
-        }, new DragRepositionStopHandler(){
-			public void onDragRepositionStop(DragRepositionStopEvent event) {
-				presenter.refreshConversationChart(true);
-			}
-        	
-        });
-
-        portal.addPortlet(conversationPortlet);
+        portal.addPortlet(createPortlet(conversationModel));
         
         AQChartModel buyRT = new AQChartModel();
         buyRT.setName("Buy_Operation_Response_Time");
@@ -202,22 +180,6 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 		panel.draw();
 	}
 	
-	public void refreshConversationChart(Conversation[] value, boolean isSmall) {
-		Table validTable = createConversationTableChart(value, isSmall, true);
-		Table invalidTable = createConversationTableChart(value, isSmall, false);
-		
-		VLayout conversationPanel = portal.getChartPortlet("Conversation Chart").getChartPanel();
-		
-		Canvas[] canvas = conversationPanel.getMembers();
-		for (int i = 0; i< canvas.length; i++) {
-			conversationPanel.removeMember(canvas[i]);
-		}
-		conversationPanel.clear();
-		conversationPanel.addMember(validTable);
-		conversationPanel.addMember(invalidTable);
-		conversationPanel.draw();
-	}
-	
 	private void showWindowModalWithChart(final AQChartModel model) {
 		final Window window = new Window();
 		window.setWidth(850);
@@ -228,7 +190,13 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 		
 		HeaderControl refreshBtn = new HeaderControl(HeaderControl.REFRESH, new ClickHandler() {
 			public void onClick(ClickEvent event) {
-				presenter.refreshChartData(model, chartLayout, ChartManager.BIG_WIDTH, ChartManager.BIG_HEIGHT);
+				//TODO: this is just a hack for now
+				if (ChartType.TABLE_CHART.equals(model.getChartType())) {
+					presenter.refreshTableChart(model, chartLayout, ChartManager.BIG_WIDTH, ChartManager.BIG_HEIGHT);
+				} else {
+					presenter.refreshChartData(model, chartLayout, ChartManager.BIG_WIDTH, ChartManager.BIG_HEIGHT);
+				}
+				
 			}			
 		});
 		window.setHeaderControls(HeaderControls.HEADER_LABEL, refreshBtn, HeaderControls.CLOSE_BUTTON);
@@ -246,55 +214,15 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 			
 		});
 		
-		presenter.refreshChartData(model, chartLayout, ChartManager.BIG_WIDTH, ChartManager.BIG_HEIGHT);
+		//TODO: this is just a hack for now
+		if (ChartType.TABLE_CHART.equals(model.getChartType())) {
+			presenter.refreshTableChart(model, chartLayout, ChartManager.BIG_WIDTH, ChartManager.BIG_HEIGHT);
+		} else {
+			presenter.refreshChartData(model, chartLayout, ChartManager.BIG_WIDTH, ChartManager.BIG_HEIGHT);
+		}
 		window.addChild(chartLayout);
 		window.show();
 	}	
-	
-	private Table createConversationTableChart(Conversation[] values, boolean isSmall, boolean isValid) {
-		DataTable dt = DataTable.create();
-		dt.addColumn(ColumnType.STRING, "Id");
-		dt.addColumn(ColumnType.BOOLEAN, "Status");
-		
-		List<Conversation> data = new ArrayList<Conversation>();
-		
-		for (int i = 0; i < values.length; i++) {
-			Conversation cd = values[i];
-			if (isValid == cd.getStatus()) {
-				data.add(cd);
-			}
-		}
-		
-		dt.addRows(data.size());
-		int i = 0;
-		for (Conversation cd : data) {
-			dt.setValue(i, 0, cd.getConversationId());
-			dt.setValue(i, 1, cd.getStatus());
-			i++;
-		}
-		
-		Table.Options toption = Table.Options.create();
-		toption.setShowRowNumber(true);
-		if (isSmall) {
-			toption.setWidth("230");
-			toption.setHeight("100");
-			toption.setPageSize(3);
-		} else {
-			toption.setWidth("800");
-			toption.setHeight("300");
-			toption.setPageSize(20);
-		}
-		
-		
-		if (isValid) {
-			toption.set("cssClassNames", "{tableRow:'validConversationTable'}");
-		} else {
-			toption.set("cssClassNames", "{tableRow:'invalidConversationTable'}");
-		}
-		
-		
-		return new Table(dt, toption);
-	}
 
 
 	private void setPortalMenus(VLayout main) {
@@ -347,7 +275,7 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 				
 				final SelectItem chartType = new SelectItem();
 				chartType.setTitle("Chart Type");
-				chartType.setValueMap(ChartType.PIE_CHART.toString(), ChartType.COLUMN_CHART.toString(), ChartType.LINE_CHART.toString());
+				chartType.setValueMap(ChartType.PIE_CHART.toString(), ChartType.COLUMN_CHART.toString(), ChartType.LINE_CHART.toString(), ChartType.TABLE_CHART.toString());
 				
 				final SelectItem xAxis = new SelectItem();
 				xAxis.setTitle("X Axis mapped property");
@@ -382,9 +310,11 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 							window.destroy();
 							
 							portal.addPortlet(createPortlet(model));
-																					
-							presenter.refreshChartData(model);							
-							
+							if (ChartType.TABLE_CHART.equals(model.getChartType())) {
+								presenter.refreshTableChart(model);
+							} else {
+								presenter.refreshChartData(model);							
+							}
 					}
 					
 				});
@@ -429,16 +359,16 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 	public void setPresenter(MainLayoutPresenter presenter) {
 		this.presenter = presenter;
 	}
-
-
-	public void setConversationDetails(Conversation[] cdetails) {
-		this.cdetails = cdetails;
-	}
 	
 	private ChartPortlet createPortlet(final AQChartModel model) {
 	        ChartPortlet txnRatio = portal.createPortlet(model.getName(), new ClickHandler() {
-				public void onClick(ClickEvent event) {
-					presenter.refreshChartData(model);
+				public void onClick(ClickEvent event) {					
+					//TODO: hack for now
+					if (ChartType.TABLE_CHART.equals(model.getChartType())) { 
+						presenter.refreshTableChart(model);
+					} else {
+						presenter.refreshChartData(model);
+					}
 				}        	
 	        }, new ClickHandler() {
 				public void onClick(ClickEvent event) {
@@ -447,7 +377,12 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 	        }, new DragRepositionStopHandler() {
 
 				public void onDragRepositionStop(DragRepositionStopEvent event) {
-					presenter.refreshChartData(model);
+					//TODO: hack for now
+					if (ChartType.TABLE_CHART.equals(model.getChartType())) { 
+						presenter.refreshTableChart(model);
+					} else {
+						presenter.refreshChartData(model);
+					}
 				}
 	        	
 	        }); 
@@ -487,6 +422,22 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 
 	public void setActiveQueries(List<String> activeQueries) {
 		aqSelect.setValueMap(activeQueries.toArray(new String[0]));
+	}
+
+
+
+	public void refreshConversationChart(AQChartModel model, List<Conversation> conversations, VLayout thePanel, int width,
+			int height) {		
+		thePanel.clear();
+		thePanel.addChild(ChartManager.createConversationChart(conversations, width, height));
+		thePanel.draw();
+	}
+
+
+
+	public void refreshConversationChart(AQChartModel model, List<Conversation> conversations) {
+		VLayout chartPanel = portal.getChartPortlet(model.getName()).getChartPanel();
+		refreshConversationChart(model, conversations, chartPanel, ChartManager.SMALL_WIDTH, ChartManager.SMALL_HEIGHT);
 	}
 
 }

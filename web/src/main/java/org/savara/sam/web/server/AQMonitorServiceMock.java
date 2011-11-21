@@ -25,11 +25,12 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
  */
 public class AQMonitorServiceMock extends RemoteServiceServlet implements AQMonitorService {
 
+	private static final long serialVersionUID = 4032065034183797168L;
 	
 	private Map<String, String> localAQs = new HashMap<String, String>();
 	
-	public Conversation[] getConversationDetails() {
-		
+	public List<Conversation> getConversationDetails() {
+				
 		Date d = new Date();
 		Conversation detail = new Conversation();
 		
@@ -47,7 +48,19 @@ public class AQMonitorServiceMock extends RemoteServiceServlet implements AQMoni
 		detail3.setStatus(true);
 		detail3.setUpdatedDate(d.getTime() + 2000);
 		
-		return new Conversation[]{detail, detail2, detail3};
+		Conversation detail4 = new Conversation();
+		detail4.setConversationId("id48366680ddss2072602");
+		detail4.setStatus(false);
+		detail4.setUpdatedDate(d.getTime() + 2030);
+		
+		
+		List<Conversation> conversations = new ArrayList<Conversation>();
+		conversations.add(detail);
+		conversations.add(detail2);
+		conversations.add(detail3);
+		conversations.add(detail4);
+		
+		return conversations;
 	}
 
 	public List<String> getSystemAQNames() {
@@ -118,15 +131,41 @@ public class AQMonitorServiceMock extends RemoteServiceServlet implements AQMoni
 		Date today2 = new Date();
 		dto2.setCreatedDate(today2);
 		dto2.setDescription("this is the description....");
-		dto2.setExternalRef("JIRA-101");
+		dto2.setExternalRef("JIRA-102");
 		dto2.setOwner("Gary");
 		dto2.setPrincipal("Gary Brown");
 		dto2.setPriority("Low");
-		dto2.setSeverity("Minor");
+		dto2.setSeverity("Critical");
 		dto2.setStatus("New");
 		
 		result.add(dto2);
 		
+		SituationDTO dto3 = new SituationDTO();
+		dto3.setId("ID3");
+		Date today3 = new Date();
+		dto3.setCreatedDate(today3);
+		dto3.setDescription("this is the description....");
+		dto3.setExternalRef("JIRA-1013");
+		dto3.setOwner("Steve");
+		dto3.setPrincipal("Steve");
+		dto3.setPriority("Low");
+		dto3.setSeverity("Major");
+		dto3.setStatus("New");
+		
+		result.add(dto2);
+		result.add(dto2);
+		result.add(dto2);
+		result.add(dto3);
+		result.add(dto2);
+		result.add(dto3);
+		result.add(dto3);
+		result.add(dto2);
+		result.add(dto3);
+		result.add(dto2);
+		result.add(dto3);
+		result.add(dto2);
+		result.add(dto3);
+		result.add(dto3);
 		return result;
 	}
 
