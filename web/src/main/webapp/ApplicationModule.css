@@ -24,7 +24,7 @@ body{ margin:0;}
 .majorSituationSelected,
 .majorSituationOver,
 .majorSituationDark,
-.majorSituationSelectedDark
+.majorSituationSelectedDark,
 .majorSituationOverDark{background-color:#E8BCC7;}
 
 .criticalSituation,

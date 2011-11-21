@@ -69,11 +69,7 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 				initializeWindow();
 				
 				for (AQChartModel model : aqCharts) {
-					if (ChartType.TABLE_CHART.equals(model.getChartType())) {
-						presenter.refreshTableChart(model);
-					} else {
-						presenter.refreshChartData(model);
-					}
+					refreshChartsDataFromServer(model);
 				}
 				
 				timer = new Timer(){
@@ -310,11 +306,7 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 							window.destroy();
 							
 							portal.addPortlet(createPortlet(model));
-							if (ChartType.TABLE_CHART.equals(model.getChartType())) {
-								presenter.refreshTableChart(model);
-							} else {
-								presenter.refreshChartData(model);							
-							}
+							refreshChartsDataFromServer(model);
 					}
 					
 				});
@@ -363,12 +355,7 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 	private ChartPortlet createPortlet(final AQChartModel model) {
 	        ChartPortlet txnRatio = portal.createPortlet(model.getName(), new ClickHandler() {
 				public void onClick(ClickEvent event) {					
-					//TODO: hack for now
-					if (ChartType.TABLE_CHART.equals(model.getChartType())) { 
-						presenter.refreshTableChart(model);
-					} else {
-						presenter.refreshChartData(model);
-					}
+					refreshChartsDataFromServer(model);
 				}        	
 	        }, new ClickHandler() {
 				public void onClick(ClickEvent event) {
@@ -377,12 +364,7 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 	        }, new DragRepositionStopHandler() {
 
 				public void onDragRepositionStop(DragRepositionStopEvent event) {
-					//TODO: hack for now
-					if (ChartType.TABLE_CHART.equals(model.getChartType())) { 
-						presenter.refreshTableChart(model);
-					} else {
-						presenter.refreshChartData(model);
-					}
+					refreshChartsDataFromServer(model);
 				}
 	        	
 	        }); 
@@ -438,6 +420,17 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 	public void refreshConversationChart(AQChartModel model, List<Conversation> conversations) {
 		VLayout chartPanel = portal.getChartPortlet(model.getName()).getChartPanel();
 		refreshConversationChart(model, conversations, chartPanel, ChartManager.SMALL_WIDTH, ChartManager.SMALL_HEIGHT);
+	}
+
+
+
+	private void refreshChartsDataFromServer(AQChartModel model) {
+		//TODO: this is a hack for now.
+		if (ChartType.TABLE_CHART.equals(model.getChartType())) {
+			presenter.refreshTableChart(model);
+		} else {
+			presenter.refreshChartData(model);
+		}
 	}
 
 }
