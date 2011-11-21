@@ -3,9 +3,13 @@
  */
 package org.savara.sam.web.client.view;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
+
+import org.savara.sam.web.shared.dto.Conversation;
 
 import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
 import com.google.gwt.visualization.client.DataTable;
@@ -15,6 +19,11 @@ import com.google.gwt.visualization.client.visualizations.corechart.LineChart;
 import com.google.gwt.visualization.client.visualizations.corechart.Options;
 import com.google.gwt.visualization.client.visualizations.corechart.PieChart;
 import com.google.gwt.visualization.client.visualizations.corechart.PieChart.PieOptions;
+import com.smartgwt.client.widgets.Label;
+import com.smartgwt.client.widgets.grid.ListGrid;
+import com.smartgwt.client.widgets.grid.ListGridField;
+import com.smartgwt.client.widgets.grid.ListGridRecord;
+import com.smartgwt.client.widgets.layout.VLayout;
 
 /**
  * 
@@ -126,6 +135,76 @@ public class ChartManager {
 		}
 		
 		return new LineChart(dt, options);
+	}
+	
+	/**
+	 * Create the conversation chart.
+	 * 
+	 * @param data
+	 * @param width
+	 * @param height
+	 * @return
+	 */
+	public static VLayout createConversationChart(List<Conversation> data, int width, int height) {
+		VLayout tables = new VLayout();
+		tables.setWidth(width - 10);
+		ListGridField id = new ListGridField("id", "ID", width * 2 /3);
+		ListGridField status = new ListGridField("status", "Status");
+		ListGridField date = new ListGridField("date", "Date");
+		
+		boolean showDate = (width > ChartManager.SMALL_WIDTH) ? true : false;
+		
+		ListGrid validGrids = new ListGrid();
+		validGrids.setWidth100();
+		validGrids.setBaseStyle("validConversation");
+		validGrids.setHeight(height/2 - 5);
+		if (showDate) {
+			validGrids.setFields(id, status, date);
+		} else {
+			validGrids.setFields(id, status);
+		}
+		
+		validGrids.setData(getListGridData(data, true, showDate));
+		
+		ListGrid invalidGrids = new ListGrid();
+		invalidGrids.setWidth100();
+		invalidGrids.setBaseStyle("invalidConversation");
+		invalidGrids.setHeight(height/2 - 5);
+		if (showDate) {
+			invalidGrids.setFields(id, status, date);
+		} else {
+			invalidGrids.setFields(id, status);
+		}
+		
+		invalidGrids.setData(getListGridData(data, false, showDate));
+		tables.addMember(validGrids);
+		Label splitor = new Label();
+		splitor.setHeight(1);
+		tables.addMember(splitor);
+		tables.addMember(invalidGrids);
+		return tables;
+	}
+	
+	private static ListGridRecord[] getListGridData(List<Conversation> data, boolean isValid, boolean showDate) {
+		List<ListGridRecord> result = new ArrayList<ListGridRecord>();
+		for (Conversation conversation : data) {
+			if (conversation.getStatus().booleanValue() == isValid) {
+				ListGridRecord record = new ListGridRecord();
+				record.setAttribute("id", conversation.getConversationId());
+				if (conversation.getStatus().booleanValue()) {
+					record.setAttribute("status", "Valid");
+				} else {
+					record.setAttribute("status", "Invalid");
+				}
+				if (showDate) {
+					Date d = new Date();
+					d.setTime(conversation.getUpdatedDate());
+					record.setAttribute("date", d);
+				}
+				result.add(record);
+			}
+		}
+		return result.toArray(new ListGridRecord[0]);
 	}
 	
 	private static String getLineChartBGColor(Collection<Long> values, long threshold) {

@@ -18,7 +18,7 @@ public class AQChartModel implements Serializable{
 	private static final long serialVersionUID = -5472614165685429537L;
 
 	public enum ChartType {
-		PIE_CHART, COLUMN_CHART, LINE_CHART
+		PIE_CHART, COLUMN_CHART, LINE_CHART, TABLE_CHART
 	}
 	
 	private String name;

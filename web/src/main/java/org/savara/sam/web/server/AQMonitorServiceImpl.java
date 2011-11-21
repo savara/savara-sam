@@ -64,7 +64,7 @@ public class AQMonitorServiceImpl extends RemoteServiceServlet implements AQMoni
 		return aqNames;
 	}
 
-	public Conversation[] getConversationDetails() {
+	public List<Conversation> getConversationDetails() {
 		if (_purchasingConversationSpec == null) {
 			_purchasingConversationSpec = _activeQueryManager.getActiveQuerySpec("PurchasingConversation");
 		}
@@ -85,8 +85,7 @@ public class AQMonitorServiceImpl extends RemoteServiceServlet implements AQMoni
 			}
 
 		}
-		Conversation[] cds = result.toArray(new Conversation[result.size()]);
-		return cds;
+		return result;
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -150,7 +149,6 @@ public class AQMonitorServiceImpl extends RemoteServiceServlet implements AQMoni
 
 	private void createLocalAQ(String name, String parentAQName, String predicate) {
 		if (parentAQName != null) {
-			System.out.println("============== ParentAQName: " + parentAQName);
 			ActiveQuery<ActivityAnalysis> aq = _activeQueryManager.getActiveQuery(parentAQName);
 			ActiveQuery<ActivityAnalysis> localAQ = _activeQueryManager.createActiveQuery(aq, new Predicate<ActivityAnalysis>(){
 				public boolean evaluate(ActivityAnalysis aa) {

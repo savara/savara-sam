@@ -6,5 +6,30 @@ body{ margin:0;}
 
 .menu_link{ color:blue; font-size:11px; font-family:Arial, Helvetica, sans-serif; text-decoration:underline; cursor: pointer; font-style: italic;}
 
-.validConversationTable{background:green;font-size:25px;color:green}
-.invalidConversationTable{background:red}
+.validConversation,
+.validConversationSelected,
+.validConversationOver,
+.validConversationDark,
+.validConversationSelectedDark,
+.validConversationOverDark{background-color:green}
+
+.invalidConversation,
+.invalidConversationSelected,
+.invalidConversationOver,
+.invalidConversationDark,
+.invalidConversationSelectedDark,
+.invalidConversationOverDark{background-color:red}
+
+.majorSituation,
+.majorSituationSelected,
+.majorSituationOver,
+.majorSituationDark,
+.majorSituationSelectedDark,
+.majorSituationOverDark{background-color:#E8BCC7;}
+
+.criticalSituation,
+.criticalSituationSelected,
+.criticalSituationOver,
+.criticalSituationDark,
+.criticalSituationSelectedDark,
+.criticalSituationOverDark{background-color:#F73E6C;}

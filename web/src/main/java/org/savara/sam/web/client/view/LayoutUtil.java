@@ -70,7 +70,9 @@ public class LayoutUtil {
 		
 		VerticalPanel links = new VerticalPanel();
 		Hyperlink chartLink = new Hyperlink("Charts", NameTokens.MAIN_VIEW);
+		chartLink.setHeight("20");
 		Hyperlink notificationList = new Hyperlink("Situations", NameTokens.SITUATION_VIEW);
+		notificationList.setHeight("20");
 		links.add(chartLink);
 		links.add(notificationList);
 		links.setSpacing(5);
@@ -78,7 +80,6 @@ public class LayoutUtil {
 		VLayout linkPanel = new VLayout();
 		linkPanel.setMargin(10);
 		linkPanel.addChild(links);
-		
 		
 		dashboard.addItem(linkPanel);
 		

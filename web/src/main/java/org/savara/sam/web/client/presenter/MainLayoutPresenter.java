@@ -49,9 +49,9 @@ public class MainLayoutPresenter extends Presenter<MainLayoutPresenter.MainLayou
 				
 		public void setPresenter(MainLayoutPresenter presenter);
 				
-		public void refreshConversationChart(Conversation[] value, boolean isSmall);
-				
-		public void setConversationDetails(Conversation[] details);
+		public void refreshConversationChart(AQChartModel model, List<Conversation> conversations, VLayout panel, int width, int height);
+		
+		public void refreshConversationChart(AQChartModel model, List<Conversation> conversations);
 				
 		public void refreshChart(AQChartModel model, Map data, VLayout panel, int width, int height);
 		
@@ -90,17 +90,6 @@ public class MainLayoutPresenter extends Presenter<MainLayoutPresenter.MainLayou
 		getView().setPresenter(this);
 	}
 	
-	public void refreshConversationChart(final boolean isSmall) {
-		service.getConversationDetails(new DefaultCallback<Conversation[]>() {
-
-			public void onSuccess(Conversation[] value) {
-				getView().setConversationDetails(value);
-				getView().refreshConversationChart(value, isSmall);
-			}
-			
-		});	
-	}
-	
 	public void refreshChartData(final AQChartModel model) {
 		service.getChartData(model, new DefaultCallback<Map>(){
 			public void onSuccess(Map data) {
@@ -116,6 +105,28 @@ public class MainLayoutPresenter extends Presenter<MainLayoutPresenter.MainLayou
 				getView().refreshChart(model, data, panel, width, height);
 			}
 						
+		});
+	}
+	
+	public void refreshTableChart(final AQChartModel model, final VLayout panel, final int width, final int height) {
+		service.getConversationDetails(new DefaultCallback<List<Conversation>>(){
+			public void onSuccess(List<Conversation> data) {
+				if (data != null) {
+					getView().refreshConversationChart(model, data, panel, width, height);
+				}
+			}			
+		});
+	}
+	
+	public void refreshTableChart(final AQChartModel model) {
+		service.getConversationDetails(new DefaultCallback<List<Conversation>>(){
+
+			public void onSuccess(List<Conversation> data) {
+				if (data != null) {
+					getView().refreshConversationChart(model, data);
+				}
+			}
+			
 		});
 	}
 	
