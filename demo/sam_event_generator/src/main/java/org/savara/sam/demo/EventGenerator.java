@@ -119,8 +119,8 @@ public class EventGenerator {
 			System.out.println((i+1)+") Enact scenario '"+_scenarioNames[i]+"'");
 		}
 		
-		System.out.println((_scenarioNames.length+1)+") Performance test");
-		System.out.println((_scenarioNames.length+2)+") Random scenario");
+		System.out.println((_scenarioNames.length+1)+") Random scenario");
+		//System.out.println((_scenarioNames.length+2)+") Performance test");
 		
 		System.out.println("Enter option:");
 		
@@ -140,14 +140,7 @@ public class EventGenerator {
 						}
 					});
 				} else if (ret == (_scenarioNames.length+1)) {
-					
-					_executor.execute(new Runnable() {
-						public void run() {						
-							runScenario(1, "id"+_random.nextLong(), getPrincipal(), true);
-						}
-					});
 
-				} else {
 					_executor.execute(new Runnable() {
 						public void run() {
 							
@@ -176,6 +169,13 @@ public class EventGenerator {
 							System.out.println("Running scenario '"+_scenarioNames[scenario]+"' id="+id);
 
 							runScenario(scenario, id, getPrincipal(), false);
+						}
+					});
+
+				} else {
+					_executor.execute(new Runnable() {
+						public void run() {						
+							runScenario(1, "id"+_random.nextLong(), getPrincipal(), true);
 						}
 					});
 				}
