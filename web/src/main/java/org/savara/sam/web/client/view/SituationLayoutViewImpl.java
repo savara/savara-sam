@@ -45,7 +45,7 @@ public class SituationLayoutViewImpl extends ViewImpl implements SituationLayout
 		HLayout body = new HLayout();
 		body.setWidth100();
 		body.setPadding(3);
-		body.setHeight(850);
+		body.setHeight(600);
 		panel.addMember(body);
 				
 		body.addMember(LayoutUtil.getMenuStack());
