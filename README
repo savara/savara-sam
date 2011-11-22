@@ -23,19 +23,13 @@ This will create an installer for JBoss AS7 in the distribution/jboss-as7/target
 Running the Demo:
 ======================================================
 
-1) Download and unpack a JBoss AS7 distribution
+1) Download and unpack a JBoss AS7 distribution (currently tested with AS7.1.alpha2)
 
 
 2) Expand the sam.deployer.zip into the root folder of the AS7 distribution
 
 
 3) Go to the bin folder and start a standalone version of AS7, e.g.
-
-	(if AS 7.0.2)  
-
-	./standalone.sh --server-config=standalone-preview.xml
-
-	(if AS 7.1, with hornetq included by default)
 
 	./standalone.sh
 
@@ -44,34 +38,34 @@ Running the Demo:
 
 4.1) Click the 'login' button, it will direct to the 'charts' page. In this page, it will show a number of portlets, each portlet has a chart or table, charts are explained as following:
 
-a) 'Txn Ration' Pie Chart: It displays the ratio between the PurchasingSuccessful and PurchasingUnsuccessful AQ.
+a) 'Txn Ratio' Pie Chart: It displays the ratio between the PurchasingSuccessful and PurchasingUnsuccessful AQ.
 b) 'Txn Bar Chart' : It displays the bar chart for PurchasingUnsuccessful, PurchasingSuccessful, PurchasingStarted AQs.
-c) 'Response Time' Line Chart: It displays the response time for PurchasingResponseTime AQ, it has a threshold as 9 second, background color gets changed if the ratio (the number of (response time > 9 sec)/the number of (responsetime)) increased.
+c) 'Response Time' Line Chart: It displays the response time for PurchasingResponseTime AQ, it has a threshold as 9 second, background color gets changed if the (number of response times > 9 sec)/(the total number of response times) goes over certain thresholds - the darker the colour the higher the threshold.
 d) 'Conversation List' Table Chart: The first table shows all of latest valid conversations, whose background color is green. While the other table shows the latest invalid conversations, whose background color is red.
-e) 'Buy_Operation_Response_Time' Table Chart: This one is similar to the 'Response Time' Line Chart, but it only shows that data whose operation name is 'buy'. This is an example that a chart used the local AQ.
+e) 'Buy_Operation_Response_Time' Table Chart: This one is similar to the 'Response Time' Line Chart, but it only shows that data whose operation name is 'buy'. This is an example of a chart the is associated with a local ActiveQuery specific to the user's session.
 
-For each portlet, you can click the 'maximise' button to open the maximised window for the chart. You can click the 'refresh' button to get the latest chart out of latest AQ data, and 'close' button to remove the portlet. Moreover, you could drag and drop a portlet into another position inside the page.
+For each portlet, you can click the 'maximise' button to open the maximised window for the chart. You can click the 'refresh' button to show the chart for the latest AQ data, and 'close' button to remove the portlet. Moreover, you could drag and drop a portlet into another position inside the page.
 
-4.2) Create a new portlet with a new chart by clicking the 'Add AQ Chart' button, it will pop up a creation form window. Detailed fields explanations as following:
+4.2) Create a new portlet with a new chart by clicking the 'Add AQ Chart' button, it will pop up a creation form window. Detailed field explanations are as follows:
 
 a) name: this will be the newly created portlet name, needs to be unique.
 b) Active Queries: This is the AQ selection, AQ is the backbone for the chart's data source. You can select one or multiple AQs for a chart. 
-c) Predicate: This is the text field of predication for local AQ, for example, operation='buy'. If this field is not null, it will result in creating a local AQ out of the parent AQ(s) that are selected in the 'Active Queries' field.
+c) Predicate: This is the expression that defined the predicate for a local AQ, for example, operation='buy'. If this field is not null, it will result in creating a local AQ out of the parent AQ(s) that are selected in the 'Active Queries' field.
 d) Chart Type: only supports the PieChart, Column Chart, Line Chart and Table Chart.
 e) X axis mapped property: This is the property definition of the specified AQ(s), which value will be used for the chart's X axis.
 f) Y axis mapped property: This is the property definition of the specified AQ(s), which value will be used for the chart's Y axis.
 
 Note: 
-Currently, we have only supported the 'name' and 'size', 'requestTimestamp' and 'responseTime' two combinations as properties value. 
-For the 'requestTimestamp' and 'responseTime', it only supports one single AQ, whose name is "PurchasingResponseTime". 
+Currently, we have only support the combinations of 'name' and 'size', or 'requestTimestamp' and 'responseTime', as valid property values. 
+For the 'requestTimestamp' and 'responseTime' pair, it only supports one single AQ, whose name is "PurchasingResponseTime". 
 As for 'Table Chart', it only shows the data from 'PurchasingConversation' AQ, the x and y mapped properties do not apply here.
-The predicate field is hard-coded now, it is hard-coded as operation='buy' in the backend.
+The predicate field is hard-coded for now, it is hard-coded as operation='buy' in the backend.
 
 4.3) Navigate to the 'Situation' page by clicking the 'Situation' link in the left menu. In this page, it will show all of situations that come out of the 'Situation' AQ. Those Critical and Major situations will be colorised as a different background color.
  
-a) Once you hover on a row, it will pop up a float table, which shows the detail information of the situation. 
+a) Once you hover on a row, it will pop up a floating table, which shows the detailed information of the situation. 
 b) You can edit the 'Severity', 'Priority', 'Status' and 'Owner' by double-clicking a row.
-c) You can filter the situation list by specify the 'Severity', 'Priority', 'Status', 'Principal' and 'Owner' fields in the filter bar.
+c) You can filter the situation list by specifying the 'Severity', 'Priority', 'Status', 'Principal' and 'Owner' fields in the filter bar.
 d) Click the 'refresh' button to reload the data from AQ.
 
 Note: 
@@ -82,24 +76,12 @@ Currently it doesn't support updating data to server, and those filter functiona
 a) opening a command window in the $AS7/demo/sam_event_generator folder
 b) running "mvn test"
 
-This will display a menu of options. Select option 1, and 1 iteration. This will send activity events representing a 'successful' purchase transaction.
+This will display a menu of options. Selecting options 1 to 4 will send activity events representing the named scenarios. Option 5 will randomly select scenarios, weighted so that successful transactions take precedence.
 
-The other menu items represent different scenarios that may be enacted. Option 2 is relevant because it generates a transaction that is invalid in respect of the choreography - so causes conversation validation errors.
+Note: Option 2 (InvalidStoreBehaviour) provides an example of a business transaction that is not valid in respect of the Purchasing choreography, and results in a Situation being created for each invalid conversation detected.
 
-The final two options are used for generating a fast stream of events, for performance testing purposes, and the final option generates a random set of transactions from the first set of options (random but weighted in favour of the successful and normal failure scenarios).
+Next you will be asked for the number of iterations (or business transactions) to send.
 
 As the transactions are being sent, with suitable delays, you can refresh the browser to see the effects.
-
-
-
-NOTE:
-
-1) Demonstrating 'situations'
-
-A situation represents the occurs of an issue that needs to be dealt with by users. Currently a situation is created when a conversation validation occurs (i.e. option 2).
-
-If you generate a number (2) transaction, then refresh the browser, you will see an entry appear in the 'Situation' list page in the web.The situation will initially have a status of 'New', and 'null' owner. If you wait around 20 seconds, and then second another (2) transaction, this will create a second situation, but you will also see the first situation has changed status to 'Accepted' with owner 'Me'.
-
-This demonstrates how application modules can manipulate the information contained in the active queries - in this case, the active query containing the 'situations'.
 
 
