@@ -364,7 +364,14 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 	        }, new DragRepositionStopHandler() {
 
 				public void onDragRepositionStop(DragRepositionStopEvent event) {
-					refreshChartsDataFromServer(model);
+                    Timer theTimer = new Timer(){
+                        @Override
+                        public void run() {
+                                refreshChartsDataFromServer(model);
+                        }                                               
+                };
+                //Looks like the portlet wouldn't be in the portalcolumn object when do the d&d straight away, so w
+                theTimer.schedule(1000);
 				}
 	        	
 	        }); 
