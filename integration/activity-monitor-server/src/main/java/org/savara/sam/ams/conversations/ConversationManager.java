@@ -51,7 +51,7 @@ import org.scribble.protocol.ProtocolContext;
 import org.scribble.protocol.model.ProtocolModel;
 import org.scribble.protocol.model.Role;
 
-public class ConversationManager extends JEEActiveQueryManager<String,ConversationId> implements MessageListener {
+public abstract class ConversationManager extends JEEActiveQueryManager<String,ConversationId> implements MessageListener {
 	
 	private static final Logger LOG=Logger.getLogger(ConversationManager.class.getName());
 	
@@ -72,20 +72,14 @@ public class ConversationManager extends JEEActiveQueryManager<String,Conversati
 	}
 	
 	@SuppressWarnings("unchecked")
-	public void init(String model, org.infinispan.manager.CacheContainer container,
+	public void init(org.infinispan.manager.CacheContainer container,
 				Destination source, Destination notification, Destination... destinations) {
 		super.init(container, source, notification, destinations);
 		
 		_container = container;
 		
-		java.net.URL url=Thread.currentThread().getContextClassLoader().getResource("/"+model);
-		
-		if (LOG.isLoggable(Level.FINE)) {
-			LOG.fine("Loading model '"+model+"' from URL: "+url);		
-		}
-		
 		try {
-			initMonitor(url.toURI());
+			initMonitor();
 			
 		} catch(Exception e) {
 			LOG.log(Level.SEVERE, "Failed to initialize monitor", e);
@@ -114,11 +108,9 @@ public class ConversationManager extends JEEActiveQueryManager<String,Conversati
 		return(_resolver);
 	}
 	
-	protected void initMonitor(java.net.URI uri) {
-		ProtocolRepository pr=new InJarProtocolRepository(uri);
-		
+	protected void initMonitor() {
 		_monitor = new org.savara.monitor.impl.DefaultMonitor();
-		_monitor.setProtocolRepository(pr);
+		_monitor.setProtocolRepository(getProtocolRepository());
 		_monitor.setConversationResolver(_resolver);
 		_monitor.setSessionStore(new CachedSessionStore(_container));
 	}
@@ -262,6 +254,8 @@ public class ConversationManager extends JEEActiveQueryManager<String,Conversati
 		return(ret);
 	}
 	
+	protected abstract ProtocolRepository getProtocolRepository();
+	
 	protected String getInteractionSummary(Activity act) {
 		String ret=(act.getServiceInvocation().getDirection() == ServiceInvocation.Direction.INBOUND ?
 						"Receiving " : "Invoking ");
@@ -280,66 +274,5 @@ public class ConversationManager extends JEEActiveQueryManager<String,Conversati
 		ret += ") on "+act.getServiceInvocation().getServiceType();
 		
 		return(ret);
-	}
-
-	public static class InJarProtocolRepository implements ProtocolRepository {
-		
-		private ProtocolModel _model=null;
-		private java.util.Map<ProtocolId,ProtocolModel> _localModels=
-						new java.util.HashMap<ProtocolId,ProtocolModel>();
-		
-		public InJarProtocolRepository(java.net.URI uri, String... roles) {
-			
-			org.scribble.protocol.parser.ProtocolParser parser=
-					new org.savara.pi4soa.cdm.parser.CDMProtocolParser();
-			org.scribble.protocol.projection.ProtocolProjector projector=
-					new org.scribble.protocol.projection.impl.ProtocolProjectorImpl();
-			ProtocolContext context=new DefaultProtocolContext();
-			
-			org.scribble.common.logging.Journal journal=
-					new org.scribble.common.logging.CachedJournal();
-			
-			try {
-				_model = parser.parse(context, new ResourceContent(uri), journal);
-
-				// If roles not explicitly defined, then initialise all roles
-				if (roles == null || roles.length == 0) {
-					java.util.List<Role> rlist=_model.getRoles();
-					roles = new String[rlist.size()];
-					for (int i=0; i < rlist.size(); i++) {
-						roles[i] = rlist.get(i).getName();
-					}
-				}
-				
-				// Project to relevant roles
-				for (String role : roles) {
-					ProtocolId pid=new ProtocolId(_model.getProtocol().getName(), role);
-					
-					ProtocolModel lm=projector.project(context, _model,
-									new Role(role), journal);
-					
-					_localModels.put(pid, lm);
-				}
-				
-			} catch(Exception e) {
-				LOG.log(Level.SEVERE, "Failed to parse protocol model '"+uri+"'", e);
-			}
-		}
-
-		public ProtocolModel getProtocol(ProtocolId pid) {
-			return (_localModels.get(pid));
-		}
-
-		public List<ProtocolId> getProtocols(ProtocolCriteria criteria) {
-			// TODO: Need to filter out the protocols that are related to
-			// the supplied criteria (e.g. message types etc).
-			List<ProtocolId> ret=new java.util.Vector<ProtocolId>(_localModels.keySet());
-			
-			if (LOG.isLoggable(Level.FINEST)) {
-				LOG.finest("Get protocol ids for criteria="+criteria+" ret="+ret);
-			}
-			
-			return (ret);
-		}
 	}
 }

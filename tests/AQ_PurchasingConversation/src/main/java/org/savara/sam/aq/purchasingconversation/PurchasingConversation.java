@@ -17,6 +17,9 @@
  */
 package org.savara.sam.aq.purchasingconversation;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
@@ -29,7 +32,9 @@ import javax.ejb.TransactionManagementType;
 import javax.jms.Destination;
 import javax.jms.MessageListener;
 
+import org.savara.protocol.repository.ProtocolRepository;
 import org.savara.sam.ams.conversations.ConversationManager;
+import org.savara.sam.ams.conversations.InJarProtocolRepository;
 
 @MessageDriven(name = "PurchasingConversation", messageListenerInterface = MessageListener.class,
                activationConfig =
@@ -40,6 +45,8 @@ import org.savara.sam.ams.conversations.ConversationManager;
 @TransactionManagement(value= TransactionManagementType.CONTAINER)
 @TransactionAttribute(value= TransactionAttributeType.REQUIRED)
 public class PurchasingConversation extends ConversationManager implements MessageListener {
+	
+	private static final Logger LOG=Logger.getLogger(PurchasingConversation.class.getName());
 	
 	private static final String ACTIVE_QUERY_NAME = "PurchasingConversation";
 	
@@ -54,13 +61,29 @@ public class PurchasingConversation extends ConversationManager implements Messa
 	@Resource(mappedName="java:jboss/infinispan/sam")
 	private org.infinispan.manager.CacheContainer _container;
 	
+	private static ProtocolRepository _protocolRepository=null;
+	
+	static {
+		java.net.URL url=Thread.currentThread().getContextClassLoader().getResource("/"+MODEL);
+		
+		if (LOG.isLoggable(Level.FINE)) {
+			LOG.fine("Loading model '"+MODEL+"' from URL: "+url);		
+		}
+		
+		try {
+			_protocolRepository = new InJarProtocolRepository(url.toURI());
+		} catch(Exception e) {
+			LOG.log(Level.SEVERE, "Failed to create protocol repository for '"+url+"'", e);
+		}
+	}
+	
 	public PurchasingConversation() {
 		super(ACTIVE_QUERY_NAME);
 	}
 	
 	@PostConstruct
 	public void init() {
-		super.init(MODEL, _container, _sourceQueue, _notificationTopic);
+		super.init(_container, _sourceQueue, _notificationTopic);
 		
 		getResolver().addMessageTypeIDLocator("{http://www.jboss.org/examples/store}BuyRequest", "//@id");
 		getResolver().addMessageTypeIDLocator("{http://www.jboss.org/examples/store}BuyConfirmed", "//@id");
@@ -71,6 +94,11 @@ public class PurchasingConversation extends ConversationManager implements Messa
 		getResolver().addMessageTypeIDLocator("{http://www.jboss.org/examples/creditAgency}CustomerUnknown", "//@id");
 		getResolver().addMessageTypeIDLocator("{http://www.jboss.org/examples/logistics}DeliveryRequest", "//@id");
 		getResolver().addMessageTypeIDLocator("{http://www.jboss.org/examples/logistics}DeliveryConfirmed", "//@id");
+	}
+	
+	@Override
+	protected ProtocolRepository getProtocolRepository() {
+		return(_protocolRepository);
 	}
 
 	@PreDestroy
