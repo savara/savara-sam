@@ -9,7 +9,6 @@ import org.savara.sam.web.client.presenter.SituationLayoutPresenter.SituationLay
 import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.Inject;
 import com.gwtplatform.mvp.client.ViewImpl;
-import com.gwtplatform.mvp.client.proxy.PlaceManager;
 import com.smartgwt.client.data.Criteria;
 import com.smartgwt.client.data.DataSource;
 import com.smartgwt.client.data.Record;
@@ -45,7 +44,7 @@ public class SituationLayoutViewImpl extends ViewImpl implements SituationLayout
 		HLayout body = new HLayout();
 		body.setWidth100();
 		body.setPadding(3);
-		body.setHeight(850);
+		body.setHeight(600);
 		panel.addMember(body);
 				
 		body.addMember(LayoutUtil.getMenuStack());
@@ -121,8 +120,6 @@ public class SituationLayoutViewImpl extends ViewImpl implements SituationLayout
         notificationList.setCanHover(true);
         notificationList.setShowHover(true);
         notificationList.setShowHoverComponents(true);
-        notificationList.setBackgroundColor("red");
-        
         
         situationList.addMember(situationTS);
         situationList.addMember(notificationList);

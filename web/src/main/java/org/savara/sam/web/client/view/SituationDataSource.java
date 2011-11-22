@@ -17,6 +17,7 @@ import com.smartgwt.client.data.DataSourceField;
 import com.smartgwt.client.data.fields.DataSourceDateField;
 import com.smartgwt.client.data.fields.DataSourceTextField;
 import com.smartgwt.client.rpc.RPCResponse;
+import com.smartgwt.client.types.DateDisplayFormat;
 import com.smartgwt.client.widgets.grid.ListGridRecord;
 
 /**
@@ -46,8 +47,9 @@ public class SituationDataSource extends GwtRpcDataSource {
         DataSourceTextField externalRefField = new DataSourceTextField("externalRef", "External Reference", 100);
         externalRefField.setCanFilter(false);
         externalRefField.setCanEdit(false);
-        DataSourceTextField ownerField = new DataSourceTextField("owner", "Owner", 60);
+        DataSourceTextField ownerField = new DataSourceTextField("owner", "Owner", 120);
         DataSourceField dateField = new DataSourceDateField("date", "Date");
+        dateField.setDateFormatter(DateDisplayFormat.TOSERIALIZEABLEDATE);
         dateField.setCanFilter(false);
         dateField.setCanEdit(false);
         

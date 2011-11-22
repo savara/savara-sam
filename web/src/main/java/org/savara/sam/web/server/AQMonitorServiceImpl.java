@@ -81,7 +81,7 @@ public class AQMonitorServiceImpl extends RemoteServiceServlet implements AQMoni
 				cd.setUpdatedDate(detail.getEndTimestamp());
 				result.add(cd);
 			} else {
-				System.err.println("FAILED TO GET CONVERSATION DETAILS FOR CID="+cid);
+				//System.err.println("FAILED TO GET CONVERSATION DETAILS FOR CID="+cid);
 			}
 
 		}
