@@ -114,8 +114,11 @@ public class ConversationManager extends JEEActiveQueryManager<String,Conversati
 								int retriesLeft) throws Exception {
 		ConversationId ret=null;
 		
-		Activity act=null; //_activities.get(id);
-		
+		Activity act=_activities.get(id);
+		if (LOG.isLoggable(Level.FINEST)) {
+			LOG.finest("Got cached activity with key '"+id+"' ret="+ret);
+		}
+		/*
 		NotifyingFuture<Activity> future=_activities.getAsync(id);
 		try {
 			if (LOG.isLoggable(Level.FINEST)) {
@@ -133,6 +136,7 @@ public class ConversationManager extends JEEActiveQueryManager<String,Conversati
 				LOG.finest("Failed to get cached activity with key '"+id+"'");
 			}
 		}
+		*/
 		
 		if (act == null) {
 			if (LOG.isLoggable(Level.FINEST)) {

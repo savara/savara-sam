@@ -101,7 +101,7 @@ public class CachedSessionStore implements SessionStore {
 	public void close() {
 	}
 
-	public class ProtocolConversationKey implements java.io.Serializable {
+	public static class ProtocolConversationKey implements java.io.Serializable {
 
 		private static final long serialVersionUID = 3223220549261325929L;
 		

@@ -46,10 +46,13 @@ public class JEECacheActiveQuerySpec<S,T> extends ActiveQuerySpec {
 		_cache = cache;
 	}
 	
+	@SuppressWarnings("unchecked")
 	public Object resolve(Object source) {
 		Object ret=null;
 		
 		if (_cache != null) {
+			ret = _cache.get((S)source);
+			/*
 			@SuppressWarnings("unchecked")
 			NotifyingFuture<T> future=_cache.getAsync((S)source);
 			try {
@@ -64,6 +67,7 @@ public class JEECacheActiveQuerySpec<S,T> extends ActiveQuerySpec {
 				throw new RuntimeException("Failed to retrieve cached object, AQ '"+
 							getName()+"' key '"+source+"'");
 			}
+			*/
 			
 			if (LOG.isLoggable(Level.FINEST)) {
 				LOG.finest("Got cached object, AQ '"+getName()+"' key '"+source+"' ret="+ret);
