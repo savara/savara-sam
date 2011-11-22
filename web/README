@@ -1,7 +1,11 @@
 Savara SAM web module
 ======================
 
-Access the web at: http://localhost:8080/sam-web
+Build the web module:
+=======================
+
+Run:
+	mvn clean install
 
 
 Run the web in hosted-mode
@@ -19,5 +23,5 @@ And then run mvn gwt:run
 Run the web with SAM Server
 ===========================
 1. Running the Demo according to the README in the SAM project's README
-2. Going to the http://localhost:8080/sam-web, log in with any username or password, you will see the dashboard page.
-3. Once you've generated a new data, please manually refresh this page to see the chart change.
+2. Going to the http://localhost:8080/sam-web, log in with any username or password, you will see the charts page, left side is the menu section.
+3. Once you've generated a new data, please manually refresh this page to see the chart change, or click each 'refresh' button on its portlet.
