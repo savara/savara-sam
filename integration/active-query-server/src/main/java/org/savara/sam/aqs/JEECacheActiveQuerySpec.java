@@ -26,7 +26,7 @@ public class JEECacheActiveQuerySpec<S,T> extends ActiveQuerySpec {
 
 	private static final Logger LOG=Logger.getLogger(JEECacheActiveQuerySpec.class.getName());
 	
-	private org.infinispan.Cache<S,T> _cache=null;
+	private java.util.Map<S,T> _cache=null;
 
 	/**
 	 * The Active Query specification constructor.
@@ -40,7 +40,7 @@ public class JEECacheActiveQuerySpec<S,T> extends ActiveQuerySpec {
 		super(name, type, internalType);
 	}
 	
-	public void setCache(org.infinispan.Cache<S,T> cache) {
+	public void setCache(java.util.Map<S,T> cache) {
 		_cache = cache;
 	}
 	

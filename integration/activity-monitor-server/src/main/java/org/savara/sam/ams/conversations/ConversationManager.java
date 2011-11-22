@@ -57,10 +57,13 @@ public class ConversationManager extends JEEActiveQueryManager<String,Conversati
 	
 	private org.savara.monitor.Monitor _monitor=null;
 	private org.infinispan.Cache<String,Activity> _activities=null;
-	private org.infinispan.AdvancedCache<ConversationId,ConversationDetails> _conversationDetails=null;
+	//private org.infinispan.AdvancedCache<ConversationId,ConversationDetails> _conversationDetails=null;
 	private org.infinispan.manager.CacheContainer _container=null;
 	private ActiveQuery<Situation> _situations=null;
 	
+	private static java.util.concurrent.ConcurrentMap<ConversationId,ConversationDetails> _conversationDetails=
+					new java.util.concurrent.ConcurrentHashMap<ConversationId,ConversationDetails>();
+
 	private XPathConversationResolver _resolver=new XPathConversationResolver();
 	
 	public ConversationManager(String conversationName) {
@@ -90,6 +93,7 @@ public class ConversationManager extends JEEActiveQueryManager<String,Conversati
 		
 		_activities = _container.getCache("activities");
 		
+		/*
 		org.infinispan.Cache<ConversationId,ConversationDetails> conversationDetails=
 							_container.getCache("conversationDetails");
 		
@@ -99,6 +103,7 @@ public class ConversationManager extends JEEActiveQueryManager<String,Conversati
 		_conversationDetails = conversationDetails.getAdvancedCache()
 				.withFlags(Flag.SKIP_LOCKING);	// To ignore lock
 				//.withFlags(Flag.FAIL_SILENTLY);	// To ignore lock failures
+		*/
 		
 		((JEECacheActiveQuerySpec<ConversationId,ConversationDetails>)getActiveQuerySpec()).setCache(_conversationDetails);
 		

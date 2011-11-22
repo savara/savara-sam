@@ -33,9 +33,12 @@ public class CachedSessionStore implements SessionStore {
 
 	private static final Logger LOG=Logger.getLogger(CachedSessionStore.class.getName());
 
-	private AdvancedCache<ProtocolConversationKey,Serializable> _cache=null;
+	//private AdvancedCache<ProtocolConversationKey,Serializable> _cache=null;
+	private static java.util.concurrent.ConcurrentMap<ProtocolConversationKey,Serializable> _cache=
+			new java.util.concurrent.ConcurrentHashMap<CachedSessionStore.ProtocolConversationKey, Serializable>();
 
 	public CachedSessionStore(org.infinispan.manager.CacheContainer cc) {
+		/*
 		org.infinispan.Cache<ProtocolConversationKey,Serializable> cache=cc.getCache("conversationSessions");
 
 		// TODO: See if possible to get a 'lockIfAvailable' with boolean result - so instead of
@@ -44,6 +47,8 @@ public class CachedSessionStore implements SessionStore {
 		_cache = cache.getAdvancedCache()
 				.withFlags(Flag.SKIP_LOCKING);	// To ignore lock
 		//.withFlags(Flag.FAIL_SILENTLY);	// To ignore lock failures
+		 * 
+		 */
 	}
 	
 	public Serializable create(ProtocolId pid, ConversationId cid,
