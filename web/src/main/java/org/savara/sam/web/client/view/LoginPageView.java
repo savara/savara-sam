@@ -54,7 +54,7 @@ public class LoginPageView extends ViewImpl implements LoginPresenter.LoginView 
 
         window = new Window();
         window.setHeaderIcon(ApplicationImages.SAVARA_ICON);
-        window.setTitle("console");
+        window.setTitle("Savara");
         window.setWidth(300);
         window.setHeight(150);
         window.setIsModal(true);
