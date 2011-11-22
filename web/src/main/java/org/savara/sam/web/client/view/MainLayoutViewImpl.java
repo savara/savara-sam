@@ -51,8 +51,6 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 				
 	private MainLayoutPresenter presenter;
 	
-	private Timer timer;
-	
 	private VLayout main;
 	
 	private ChartPortalLayout portal;
@@ -68,19 +66,8 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 			public void run() {				
 				initializeWindow();
 				
-				for (AQChartModel model : aqCharts) {
-					refreshChartsDataFromServer(model);
-				}
+				refreshAllCharts();
 				
-				timer = new Timer(){
-					public void run() {
-						for (AQChartModel model : aqCharts) {
-							presenter.refreshChartData(model);
-						}
-					}};
-				
-				//TODO: looks like the refreshing action sometimes block the whole page.
-			    //timer.scheduleRepeating(30 * 1000);
 			}        	
         };
                 
@@ -437,6 +424,14 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 			presenter.refreshTableChart(model);
 		} else {
 			presenter.refreshChartData(model);
+		}
+	}
+
+
+
+	public void refreshAllCharts() {
+		for (AQChartModel model : aqCharts) {
+			refreshChartsDataFromServer(model);
 		}
 	}
 

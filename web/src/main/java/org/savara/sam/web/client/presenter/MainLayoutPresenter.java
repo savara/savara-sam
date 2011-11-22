@@ -16,18 +16,15 @@ import org.savara.sam.web.shared.dto.Conversation;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.shared.EventBus;
-import com.google.gwt.event.shared.GwtEvent;
+import com.google.gwt.user.client.Timer;
 import com.google.inject.Inject;
 import com.gwtplatform.mvp.client.Presenter;
 import com.gwtplatform.mvp.client.View;
-import com.gwtplatform.mvp.client.annotations.ContentSlot;
 import com.gwtplatform.mvp.client.annotations.NameToken;
 import com.gwtplatform.mvp.client.annotations.NoGatekeeper;
 import com.gwtplatform.mvp.client.annotations.ProxyCodeSplit;
 import com.gwtplatform.mvp.client.proxy.PlaceManager;
-import com.gwtplatform.mvp.client.proxy.PlaceRequest;
 import com.gwtplatform.mvp.client.proxy.ProxyPlace;
-import com.gwtplatform.mvp.client.proxy.RevealContentHandler;
 import com.gwtplatform.mvp.client.proxy.RevealRootLayoutContentEvent;
 import com.smartgwt.client.widgets.layout.VLayout;
 
@@ -59,6 +56,8 @@ public class MainLayoutPresenter extends Presenter<MainLayoutPresenter.MainLayou
 		
 		public void setActiveQueries(List<String> activeQueries);
 		
+		public void refreshAllCharts();
+		
 	}
 		
 	@ProxyCodeSplit
@@ -88,6 +87,20 @@ public class MainLayoutPresenter extends Presenter<MainLayoutPresenter.MainLayou
 	public void onBind() {
 		super.onBind();
 		getView().setPresenter(this);
+	}
+	
+	@Override
+	public void onReveal() {
+		super.onReveal();
+		Timer timer = new Timer() {
+
+			@Override
+			public void run() {
+				getView().refreshAllCharts();
+			}			
+		};
+		//TODO: hack for now, delay for 1sec.
+		timer.schedule(1000);
 	}
 	
 	public void refreshChartData(final AQChartModel model) {
