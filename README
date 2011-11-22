@@ -40,7 +40,7 @@ Running the Demo:
 	./standalone.sh
 
 
-4) Start a browser and navigate to URL: http://localhost:8080/sam-web
+4) Start a browser and navigate to URL: http://localhost:8080/sam-web (The web is only working on Chrome 15.0 and Safari 5.1.1)
 
 4.1) Click the 'login' button, it will direct to the 'charts' page. In this page, it will show a number of portlets, each portlet has a chart or table, charts are explained as following:
 
