@@ -74,6 +74,7 @@ public class SituationLayoutViewImpl extends ViewImpl implements SituationLayout
 		ToolStripButton refresh = new ToolStripButton("Refresh", "[SKIN]/headerIcons/refresh.png");
 		refresh.addClickHandler(new ClickHandler(){
 			public void onClick(ClickEvent event) {
+				notificationList.invalidateCache();
 				notificationList.redraw();			
 			}			
 		});
