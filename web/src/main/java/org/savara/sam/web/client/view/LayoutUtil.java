@@ -3,10 +3,13 @@
  */
 package org.savara.sam.web.client.view;
 
+import org.savara.sam.web.client.ApplicationEntryPoint;
 import org.savara.sam.web.client.NameTokens;
 
 import com.google.gwt.user.client.ui.Hyperlink;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.gwtplatform.mvp.client.proxy.PlaceManager;
+import com.gwtplatform.mvp.client.proxy.PlaceRequest;
 import com.smartgwt.client.types.Alignment;
 import com.smartgwt.client.types.VerticalAlignment;
 import com.smartgwt.client.types.VisibilityMode;
@@ -95,7 +98,8 @@ public class LayoutUtil {
 		link.setWidth(150);
 		link.addClickHandler(new ClickHandler(){
 			public void onClick(ClickEvent event) {
-				
+				PlaceRequest request = new PlaceRequest(tokenName);
+				ApplicationEntryPoint.MODULE.getPlaceManager().revealPlace(request);
 			}});
 		return link;
 	}

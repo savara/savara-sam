@@ -51,8 +51,6 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 				
 	private MainLayoutPresenter presenter;
 	
-	private Timer timer;
-	
 	private VLayout main;
 	
 	private ChartPortalLayout portal;
@@ -68,19 +66,8 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 			public void run() {				
 				initializeWindow();
 				
-				for (AQChartModel model : aqCharts) {
-					refreshChartsDataFromServer(model);
-				}
+				refreshAllCharts();
 				
-				timer = new Timer(){
-					public void run() {
-						for (AQChartModel model : aqCharts) {
-							presenter.refreshChartData(model);
-						}
-					}};
-				
-				//TODO: looks like the refreshing action sometimes block the whole page.
-			    //timer.scheduleRepeating(30 * 1000);
 			}        	
         };
                 
@@ -364,7 +351,14 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 	        }, new DragRepositionStopHandler() {
 
 				public void onDragRepositionStop(DragRepositionStopEvent event) {
-					refreshChartsDataFromServer(model);
+                    Timer theTimer = new Timer(){
+                        @Override
+                        public void run() {
+                                refreshChartsDataFromServer(model);
+                        }                                               
+                };
+                //Looks like the portlet wouldn't be in the portalcolumn object when do the d&d straight away, so w
+                theTimer.schedule(1000);
 				}
 	        	
 	        }); 
@@ -430,6 +424,14 @@ public class MainLayoutViewImpl extends ViewImpl implements MainLayoutView{
 			presenter.refreshTableChart(model);
 		} else {
 			presenter.refreshChartData(model);
+		}
+	}
+
+
+
+	public void refreshAllCharts() {
+		for (AQChartModel model : aqCharts) {
+			refreshChartsDataFromServer(model);
 		}
 	}
 

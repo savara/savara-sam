@@ -9,6 +9,7 @@ import org.savara.sam.web.client.presenter.SituationLayoutPresenter.SituationLay
 import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.Inject;
 import com.gwtplatform.mvp.client.ViewImpl;
+import com.gwtplatform.mvp.client.proxy.PlaceManager;
 import com.smartgwt.client.data.Criteria;
 import com.smartgwt.client.data.DataSource;
 import com.smartgwt.client.data.Record;
@@ -16,7 +17,6 @@ import com.smartgwt.client.widgets.Canvas;
 import com.smartgwt.client.widgets.events.ClickEvent;
 import com.smartgwt.client.widgets.events.ClickHandler;
 import com.smartgwt.client.widgets.grid.ListGrid;
-import com.smartgwt.client.widgets.grid.ListGridField;
 import com.smartgwt.client.widgets.grid.ListGridRecord;
 import com.smartgwt.client.widgets.layout.HLayout;
 import com.smartgwt.client.widgets.layout.VLayout;
@@ -35,7 +35,7 @@ public class SituationLayoutViewImpl extends ViewImpl implements SituationLayout
 	private VLayout panel;
 	
 	private ListGrid notificationList;
-	
+		
 	@Inject
 	public SituationLayoutViewImpl() {
         
@@ -74,7 +74,8 @@ public class SituationLayoutViewImpl extends ViewImpl implements SituationLayout
 		ToolStripButton refresh = new ToolStripButton("Refresh", "[SKIN]/headerIcons/refresh.png");
 		refresh.addClickHandler(new ClickHandler(){
 			public void onClick(ClickEvent event) {
-				notificationList.setDataSource(situationDS);				
+				notificationList.invalidateCache();
+				notificationList.redraw();			
 			}			
 		});
 		situationTS.addButton(refresh);
