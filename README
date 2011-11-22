@@ -61,7 +61,11 @@ d) Chart Type: only supports the PieChart, Column Chart, Line Chart and Table Ch
 e) X axis mapped property: This is the property definition of the specified AQ(s), which value will be used for the chart's X axis.
 f) Y axis mapped property: This is the property definition of the specified AQ(s), which value will be used for the chart's Y axis.
 
-Note: Currently, we have only supported the 'name' and 'size', 'requestTimestamp' and 'responseTime' two combinations as properties value. For the 'requestTimestamp' and 'responseTime', it only supports one single AQ, whose name is "PurchasingResponseTime". With regard to the 'Table Chart', it only shows the data from 'PurchasingConversation' AQ, the x and y mapped properties do not apply here.
+Note: 
+Currently, we have only supported the 'name' and 'size', 'requestTimestamp' and 'responseTime' two combinations as properties value. 
+For the 'requestTimestamp' and 'responseTime', it only supports one single AQ, whose name is "PurchasingResponseTime". 
+As for 'Table Chart', it only shows the data from 'PurchasingConversation' AQ, the x and y mapped properties do not apply here.
+The predicate field is hard-coded now, it is hard-coded as operation='buy' in the backend.
 
 4.3) Navigate to the 'Situation' page by clicking the 'Situation' link in the left menu. In this page, it will show all of situations that come out of the 'Situation' AQ. Those Critical and Major situations will be colorised as a different background color.
  
@@ -70,7 +74,8 @@ b) You can edit the 'Severity', 'Priority', 'Status' and 'Owner' by double-click
 c) You can filter the situation list by specify the 'Severity', 'Priority', 'Status', 'Principal' and 'Owner' fields in the filter bar.
 d) Click the 'refresh' button to reload the data from AQ.
 
-Note: currently it doesn't support updating data to server, and those filter functionalities only applies to the data shown in the client side. 
+Note: 
+Currently it doesn't support updating data to server, and those filter functionalities only applies to the data shown in the client side. 
 
 5) Generate activities by:
 
