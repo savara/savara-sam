@@ -18,14 +18,14 @@
 package org.savara.sam.ams.conversations;
 
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.jms.Destination;
 import javax.jms.MessageListener;
 
-import org.infinispan.util.concurrent.NotifyingFuture;
+//import org.infinispan.context.Flag;
+import org.infinispan.context.Flag;
 import org.savara.monitor.ConversationId;
 import org.savara.monitor.Message;
 import org.savara.monitor.MonitorResult;
@@ -57,7 +57,7 @@ public class ConversationManager extends JEEActiveQueryManager<String,Conversati
 	
 	private org.savara.monitor.Monitor _monitor=null;
 	private org.infinispan.Cache<String,Activity> _activities=null;
-	private org.infinispan.Cache<ConversationId,ConversationDetails> _conversationDetails=null;
+	private org.infinispan.AdvancedCache<ConversationId,ConversationDetails> _conversationDetails=null;
 	private org.infinispan.manager.CacheContainer _container=null;
 	private ActiveQuery<Situation> _situations=null;
 	
@@ -89,7 +89,16 @@ public class ConversationManager extends JEEActiveQueryManager<String,Conversati
 		}
 		
 		_activities = _container.getCache("activities");
-		_conversationDetails = _container.getCache("conversationDetails");
+		
+		org.infinispan.Cache<ConversationId,ConversationDetails> conversationDetails=
+							_container.getCache("conversationDetails");
+		
+		// TODO: See if possible to get a 'lockIfAvailable' with boolean result - so instead of
+		// failing and setting the cache in an inconsistent state, it retains valid transaction
+		// but app could can decide how to deal with the issue
+		_conversationDetails = conversationDetails.getAdvancedCache()
+				.withFlags(Flag.SKIP_LOCKING);	// To ignore lock
+				//.withFlags(Flag.FAIL_SILENTLY);	// To ignore lock failures
 		
 		((JEECacheActiveQuerySpec<ConversationId,ConversationDetails>)getActiveQuerySpec()).setCache(_conversationDetails);
 		
@@ -118,25 +127,6 @@ public class ConversationManager extends JEEActiveQueryManager<String,Conversati
 		if (LOG.isLoggable(Level.FINEST)) {
 			LOG.finest("Got cached activity with key '"+id+"' ret="+ret);
 		}
-		/*
-		NotifyingFuture<Activity> future=_activities.getAsync(id);
-		try {
-			if (LOG.isLoggable(Level.FINEST)) {
-				LOG.finest("Get cached activity with key '"+id+"'");
-			}
-			act = future.get(1000, TimeUnit.MILLISECONDS);
-			
-			if (LOG.isLoggable(Level.FINEST)) {
-				LOG.finest("Got cached activity with key '"+id+"' ret="+ret);
-			}
-		} catch(Exception e) {
-			future.cancel(false);
-			
-			if (LOG.isLoggable(Level.FINEST)) {
-				LOG.finest("Failed to get cached activity with key '"+id+"'");
-			}
-		}
-		*/
 		
 		if (act == null) {
 			if (LOG.isLoggable(Level.FINEST)) {
@@ -213,6 +203,9 @@ public class ConversationManager extends JEEActiveQueryManager<String,Conversati
 					LOG.finest("Updating Conversation Details for cid="+
 								result.getConversationId()+" : added activity "+act);
 				}
+				
+				//_conversationDetails.lock(result.getConversationId());
+				
 				_conversationDetails.replace(result.getConversationId(), details);
 				
 				ret = result.getConversationId();

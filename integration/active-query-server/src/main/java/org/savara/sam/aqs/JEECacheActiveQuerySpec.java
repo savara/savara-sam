@@ -17,11 +17,9 @@
  */
 package org.savara.sam.aqs;
 
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.infinispan.util.concurrent.NotifyingFuture;
 import org.savara.sam.aq.ActiveQuerySpec;
 
 public class JEECacheActiveQuerySpec<S,T> extends ActiveQuerySpec {
@@ -52,22 +50,6 @@ public class JEECacheActiveQuerySpec<S,T> extends ActiveQuerySpec {
 		
 		if (_cache != null) {
 			ret = _cache.get((S)source);
-			/*
-			@SuppressWarnings("unchecked")
-			NotifyingFuture<T> future=_cache.getAsync((S)source);
-			try {
-				if (LOG.isLoggable(Level.FINEST)) {
-					LOG.finest("Get cached object, AQ '"+getName()+"' key '"+source+"'");
-				}
-				ret = future.get(1000, TimeUnit.MILLISECONDS);
-			} catch(Exception e) {
-				future.cancel(false);
-				
-				// Trigger retry rather than waiting on a cache lock
-				throw new RuntimeException("Failed to retrieve cached object, AQ '"+
-							getName()+"' key '"+source+"'");
-			}
-			*/
 			
 			if (LOG.isLoggable(Level.FINEST)) {
 				LOG.finest("Got cached object, AQ '"+getName()+"' key '"+source+"' ret="+ret);

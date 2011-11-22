@@ -21,7 +21,9 @@ import java.io.Serializable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.infinispan.Cache;
+import org.infinispan.AdvancedCache;
+import org.infinispan.context.Flag;
+//import org.infinispan.context.Flag;
 import org.savara.common.config.Configuration;
 import org.savara.monitor.ConversationId;
 import org.savara.monitor.SessionStore;
@@ -31,10 +33,17 @@ public class CachedSessionStore implements SessionStore {
 
 	private static final Logger LOG=Logger.getLogger(CachedSessionStore.class.getName());
 
-	private Cache<ProtocolConversationKey,Serializable> _cache=null;
+	private AdvancedCache<ProtocolConversationKey,Serializable> _cache=null;
 
 	public CachedSessionStore(org.infinispan.manager.CacheContainer cc) {
-		_cache = cc.getCache("conversationSessions");
+		org.infinispan.Cache<ProtocolConversationKey,Serializable> cache=cc.getCache("conversationSessions");
+
+		// TODO: See if possible to get a 'lockIfAvailable' with boolean result - so instead of
+		// failing and setting the cache in an inconsistent state, it retains valid transaction
+		// but app could can decide how to deal with the issue
+		_cache = cache.getAdvancedCache()
+				.withFlags(Flag.SKIP_LOCKING);	// To ignore lock
+		//.withFlags(Flag.FAIL_SILENTLY);	// To ignore lock failures
 	}
 	
 	public Serializable create(ProtocolId pid, ConversationId cid,
@@ -95,7 +104,13 @@ public class CachedSessionStore implements SessionStore {
 			LOG.finest("Update session for pid="+pid+" cid="+cid+" value="+value);			
 		}
 			
+		//_cache.lock(key);
+		
 		_cache.replace(key, value);
+		
+		if (LOG.isLoggable(Level.FINEST)) {
+			LOG.finest("Updated session for pid="+pid+" cid="+cid+" value="+value);			
+		}
 	}
 	
 	public void close() {

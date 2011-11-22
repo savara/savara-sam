@@ -299,7 +299,7 @@ public class JEEActiveQueryManager<S,T> implements MessageListener {
 					int retriesLeft=MAX_RETRY-getRetryCount(message);
 					
 					if (LOG.isLoggable(Level.FINEST)) {
-						LOG.finest("AQ<"+getActiveQueryName()+"> message="+
+						LOG.finest("Started processing AQ<"+getActiveQueryName()+"> message="+
 								message+" retriesLeft="+retriesLeft+" activities="+activities);
 					}
 				
@@ -412,8 +412,13 @@ public class JEEActiveQueryManager<S,T> implements MessageListener {
 					if (forwardRemovals != null) {
 						forwardChange(forwardRemovals, ActiveChangeType.Remove);
 					}
+					
+					if (LOG.isLoggable(Level.FINEST)) {
+						LOG.finest("Finished processing AQ<"+getActiveQueryName()+"> message="+
+								message+" retriesLeft="+retriesLeft+" activities="+activities);
+					}
 				}
-
+				
 			} catch(Exception e) {
 				LOG.log(Level.SEVERE, "Failed to handle activity event '"+message+"'", e);
 			}
