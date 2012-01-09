@@ -51,23 +51,9 @@
 
 	<properties>
 		<sam.version>1.0.0-SNAPSHOT</sam.version>
-		<savara.version>2.0.0-SNAPSHOT</savara.version>
-		<scribble.version>2.0.0-SNAPSHOT</scribble.version>
-		<protobuf.version>2.4.0a</protobuf.version>
-		<junit.version>4.4</junit.version>
-		<infinispan.version>5.0.1.FINAL</infinispan.version>
-		<drools.version>5.3.0.Final</drools.version>
-		<mvel.version>2.1.0.drools4</mvel.version>
-		<ecj.version>3.5.1</ecj.version>
-		<antlr.version>3.3</antlr.version>
 	</properties>
 
 	<modules>
-		<module>modules</module>
-		<module>integration</module>
-		<module>tests</module>
-		<module>distribution</module>
-                <module>web</module>
 	</modules>
 
 	<build>

@@ -1,88 +1,11 @@
-SAVARA SAM (Service Activity Monitoring) Prototype
-==================================================
+SAVARA SAM (Service Activity Monitoring)
+========================================
 
-Aim: This repository has been setup to build a Service Activity Monitoring prototype architecture for use by Savara.
-
-NOTE: This is just an experiment at this stage, and may therefore be deleted in the future if a more appropriate alternative is found, or the experiment is not successful.
-
-You can see a screencast for building/running the demo and web application at here: http://www.screencast.com/t/UfCP8RxBqgP
-
-Building:
-===================================================
-
-Checkout the savara-sam project, e.g.
-
-	git clone git@github.com:savara/savara-sam.git
-
-and run the following command from the top level folder,
-
-	mvn clean install
-
-This will create an installer for JBoss AS7 in the distribution/jboss-as7/target folder, called sam.deployer.zip.
+This repository has been setup to build a Service Activity Monitoring architecture for use by Savara.
 
 
-Running the Demo:
-======================================================
+Prototype:
 
-1) Download and unpack a JBoss AS7 distribution (currently tested with AS7.1.alpha2)
-
-
-2) Expand the sam.deployer.zip into the root folder of the AS7 distribution
-
-
-3) Go to the bin folder and start a standalone version of AS7, e.g.
-
-	./standalone.sh
-
-
-4) Start a browser and navigate to URL: http://localhost:8080/sam-web (The web is only working on Chrome 15.0 and Safari 5.1.1)
-
-4.1) Click the 'login' button, it will direct to the 'charts' page. In this page, it will show a number of portlets, each portlet has a chart or table, charts are explained as following:
-
-a) 'Txn Ratio' Pie Chart: It displays the ratio between the PurchasingSuccessful and PurchasingUnsuccessful AQ.
-b) 'Txn Bar Chart' : It displays the bar chart for PurchasingUnsuccessful, PurchasingSuccessful, PurchasingStarted AQs.
-c) 'Response Time' Line Chart: It displays the response time for PurchasingResponseTime AQ, it has a threshold as 9 second, background color gets changed if the (number of response times > 9 sec)/(the total number of response times) goes over certain thresholds - the darker the colour the higher the threshold.
-d) 'Conversation List' Table Chart: The first table shows all of latest valid conversations, whose background color is green. While the other table shows the latest invalid conversations, whose background color is red.
-e) 'Buy_Operation_Response_Time' Table Chart: This one is similar to the 'Response Time' Line Chart, but it only shows that data whose operation name is 'buy'. This is an example of a chart the is associated with a local ActiveQuery specific to the user's session.
-
-For each portlet, you can click the 'maximise' button to open the maximised window for the chart. You can click the 'refresh' button to show the chart for the latest AQ data, and 'close' button to remove the portlet. Moreover, you could drag and drop a portlet into another position inside the page.
-
-4.2) Create a new portlet with a new chart by clicking the 'Add AQ Chart' button, it will pop up a creation form window. Detailed field explanations are as follows:
-
-a) name: this will be the newly created portlet name, needs to be unique.
-b) Active Queries: This is the AQ selection, AQ is the backbone for the chart's data source. You can select one or multiple AQs for a chart. 
-c) Predicate: This is the expression that defined the predicate for a local AQ, for example, operation='buy'. If this field is not null, it will result in creating a local AQ out of the parent AQ(s) that are selected in the 'Active Queries' field.
-d) Chart Type: only supports the PieChart, Column Chart, Line Chart and Table Chart.
-e) X axis mapped property: This is the property definition of the specified AQ(s), which value will be used for the chart's X axis.
-f) Y axis mapped property: This is the property definition of the specified AQ(s), which value will be used for the chart's Y axis.
-
-Note: 
-Currently, we have only support the combinations of 'name' and 'size', or 'requestTimestamp' and 'responseTime', as valid property values. 
-For the 'requestTimestamp' and 'responseTime' pair, it only supports one single AQ, whose name is "PurchasingResponseTime". 
-As for 'Table Chart', it only shows the data from 'PurchasingConversation' AQ, the x and y mapped properties do not apply here.
-The predicate field is hard-coded for now, it is hard-coded as operation='buy' in the backend.
-
-4.3) Navigate to the 'Situation' page by clicking the 'Situation' link in the left menu. In this page, it will show all of situations that come out of the 'Situation' AQ. Those Critical and Major situations will be colorised as a different background color.
- 
-a) Once you hover on a row, it will pop up a floating table, which shows the detailed information of the situation. 
-b) You can edit the 'Severity', 'Priority', 'Status' and 'Owner' by double-clicking a row.
-c) You can filter the situation list by specifying the 'Severity', 'Priority', 'Status', 'Principal' and 'Owner' fields in the filter bar.
-d) Click the 'refresh' button to reload the data from AQ.
-
-Note: 
-Currently it doesn't support updating data to server, and those filter functionalities only applies to the data shown in the client side. 
-
-5) Generate activities by:
-
-a) opening a command window in the $AS7/demo/sam_event_generator folder
-b) running "mvn test"
-
-This will display a menu of options. Selecting options 1 to 4 will send activity events representing the named scenarios. Option 5 will randomly select scenarios, weighted so that successful transactions take precedence.
-
-Note: Option 2 (InvalidStoreBehaviour) provides an example of a business transaction that is not valid in respect of the Purchasing choreography, and results in a Situation being created for each invalid conversation detected.
-
-Next you will be asked for the number of iterations (or business transactions) to send.
-
-As the transactions are being sent, with suitable delays, you can refresh the browser to see the effects.
-
+A prototype was originally built to experiment with some ideas. This can be found in the 'prototype'
+branch. You can see a screencast for building/running the prototype and web application at here: http://www.screencast.com/t/UfCP8RxBqgP
 

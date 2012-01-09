@@ -1,4 +1,0 @@
-Dependencies: org.savara export,
-  org.savara.sam export,
-  deployment.active-query-server.jar,
-  deployment.activity-monitor-server.jar

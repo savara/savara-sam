@@ -1,5 +1,0 @@
-Dependencies: org.infinispan export,
-  org.drools export,
-  org.savara.sam export,
-  org.savara export,
-  deployment.active-query-server.jar
